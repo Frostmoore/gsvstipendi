@@ -31,7 +31,8 @@
                 <table class="table-auto w-full std-table">
                     <thead class="bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-200">
                         <tr>
-                            <th class="px-4 py-2">Ruolo</th>
+                            <th class="px-4 py-2">Nome</th>
+                            <th class="px-4 py-2">Campi</th>
                             <th class="px-4 py-2">Azioni</th>
                         </tr>
                     </thead>
@@ -42,6 +43,7 @@
                                         '{{ $role->role }}'.toLowerCase().includes(search.toLowerCase()) || 
                                         '{{ $role->fields }}'.toLowerCase().includes(search.toLowerCase())">
                                 <td class="px-4 py-2">{{ $role->role }}</td>
+                                <td class="px-4 py-2">{{ $role->fields }}</td>
                                 <td class="px-4 py-2">
                                     <a href="{{ route('roles.edit', $role) }}" 
                                     class="btn btn-primary">

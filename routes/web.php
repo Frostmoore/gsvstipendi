@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RolesController;
+use App\Http\Controllers\CompensationController;
 use App\Http\Middleware\AdminMiddleware;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
@@ -20,32 +21,32 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::get('/profile/users', function () {
-    $users = User::all();
-    return view('profile.users', ['users' => $users]);
-})->middleware(['auth', 'verified', AdminMiddleware::class])->name('profile.users');
+// Route::get('/profile/users', function () {
+//     $users = User::all();
+//     return view('profile.users', ['users' => $users]);
+// })->middleware(['auth', 'verified', AdminMiddleware::class])->name('profile.users');
 
-Route::get('/profile/users/{user}', function (User $user) {
-    return view('profile.show', ['user' => $user]);
-})->middleware(['auth', 'verified', AdminMiddleware::class])->name('profile.users.show');
+// Route::get('/profile/users/{user}', function (User $user) {
+//     return view('profile.show', ['user' => $user]);
+// })->middleware(['auth', 'verified', AdminMiddleware::class])->name('profile.users.show');
 
-Route::get('/profile/users/{user}/edit', function (User $user) {
-    return view('profile.edit', ['user' => $user]);
-})->middleware(['auth', 'verified', AdminMiddleware::class])->name('profile.users.edit');
+// Route::get('/profile/users/{user}/edit', function (User $user) {
+//     return view('profile.edit', ['user' => $user]);
+// })->middleware(['auth', 'verified', AdminMiddleware::class])->name('profile.users.edit');
 
-Route::patch('/profile/users/{user}', function (User $user) {
-    $user->update(request()->all());
-    return redirect()->route('profile.users')->with('success', 'Utente Aggiornato con successo!');
-})->middleware(['auth', 'verified', AdminMiddleware::class])->name('profile.users.update');
+// Route::patch('/profile/users/{user}', function (User $user) {
+//     $user->update(request()->all());
+//     return redirect()->route('profile.users')->with('success', 'Utente Aggiornato con successo!');
+// })->middleware(['auth', 'verified', AdminMiddleware::class])->name('profile.users.update');
 
-Route::delete('/profile/users/{user}', function (User $user) {
-    $user->delete();
-    return redirect()->route('profile.users')->with('success', 'Utente Eliminato con successo!');
-})->middleware(['auth', 'verified', AdminMiddleware::class])->name('profile.users.destroy');
+// Route::delete('/profile/users/{user}', function (User $user) {
+//     $user->delete();
+//     return redirect()->route('profile.users')->with('success', 'Utente Eliminato con successo!');
+// })->middleware(['auth', 'verified', AdminMiddleware::class])->name('profile.users.destroy');
 
-Route::get('/profile/users/create', function () {
-    return view('profile.create');
-})->middleware(['auth', 'verified', AdminMiddleware::class])->name('profile.users.create');
+// Route::get('/profile/users/create', function () {
+//     return view('profile.create');
+// })->middleware(['auth', 'verified', AdminMiddleware::class])->name('profile.users.create');
 
 Route::controller(ProfileController::class)
 ->prefix('profile')
@@ -75,6 +76,20 @@ Route::controller(RolesController::class)
     Route::get('/{roles}/edit', 'edit')->name('edit');
     Route::patch('/{roles}/update', 'update')->name('update');
     Route::delete('/{roles}/destroy', 'destroy')->name('destroy');
+});
+
+Route::controller(CompensationController::class)
+->prefix('compensations')
+->name('compensations.')
+->middleware(['auth', AdminMiddleware::class])
+->group(function () {
+    Route::get('/', 'index')->name('index');
+    Route::get('/create', 'create')->name('create');
+    Route::post('/', 'store')->name('store');
+    Route::get('/{compensation}', 'show')->name('show');
+    Route::get('/{compensation}/edit', 'edit')->name('edit');
+    Route::patch('/{compensation}/update', 'update')->name('update');
+    Route::delete('/{compensation}/destroy', 'destroy')->name('destroy');
 });
 
 
