@@ -29,7 +29,8 @@ class RolesController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $roles = Roles::create($request->all());
+        return redirect()->route('roles.index')->with('success', 'Ruolo Aggiunto con successo!');
     }
 
     /**
@@ -37,7 +38,7 @@ class RolesController extends Controller
      */
     public function show(Roles $roles)
     {
-        //
+        return view('roles.show', ['role' => $roles, 'title' => 'Gestione Ruoli']);
     }
 
     /**
@@ -45,7 +46,7 @@ class RolesController extends Controller
      */
     public function edit(Roles $roles)
     {
-        //
+        return view('roles.edit', compact('roles'));
     }
 
     /**
@@ -53,7 +54,8 @@ class RolesController extends Controller
      */
     public function update(Request $request, Roles $roles)
     {
-        //
+        $roles->update($request->all());
+        return redirect()->route('roles.index')->with('success', 'Ruolo Aggiornato con successo!');
     }
 
     /**
@@ -61,6 +63,8 @@ class RolesController extends Controller
      */
     public function destroy(Roles $roles)
     {
-        //
+        $role = Roles::find($roles->id);
+        $role->delete();
+        return redirect()->route('roles.index')->with('success', 'Ruolo Eliminato con successo!');
     }
 }

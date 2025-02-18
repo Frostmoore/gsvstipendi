@@ -14,12 +14,17 @@
 
         <!-- Barra di ricerca con filtraggio dinamico -->
         <div x-data="{ search: '', showModal: false, selectedUser: null }">
-            <input 
-                type="text" 
-                x-model.debounce.200ms="search"
-                placeholder="Cerca utenti..." 
-                class="px-4 py-2 border rounded-lg focus:ring focus:ring-blue-300 w-full mb-4 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-200"
-            />
+            <div class="gsv-row-search">
+                <input 
+                    type="text" 
+                    x-model.debounce.200ms="search"
+                    placeholder="Cerca utenti..." 
+                    class="px-4 py-2 border rounded-lg focus:ring focus:ring-blue-300 w-full mb-4 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-200 gsv-search"
+                />
+                <a href="{{ route('profile.users.create') }}" class="btn btn-primary mb-3">
+                    <i class="fa-solid fa-plus-circle gsv-add px-2 py-2"></i>
+                </a>
+            </div>
 
             <div class="overflow-x-auto shadow-md rounded-lg">
                 <table class="table-auto w-full std-table">

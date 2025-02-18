@@ -3,6 +3,10 @@
 @tailwind components;
 @tailwind utilities;
 
+i {
+    display: inline!important;
+}
+
 .std-content {
     display: flex;
     align-self: center;
@@ -23,7 +27,7 @@
 }
 
 .std-table > tbody > tr > td {
-    min-width: 90px!important;
+    min-width: 100px!important;
     text-align:center;
 }
 
@@ -32,7 +36,8 @@
 }
 
 .gsv-destroy:hover {
-    background-color: rgb(155, 155, 155);
+    background-color: red;
+    color: white!important;
     border-radius: 3px;
     
 }
@@ -42,17 +47,48 @@
 }
 
 .gsv-edit:hover {
-    background-color: rgb(155, 155, 155);
+    background-color: rgb(255, 196, 0);
+    color: white!important;
+    border-radius: 3px;
+    
+}
+
+.gsv-add {
+    color:rgb(14, 172, 0)!important;
+    display: inline-block;
+    margin-bottom: 4px;
+}
+
+.gsv-add:hover {
+    background-color: rgb(14, 172, 0);
+    color:white!important;
     border-radius: 3px;
     
 }
 
 .gsv-secure {
-    color:rgb(24, 150, 45)!important;
+    color:rgb(0, 118, 187)!important;
 }
 
 .gsv-secure:hover {
-    background-color: rgb(155, 155, 155);
+    background-color: rgb(0, 118, 187);
+    color: white!important;
     border-radius: 3px;
     
+}
+
+.gsv-form {
+    min-width: 300px!important;
+}
+
+.gsv-search {
+    margin-right:15px;
+}
+
+.gsv-row-search {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin: 0;
 }
