@@ -102,3 +102,19 @@ input::-webkit-inner-spin-button {
 input[type=number] {
     -moz-appearance: textfield;
 }
+
+.alert {
+    padding: 20px;
+    margin-bottom: 15px;
+    margin-top: 15px;
+}
+
+.alert-danger {
+    background-color: #f44336;
+    color: white;
+}
+
+.alert-success {
+    background-color: #4CAF50;
+    color: white;
+}

@@ -17,7 +17,7 @@
                     </x-nav-link>
                 </div>
                 @auth
-                    @if(Auth::user()->role != 'admin')
+                    @if(Auth::user()->role != 'admin' && Auth::user()->role != 'superadmin')
                         <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                             <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                                 {{ __('Foglio Orario') }}
@@ -26,7 +26,7 @@
                     @endif
                 @endauth
                 @auth
-                    @if(Auth::user()->role == 'admin')
+                    @if(Auth::user()->role == 'admin' || Auth::user()->role == 'superadmin')
                         <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                             <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                                 {{ __('Fogli Orari') }}

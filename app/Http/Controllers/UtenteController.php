@@ -21,9 +21,9 @@ class UtenteController extends Controller
     
         if ($status === Password::RESET_LINK_SENT) {
             return redirect()->route('utenti.index')->with('success', 'Email di reset password inviata con successo!');
+        } else {
+            return redirect()->route('utenti.index')->with('error', 'Errore nell\'invio dell\'email!');
         }
-    
-        return redirect()->route('utenti.index')->withErrors(['email' => 'Errore nell\'invio dell\'email!']);
     }
 
     /**
