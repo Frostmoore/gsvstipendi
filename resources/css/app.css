@@ -118,3 +118,13 @@ input[type=number] {
     background-color: #4CAF50;
     color: white;
 }
+
+.alert-info {
+    background-color: #2196F3;
+    color: white;
+}
+
+.alert-warning {
+    background-color: #ff9800;
+    color: white;
+}

@@ -33,7 +33,7 @@
                             </x-nav-link>
                         </div>
                         <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                            <x-nav-link :href="route('profile.users')" :active="request()->routeIs('profile.users')">
+                            <x-nav-link :href="route('utenti.index')" :active="request()->routeIs('utenti.index')">
                                 {{ __('Utenti') }}
                             </x-nav-link>
                         </div>
