@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RolesController;
 use App\Http\Controllers\CompensationController;
 use App\Http\Middleware\AdminMiddleware;
+use App\Http\Controllers\UtenteController;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
 
@@ -21,10 +22,10 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-// Route::get('/profile/users', function () {
-//     $users = User::all();
-//     return view('profile.users', ['users' => $users]);
-// })->middleware(['auth', 'verified', AdminMiddleware::class])->name('profile.users');
+Route::get('/profile/users', function () {
+    $users = User::all();
+    return view('profile.users', ['users' => $users]);
+})->middleware(['auth', 'verified', AdminMiddleware::class])->name('profile.users');
 
 // Route::get('/profile/users/{user}', function (User $user) {
 //     return view('profile.show', ['user' => $user]);
@@ -48,21 +49,21 @@ Route::middleware('auth')->group(function () {
 //     return view('profile.create');
 // })->middleware(['auth', 'verified', AdminMiddleware::class])->name('profile.users.create');
 
-Route::controller(ProfileController::class)
-->prefix('profile')
-->name('profile.')
-->middleware(['auth', AdminMiddleware::class])
-->group(function () {
-    Route::get('/', 'edit')->name('edit');
-    Route::patch('/', 'update')->name('update');
-    Route::delete('/', 'destroy')->name('destroy');
-    Route::get('/users', 'users')->name('users');
-    Route::get('/users/{user}', 'show')->name('users.show');
-    Route::get('/users/{user}/edit', 'edit')->name('users.edit');
-    Route::patch('/users/{user}', 'update')->name('users.update');
-    Route::delete('/users/{user}', 'destroy')->name('users.destroy');
-    Route::get('/users/create', 'create')->name('users.create');
-});
+// Route::controller(ProfileController::class)
+// ->prefix('profile')
+// ->name('profile.')
+// ->middleware(['auth', AdminMiddleware::class])
+// ->group(function () {
+//     Route::get('/', 'edit')->name('edit');
+//     Route::patch('/', 'update')->name('update');
+//     Route::delete('/', 'destroy')->name('destroy');
+//     Route::get('/users', 'users')->name('users');
+//     Route::get('/users/{user}', 'show')->name('users.show');
+//     Route::get('/users/{user}/edit', 'edit')->name('users.edit');
+//     Route::patch('/users/{user}', 'update')->name('users.update');
+//     Route::delete('/users/{user}', 'destroy')->name('users.destroy');
+//     Route::get('/users/create', 'create')->name('users.create');
+// });
 
 Route::controller(RolesController::class)
 ->prefix('roles')
@@ -92,5 +93,19 @@ Route::controller(CompensationController::class)
     Route::delete('/{compensation}/destroy', 'destroy')->name('destroy');
 });
 
+Route::controller(UtenteController::class)
+->prefix('utenti')
+->name('utenti.')
+->middleware(['auth', AdminMiddleware::class])
+->group(function () {
+    Route::get('/', 'index')->name('index');
+    Route::get('/create', 'create')->name('create');
+    Route::post('/{utente}/passwordReset', [UtenteController::class, 'passwordReset'])->name('passwordReset');
+    Route::post('/', 'store')->name('store');
+    Route::get('/{utente}', 'show')->name('show');
+    Route::get('/{utente}/edit', 'edit')->name('edit');
+    Route::patch('/{utente}/update', 'update')->name('update');
+    Route::delete('/{utente}/destroy', 'destroy')->name('destroy');
+});
 
 require __DIR__.'/auth.php';

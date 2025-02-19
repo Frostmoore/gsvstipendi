@@ -12,14 +12,14 @@ use Illuminate\View\View;
 
 class ProfileController extends Controller
 {
-    public function users(Request $request): View
-    {
-        $users = User::all();
+    // public function users(Request $request): View
+    // {
+    //     $users = User::all();
 
-        return view('profile.users', [
-            'users' => $users,
-        ]);
-    }
+    //     return view('profile.users', [
+    //         'users' => $users,
+    //     ]);
+    // }
 
     /**
      * Display the user's profile form.
@@ -68,12 +68,12 @@ class ProfileController extends Controller
         return Redirect::to('/');
     }
 
-    public function list(Request $request): View
-    {
-        $users = User::all();
+    // public function list(Request $request): View
+    // {
+    //     $users = User::all();
 
-        return view('profile.index', [
-            'users' => $users,
-        ]);
-    }
+    //     return view('profile.index', [
+    //         'users' => $users,
+    //     ]);
+    // }
 }
