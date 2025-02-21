@@ -15,6 +15,7 @@ i {
     align-items: center;
     justify-content: center;
     max-width: 1200px;
+    padding: 10px;
 }
 
 .title-container {
@@ -26,9 +27,56 @@ i {
     width: 800px!important;
 }
 
+.gsv-description-container {
+}
+
+.gsv-timesheet-form {
+    max-width: 400px!important;
+    margin: auto!important;
+}
+
+.gsv-timesheet-table {
+    /* min-width: 1200px!important; */
+    max-width: 1200px!important;
+    overflow-x: scroll!important;
+}
+
 .std-table > tbody > tr > td {
     min-width: 134px!important;
     text-align:center;
+}
+
+.gsv-timesheet-table-container {
+    min-width: 1200px;
+}
+
+.gsv-timesheet-table {
+    border: 1px solid #324773;
+    border-collapse: collapse;
+    width: 100%;
+    border-radius: 5px;
+}
+
+.gsv-timesheet-table > tbody > tr > td {
+    min-width: 134px!important;
+    border-right: 1px solid #324773;
+    border-left: 1px solid #324773;
+    border-bottom: 1px solid #324773;
+    padding: 7px;
+    text-align:center;
+}
+
+.gsv-timesheet-table > tbody > tr > td > input[type="time"] {
+    min-width: 13px!important;
+    margin: 3px!important;
+    padding: 3px!important;
+}
+
+.gsv-timesheet-table > thead > tr > th {
+    min-width: 134px!important;
+    padding: 12px;
+    text-align:center;
+    border: 1px solid #324773;
 }
 
 .gsv-destroy {
@@ -72,6 +120,17 @@ i {
 
 .gsv-secure:hover {
     background-color: rgb(0, 118, 187);
+    color: white!important;
+    border-radius: 3px;
+    
+}
+
+.gsv-document {
+    color:rgb(199, 15, 216)!important;
+}
+
+.gsv-document:hover {
+    background-color: rgb(199, 15, 216)!important;
     color: white!important;
     border-radius: 3px;
     

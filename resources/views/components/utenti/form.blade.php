@@ -19,15 +19,15 @@
         <option value="">Seleziona un ruolo</option>
         @auth
             @if(Auth::user()->role == 'superadmin')
-                <option value="admin" {{($user->role == 'admin' ? 'selected' : '')}}>Admin</option>
-                <option value="user" {{($user->role == 'user' ? 'selected' : '')}}>Utente Semplice (Nessun Accesso)</option>
-                <option value="superadmin" {{($user->role == 'superadmin' ? 'selected' : '')}}>Super Admin</option>
+                <option value="admin" {{(Auth::user()->role == 'admin' ? 'selected' : '')}}>Admin</option>
+                <option value="user" {{(Auth::user()->role == 'user' ? 'selected' : '')}}>Utente Semplice (Nessun Accesso)</option>
+                <option value="superadmin" {{(Auth::user()->role == 'superadmin' ? 'selected' : '')}}>Super Admin</option>
             @else
-                <option value="user" {{($user->role == 'user' ? 'selected' : '')}}>Utente Semplice (Nessun Accesso)</option>
+                <option value="user" {{(Auth::user()->role == 'user' ? 'selected' : '')}}>Utente Semplice (Nessun Accesso)</option>
             @endif
         @endauth
         @foreach ($roles as $role)
-            <option value="{{ $role->id }}" {{(old('role') == $role->id ? 'selected' : '')}} {{isset($user) ? ($user->role == $role->id ? 'selected' : '') : ''}}>{{ $role->role }}</option>
+            <option value="{{ $role->id }}" {{(old('role') == $role->id ? 'selected' : '')}} {{null !== Auth::user()->role ? (Auth::user()->role == $role->id ? 'selected' : '') : ''}}>{{ $role->role }}</option>
         @endforeach
     </x-select-input>
     <x-input-error :messages="$errors->get('role')" class="mt-2" />

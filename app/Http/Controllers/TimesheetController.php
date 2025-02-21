@@ -3,7 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Timesheet;
+use App\Models\Roles;
+use App\Models\Utente;
+use App\Models\Compensation;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class TimesheetController extends Controller
 {
@@ -12,7 +17,32 @@ class TimesheetController extends Controller
      */
     public function index()
     {
-        //
+        $months = [
+            '1' => 'Gennaio', '2' => 'Febbraio', '3' => 'Marzo',
+            '4' => 'Aprile', '5' => 'Maggio', '6' => 'Giugno',
+            '7' => 'Luglio', '8' => 'Agosto', '9' => 'Settembre',
+            '10' => 'Ottobre', '11' => 'Novembre', '12' => 'Dicembre'
+        ];
+    
+        $timesheets = DB::table('timesheets')
+            ->leftJoin('users', DB::raw('CAST(timesheets.user AS UNSIGNED)'), '=', 'users.id')
+            ->select(
+                'timesheets.id',
+                'timesheets.month',
+                'timesheets.year',
+                DB::raw("COALESCE(CONCAT(users.surname, ' ', users.name), 'Sconosciuto') as user_fullname"),
+                'timesheets.link',
+                'timesheets.user as user_id'
+            )
+            ->get()
+            ->map(function ($t) use ($months) {
+                $t->month = $months[$t->month] ?? 'Mese sconosciuto';
+            return $t;
+        });
+        // @dd($timesheets);
+        $a = Utente::all();
+        $b = Timesheet::all();
+        return view('timesheets.index', ['timesheets' => $b, 'users' => $a, 'timesheets_worked' => $timesheets]);
     }
 
     /**
@@ -20,7 +50,30 @@ class TimesheetController extends Controller
      */
     public function create()
     {
-        //
+       // Recupera dati standard
+        $users = Utente::all();
+        $roles = Roles::all();
+        $compensations = Compensation::all();
+
+        $months = [
+            '1' => 'Gennaio', '2' => 'Febbraio', '3' => 'Marzo',
+            '4' => 'Aprile', '5' => 'Maggio', '6' => 'Giugno',
+            '7' => 'Luglio', '8' => 'Agosto', '9' => 'Settembre',
+            '10' => 'Ottobre', '11' => 'Novembre', '12' => 'Dicembre'
+        ];
+
+        for($i = -1; $i < 2; $i++) {
+            $years[Carbon::now()->subYears($i)->year] = Carbon::now()->subYears($i)->year;
+        }
+
+        // Passa tutti i dati alla view
+        return view('timesheets.create', [
+            'users'           => $users,
+            'roles'           => $roles,
+            'compensations'   => $compensations,
+            'months'          => $months,
+            'years'           => $years
+        ]);
     }
 
     /**
@@ -28,7 +81,9 @@ class TimesheetController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        // dd($request->all());
+        $utenti = Timesheet::create($request->all());
+        return redirect()->route('timesheets.index')->with('success', 'Foglio Orario Aggiunto con successo!');
     }
 
     /**
@@ -60,6 +115,8 @@ class TimesheetController extends Controller
      */
     public function destroy(Timesheet $timesheet)
     {
-        //
+        $timesheet = Timesheet::find($timesheet->id);
+        $timesheet->delete();
+        return redirect()->route('timesheets.index')->with('success', 'Foglio Orario Eliminato con successo!');
     }
 }
