@@ -62,25 +62,25 @@ document.addEventListener("DOMContentLoaded", function () {
     let ruolo = 0;
     let ruolo_name = '';
     let columns = [];
-
-    userSelect.addEventListener('change', function () {
+    
+    userSelect.addEventListener('change', function() {
         user = userSelect.value;
         console.log(roles);
     });
 
-    for (let i = 0; i < utenti.length; i++) {
-        if (user == utenti[i].id) {
+    for(let i = 0; i < utenti.length; i++) {
+        if(user == utenti[i].id) {
             ruolo = utenti[i].role;
         }
     }
 
-    for (let j = 0; j < roles.length; j++) {
-        if (ruolo == roles[j].id) {
+    for(let j = 0; j < roles.length; j++) {
+        if(ruolo == roles[j].id) {
             ruolo_name = roles[j].name;
         }
-    }
+    }   
 
-    // Definizione delle colonne in base al ruolo
+    // Definizione delle colonne
     switch (ruolo_name) {
         case 'Autista':
             columns = [
@@ -89,6 +89,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 { name: "Luogo", type: "text", editable: true },
                 { name: "Entrata", type: "time", editable: true },
                 { name: "Uscita", type: "time", editable: true },
+                //{ name: "Trasf. Breve", type: "checkbox", editable: false },
                 { name: "Trasf. Lunga", type: "checkbox", editable: false },
                 { name: "Pernotto", type: "checkbox", editable: false },
                 { name: "Presidio", type: "checkbox", editable: false }
@@ -101,7 +102,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 { name: "Luogo", type: "text", editable: true },
                 { name: "Estero", type: "checkbox", editable: false }
             ];
-            break;
+        break;
         case 'Facchino':
             columns = [
                 { name: "Data", type: "text", editable: false },
@@ -109,9 +110,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 { name: "Luogo", type: "text", editable: true },
                 { name: "Entrata", type: "time", editable: true },
                 { name: "Uscita", type: "time", editable: true },
-                { name: "Trasferta", type: "checkbox", editable: false }
+                //{ name: "Trasf. Breve", type: "checkbox", editable: false },
+                { name: "Trasferta", type: "checkbox", editable: false },
             ];
-            break;
+        break;
         default:
             columns = [
                 { name: "Data", type: "text", editable: false },
@@ -119,19 +121,22 @@ document.addEventListener("DOMContentLoaded", function () {
                 { name: "Luogo", type: "text", editable: true },
                 { name: "Entrata", type: "time", editable: true },
                 { name: "Uscita", type: "time", editable: true },
+                //{ name: "Trasf. Breve", type: "checkbox", editable: false },
                 { name: "Trasferta", type: "checkbox", editable: false },
                 { name: "Trasf. Lunga", type: "checkbox", editable: false },
                 { name: "Pernotto", type: "checkbox", editable: false },
                 { name: "Presidio", type: "checkbox", editable: false },
                 { name: "Estero", type: "checkbox", editable: false }
             ];
-            break;
+        break;
     }
 
-    function generateTable() {
-        tableHead.innerHTML = "";
-        tableBody.innerHTML = "";
 
+    function generateTable() {
+        tableHead.innerHTML = ""; // Pulizia della riga di intestazione
+        tableBody.innerHTML = ""; // Pulizia delle righe
+
+        // Creazione dell'intestazione
         let headerRow = document.createElement("tr");
         columns.forEach(col => {
             let th = document.createElement("th");
@@ -144,19 +149,25 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function generateTableRows() {
-        let month = parseInt(monthSelect.value);
-        let year = parseInt(yearSelect.value);
+        let month = parseInt(monthSelect.value); // Mese (0-11)
+        let year = parseInt(yearSelect.value);   // Anno
 
-        tableBody.innerHTML = "";
+        tableBody.innerHTML = ""; // Pulisce la tabella
 
-        let daysInMonth = new Date(year, month, 0).getDate();
+        let daysInMonth = new Date(year, month, 0).getDate(); // Numero di giorni nel mese
 
         for (let day = 1; day <= daysInMonth; day++) {
             let date = new Date(year, month, day);
             let dayOfWeek = date.toLocaleDateString("it-IT", { weekday: "long" });
             let monthName = date.toLocaleDateString("it-IT", { month: "long" });
             let formattedDate = `<strong>${capitalizeFirstLetter(dayOfWeek)}</strong>`;
-            formattedDate += `<span> ${day}</span>`;
+            if(dayOfWeek == "domenica") {
+                formattedDate += `<span style="color:red;"> ${day}</span>`;
+            } else if(dayOfWeek == "sabato") {
+                formattedDate += `<span style="color:orange;"> ${day}</span>`;
+            } else {
+                formattedDate += `<span> ${day}</span>`;
+            }
 
             let row = document.createElement("tr");
 
@@ -164,7 +175,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 let td = document.createElement("td");
 
                 if (col.name === "Data") {
-                    td.innerHTML = formattedDate;
+                    td.innerHTML = `${formattedDate}`;
                     td.style.textAlign = "left";
                 } else if (col.type === "checkbox") {
                     let input = document.createElement("input");
@@ -176,26 +187,11 @@ document.addEventListener("DOMContentLoaded", function () {
                     let input = document.createElement("input");
                     input.type = "time";
                     input.classList.add("odd:bg-white", "odd:dark:bg-gray-700", "even:bg-gray-50", "even:dark:bg-gray-800", "hover:bg-gray-100", "hover:dark:bg-gray-600");
-                    input.classList.add("time-column");
-                    input.addEventListener("input", function () {
-                        propagateValue(this, col.name);
-                    });
+                    input.addEventListener("input", updateHiddenInput);
                     td.appendChild(input);
                 } else {
+                    td.name = col.name;
                     td.contentEditable = col.editable;
-                    if (col.name === "Cliente") {
-                        td.classList.add("cliente-column");
-                        td.addEventListener("input", function () {
-                            propagateValue(this, col.name);
-                        });
-                    }
-
-                    if (col.name === "Luogo") {
-                        td.classList.add("luogo-column");
-                        td.addEventListener("input", function () {
-                            propagateValue(this, col.name);
-                        });
-                    }
                 }
 
                 row.appendChild(td);
@@ -203,25 +199,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
             tableBody.appendChild(row);
         }
-
-        updateHiddenInput();
-    }
-
-    function propagateValue(element, columnName) {
-        let value = element.innerText ? element.innerText.trim() : element.value;
-        let columnIndex = Array.from(element.closest("tr").children).indexOf(element.closest("td"));
-
-        document.querySelectorAll(`#editableTable tbody tr`).forEach((row, rowIndex) => {
-            if (rowIndex > Array.from(tableBody.children).indexOf(element.closest("tr"))) {
-                let targetCell = row.children[columnIndex];
-
-                if (columnName === "Cliente" || columnName === "Luogo") {
-                    targetCell.innerText = value;
-                } else if (columnName === "Entrata" || columnName === "Uscita") {
-                    targetCell.querySelector("input[type='time']").value = value;
-                }
-            }
-        });
 
         updateHiddenInput();
     }
@@ -256,13 +233,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
     monthSelect.addEventListener("change", generateTableRows);
     yearSelect.addEventListener("change", generateTableRows);
+    tableBody.addEventListener("input", updateHiddenInput);
+    tableBody.addEventListener("change", updateHiddenInput);
 
+    // Genera la tabella iniziale basata sul mese e anno attuali
+    //generateTableRows();
     generateTable();
-
-
-    //***********************************************************************//
-    //************************** Movimento Celle ****************************//
-    //***********************************************************************//
 
     let table = document.getElementById("editableTable");
 

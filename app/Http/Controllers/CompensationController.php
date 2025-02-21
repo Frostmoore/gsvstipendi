@@ -20,7 +20,8 @@ class CompensationController extends Controller
                 'compensations.name',
                 'roles.id as role_id',
                 'roles.role as role_name',
-                'compensations.value'
+                'compensations.value',
+                'compensations.type'
             )
             ->get()->sortByDesc('role_id');
 
@@ -69,7 +70,8 @@ class CompensationController extends Controller
                 'compensations.name',
                 'roles.id as role_id',
                 'roles.role as role_name',
-                'compensations.value'
+                'compensations.value',
+                'compensations.type'
             )
         ->get();
 
@@ -94,7 +96,8 @@ class CompensationController extends Controller
                 'compensations.name',
                 'roles.id as role_id',
                 'roles.role as role_name',
-                'compensations.value'
+                'compensations.value',
+                'compensations.type'
             )
         ->get();
         $compensation->update($request->all());

@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", function() {
         let userSelect = new TomSelect("#user-select", {
             valueField: 'id',  // Il valore salvato è l'ID dell'utente
             labelField: 'name', // Mostra il nome
-            searchField: ['name', 'surname', 'email', 'role'], // Ricerca su più campi
+            searchField: ['name', 'surname', 'email', 'username', 'role'], // Ricerca su più campi
             create: false,
             load: function(query, callback) {
                 if (!query.length) return callback();

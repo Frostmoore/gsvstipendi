@@ -7,15 +7,19 @@ i {
     display: inline!important;
 }
 
+nav {
+    width: 100%;
+}
+
 .std-content {
-    display: flex;
+    /* display: flex; */
     align-self: center;
     justify-self: center;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     max-width: 1200px;
-    padding: 10px;
+    padding: 10px!important;
 }
 
 .title-container {
@@ -38,7 +42,7 @@ i {
 .gsv-timesheet-table {
     /* min-width: 1200px!important; */
     max-width: 1200px!important;
-    overflow-x: scroll!important;
+    /* overflow-x: scroll!important; */
 }
 
 .std-table > tbody > tr > td {
@@ -47,7 +51,7 @@ i {
 }
 
 .gsv-timesheet-table-container {
-    min-width: 1200px;
+    /* min-width: 1800px; */
 }
 
 .gsv-timesheet-table {
@@ -186,4 +190,94 @@ input[type=number] {
 .alert-warning {
     background-color: #ff9800;
     color: white;
+}
+
+@media screen and (max-width: 576px) {
+
+    body {
+        width: 576px;
+    }
+
+    .std-content {
+        max-width: 600px;
+        padding: 0!important;
+    }
+
+    .gsv-timesheet-table {
+        display:block;
+        width: 100%;
+        position:relative;
+        /* padding: 20px; */
+        border: none;
+    }
+
+    .gsv-timesheet-table-container {
+        padding: 20px;
+    }
+
+    .gsv-form {
+        width: 100%;
+    }
+
+}
+
+@media screen and (max-width: 768px) {
+
+    body {
+        width: 768px;
+    }
+
+    .std-content {
+        max-width: 768px;
+        padding: 0!important;
+    }
+
+    .gsv-timesheet-table {
+        display:block;
+        min-width: 1200px;
+        width: 100%;
+        position:relative!important;
+        /* padding: 20px; */
+        border: none;
+    }
+
+    .gsv-timesheet-table-container {
+        padding: 20px;
+        overflow-x: auto;
+        width:100%;
+    }
+
+    .gsv-form {
+        width: 100%;
+    }
+
+    .gsv-timesheet-table {
+        border: 1px solid #324773;
+        border-collapse: collapse;
+        width: 100%;
+        border-radius: 5px;
+    }
+    
+    .gsv-timesheet-table > tbody > tr > td {
+        width: 134px!important;
+        border-right: 1px solid #324773;
+        border-left: 1px solid #324773;
+        border-bottom: 1px solid #324773;
+        padding: 7px;
+        text-align:center;
+    }
+    
+    .gsv-timesheet-table > tbody > tr > td > input[type="time"] {
+        min-width: 13px!important;
+        margin: 3px!important;
+        padding: 3px!important;
+    }
+    
+    .gsv-timesheet-table > thead > tr > th {
+        min-width: 134px!important;
+        padding: 12px;
+        text-align:center;
+        border: 1px solid #324773;
+    }
+
 }

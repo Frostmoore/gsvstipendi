@@ -19,7 +19,7 @@
         <script src="https://cdn.jsdelivr.net/npm/tom-select"></script>
     </head>
     <body class="font-sans antialiased">
-        <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
+        <div class="min-h-screen bg-gray-100 dark:bg-gray-900 .gsv-std-body">
             @include('layouts.navigation')
 
             <!-- Page Heading -->

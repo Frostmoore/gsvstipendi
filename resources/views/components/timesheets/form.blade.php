@@ -25,8 +25,8 @@
         <x-input-error :messages="$errors->get('year')" class="mt-2" />
     </div>
 </div>
-<div class="mb-4" style="width: 100%; overflow-x: auto;">
-    <x-timesheet-table />
+<div class="mb-4 gsv-timesheet-table-container" style="width: 100%; overflow-x: auto;">
+    <x-timesheet-table :roles="$roles" :compensations="$compensations" :users="$users"/>
 </div>
 
 <div class="gsv-timesheet-form">

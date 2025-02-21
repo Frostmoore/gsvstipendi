@@ -15,6 +15,7 @@ class Compensation extends Model
     protected $fillable = [
         'role',
         'value',
-        'name'
+        'name',
+        'type'
     ];
 }

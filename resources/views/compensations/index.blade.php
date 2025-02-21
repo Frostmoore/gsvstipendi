@@ -12,6 +12,23 @@
                 {{ __('Elenco Compensi') }}
             </h2>
         </div>
+        <div class="gsv-description-container mb-4">
+            <p class="text-xs text-gray-800 dark:text-gray-200 leading-tight" style="color:orange;">
+                {{ __('Istruzioni per la compilazione:') }}
+            </p>
+            <p class="text-xs text-gray-800 dark:text-gray-200 leading-tight">
+                {{ __('1. Causale è anche il nome del campo del Foglio Orario che verrà generato') }}
+            </p>
+            <p class="text-xs text-gray-800 dark:text-gray-200 leading-tight">
+                {{ __('2. Tipo Operatore è anche il campo che genererà le colonne del Foglio Orario') }}
+            </p>
+            <p class="text-xs text-gray-800 dark:text-gray-200 leading-tight">
+                {{ __('3. Compenso è il valore che verrà sommato nel calcolo del compenso') }}
+            </p>
+            <p class="text-xs text-gray-800 dark:text-gray-200 leading-tight">
+                {{ __('4. Tipo di Campo è il tipo di campo che apparirà nel Foglio Orario (checkbox, time, testo...)') }}
+            </p>
+        </div>
 
         <!-- Barra di ricerca con filtraggio dinamico -->
         <div x-data="{ search: '', showModal: false, selectedRole: null }">
@@ -34,6 +51,7 @@
                             <th class="px-4 py-2">Causale</th>
                             <th class="px-4 py-2">Tipo Operatore</th>
                             <th class="px-4 py-2">Compenso</th>
+                            <th class="px-4 py-2">Tipo di Campo</th>
                             <th class="px-4 py-2">Azioni</th>
                         </tr>
                     </thead>
@@ -47,6 +65,7 @@
                                 <td class="px-4 py-2">{{ $compensation->name }}</td>
                                 <td class="px-4 py-2">{{ $compensation->role_name == '' ? 'Tutti' : $compensation->role_name }}</td>
                                 <td class="px-4 py-2">{{ $compensation->value }} €</td>
+                                <td class="px-4 py-2">{{ $compensation->type }}</td>
                                 <td class="px-4 py-2">
                                     <a href="{{ route('compensations.edit', $compensation) }}" 
                                     class="btn btn-primary">

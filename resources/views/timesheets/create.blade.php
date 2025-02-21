@@ -11,7 +11,7 @@
             </h2>
         </div>
         <form class="gsv-form" method="POST" action="{{ route('timesheets.store') }}">
-            <x-timesheets.form :months="$months" :years="$years" />
+            <x-timesheets.form :months="$months" :years="$years" :roles="$roles" :compensations="$compensations" :users="$users" />
         </form>
     </x-std-content>
 </x-app-layout>
