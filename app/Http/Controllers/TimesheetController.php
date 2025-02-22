@@ -91,7 +91,17 @@ class TimesheetController extends Controller
      */
     public function show(Timesheet $timesheet)
     {
-        //
+        $months = [
+            '1' => 'Gennaio', '2' => 'Febbraio', '3' => 'Marzo',
+            '4' => 'Aprile', '5' => 'Maggio', '6' => 'Giugno',
+            '7' => 'Luglio', '8' => 'Agosto', '9' => 'Settembre',
+            '10' => 'Ottobre', '11' => 'Novembre', '12' => 'Dicembre'
+        ];
+        $users = Utente::all();
+        $roles = Roles::all();
+        $compensations = Compensation::all();
+        $timesheet = Timesheet::find($timesheet->id);
+        return view('timesheets.show', ['timesheet' => $timesheet, 'users' => $users, 'roles' => $roles, 'compensations' => $compensations, 'months' => $months]);
     }
 
     /**

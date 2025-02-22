@@ -40,7 +40,7 @@
     </table>
 
     <!-- Campo nascosto per memorizzare i dati JSON -->
-    <input type="hidden" name="tableData" id="hiddenTableData" value="">
+    <input type="hidden" name="link" id="link" value="">
 </div>
 
 <script>
@@ -50,7 +50,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let tableHead = document.querySelector('thead');
     let monthSelect = document.getElementById("month");
     let yearSelect = document.getElementById("year");
-    let hiddenInput = document.getElementById("hiddenTableData");
+    let hiddenInput = document.getElementById("link");
     let userSelect = document.getElementById("user-select");
     let roles = `<?= json_encode($roles); ?>`;
     roles = JSON.parse(roles);
@@ -120,7 +120,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 { name: "Entrata", type: "time", editable: true },
                 { name: "Uscita", type: "time", editable: true },
                 { name: "Trasferta", type: "checkbox", editable: false },
-                { name: "Trasf. Lunga", type: "checkbox", editable: false },
+                { name: "Trasf Lunga", type: "checkbox", editable: false },
                 { name: "Pernotto", type: "checkbox", editable: false },
                 { name: "Presidio", type: "checkbox", editable: false },
                 { name: "Estero", type: "checkbox", editable: false }
@@ -222,7 +222,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
             }
         });
-
         updateHiddenInput();
     }
 
@@ -230,16 +229,22 @@ document.addEventListener("DOMContentLoaded", function () {
         let tableData = [];
 
         document.querySelectorAll("#editableTable tbody tr").forEach(row => {
-            let rowData = [];
+            let rowData = {};
             row.querySelectorAll("td").forEach((cell, index) => {
+                let columnName = columns[index].name; // Nome della colonna
+                let cellValue = "";
+
                 if (cell.querySelector("input[type='checkbox']")) {
-                    rowData.push(cell.querySelector("input[type='checkbox']").checked ? "1" : "0");
+                    cellValue = cell.querySelector("input[type='checkbox']").checked ? "1" : "0";
                 } else if (cell.querySelector("input[type='time']")) {
-                    rowData.push(cell.querySelector("input[type='time']").value);
+                    cellValue = cell.querySelector("input[type='time']").value;
                 } else {
-                    rowData.push(cell.innerText.trim());
+                    cellValue = cell.innerText.trim();
                 }
+
+                rowData[columnName] = cellValue;
             });
+
             tableData.push(rowData);
         });
 
@@ -249,6 +254,7 @@ document.addEventListener("DOMContentLoaded", function () {
         console.clear();
         console.log("Modifica rilevata:", jsonData);
     }
+
 
     function capitalizeFirstLetter(string) {
         return string.charAt(0).toUpperCase() + string.slice(1);
