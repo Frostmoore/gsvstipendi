@@ -52,42 +52,21 @@ document.addEventListener("DOMContentLoaded", function () {
     let yearSelect = document.getElementById("year");
     let hiddenInput = document.getElementById("link");
     let userSelect = document.getElementById("user-select");
-
-    let roles = JSON.parse(`<?= json_encode($roles); ?>`);
-    let utenti = JSON.parse(`<?= json_encode($users); ?>`);
-
+    let roles = `<?= json_encode($roles); ?>`;
+    roles = JSON.parse(roles);
+    let compensations = `<?= json_encode($compensations); ?>`;
+    compensations = JSON.parse(compensations);
+    let utenti = `<?= json_encode($users); ?>`;
+    utenti = JSON.parse(utenti);
+    //let user = 0;
     let user = userSelect.value;
     let ruolo = 0;
     let ruolo_name = '';
     let columns = [];
-
-    function updateRoleAndGenerateTable() {
-        let userVal = userSelect.value;
-        console.log("Nuovo user selezionato:", userVal);
-
-        // Cerca l'utente nell'array
-        let selectedUser = utenti.find(utente => utente.id.toString() === userVal);
-        if (!selectedUser) {
-            console.error("Utente non trovato");
-            return;
-        }
         
-        // Imposta il ruolo dell'utente
-        ruolo = selectedUser.role;
-        console.log("Ruolo trovato:", ruolo);
-        
-        // Cerca il record del ruolo nell'array roles
-        let roleEntry = roles.find(r => r.id.toString() === ruolo.toString());
-        if (!roleEntry) {
-            console.log("Ruolo non trovato in roles, impostiamo come Superadmin");
-            ruolo_name = "Superadmin";
-        } else {
-            ruolo_name = roleEntry.role;
-        }
-        console.log("Ruolo aggiornato:", ruolo_name);
-
-        // Aggiorna le colonne in base al ruolo aggiornato
-        if (ruolo_name === 'Autista') {
+    // Definizione delle colonne in base al ruolo
+    switch (ruolo_name) {
+        case 'Autista':
             columns = [
                 { name: "Data", type: "text", editable: false },
                 { name: "Cliente", type: "text", editable: true },
@@ -98,14 +77,16 @@ document.addEventListener("DOMContentLoaded", function () {
                 { name: "Pernotto", type: "checkbox", editable: false },
                 { name: "Presidio", type: "checkbox", editable: false }
             ];
-        } else if (ruolo_name === 'Magazziniere FIGC') {
+            break;
+        case 'Magazziniere FIGC':
             columns = [
                 { name: "Data", type: "text", editable: false },
                 { name: "Cliente", type: "text", editable: true },
                 { name: "Luogo", type: "text", editable: true },
                 { name: "Estero", type: "checkbox", editable: false }
             ];
-        } else if (ruolo_name === 'Facchino') {
+            break;
+        case 'Facchino':
             columns = [
                 { name: "Data", type: "text", editable: false },
                 { name: "Cliente", type: "text", editable: true },
@@ -114,8 +95,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 { name: "Uscita", type: "time", editable: true },
                 { name: "Trasferta", type: "checkbox", editable: false }
             ];
-        } else if (ruolo_name === 'Superadmin') {
-            // Definisci le colonne per Superadmin (oppure usa quelle di default)
+            break;
+        default:
             columns = [
                 { name: "Data", type: "text", editable: false },
                 { name: "Cliente", type: "text", editable: true },
@@ -128,43 +109,16 @@ document.addEventListener("DOMContentLoaded", function () {
                 { name: "Presidio", type: "checkbox", editable: false },
                 { name: "Estero", type: "checkbox", editable: false }
             ];
-        } else {
-            // Caso default, se necessario
-            columns = [
-                { name: "Data", type: "text", editable: false },
-                { name: "Cliente", type: "text", editable: true },
-                { name: "Luogo", type: "text", editable: true },
-                { name: "Entrata", type: "time", editable: true },
-                { name: "Uscita", type: "time", editable: true },
-                { name: "Trasferta", type: "checkbox", editable: false },
-                { name: "TrasfLunga", type: "checkbox", editable: false },
-                { name: "Pernotto", type: "checkbox", editable: false },
-                { name: "Presidio", type: "checkbox", editable: false },
-                { name: "Estero", type: "checkbox", editable: false }
-            ];
-        }
-        console.log("Colonne aggiornate:", columns);
-
-        // Rigenera la tabella
-        generateTable();
+            break;
     }
 
 
-    // Funzione per generare la tabella
+
     function generateTable() {
-        // Prendi l'elemento tabella e ricrea interamente i suoi figli
-        let table = document.getElementById("editableTable");
-        table.innerHTML = ""; // Rimuove tutti i nodi figli
 
-        // Crea nuovi elementi thead e tbody
-        tableHead = document.createElement("thead");
-        tableHead.classList.add("bg-gray-50", "dark:bg-gray-800", "text-gray-700", "dark:text-gray-200");
-        tableBody = document.createElement("tbody");
-        tableBody.classList.add("text-gray-700", "dark:text-gray-200");
-        table.appendChild(tableHead);
-        table.appendChild(tableBody);
+        tableHead.innerHTML = "";
+        tableBody.innerHTML = "";
 
-        // Crea l'intestazione della tabella
         let headerRow = document.createElement("tr");
         columns.forEach(col => {
             let th = document.createElement("th");
@@ -173,13 +127,29 @@ document.addEventListener("DOMContentLoaded", function () {
         });
         tableHead.appendChild(headerRow);
 
-        // Genera le righe della tabella
         generateTableRows();
     }
 
-
-    // Funzione per generare le righe della tabella
     function generateTableRows() {
+
+        
+
+        userSelect.addEventListener('change', function () {
+            user = userSelect.value;
+            //console.log(roles);
+
+            for (let i = 0; i < utenti.length; i++) {
+                if (user == utenti[i].id) {
+                    ruolo = utenti[i].role;
+                }
+            }
+
+            for (let j = 0; j < roles.length; j++) {
+                if (ruolo == roles[j].id) {
+                    ruolo_name = roles[j].role;
+                }
+            }
+        });
         let month = parseInt(monthSelect.value);
         let year = parseInt(yearSelect.value);
 
@@ -190,7 +160,11 @@ document.addEventListener("DOMContentLoaded", function () {
         for (let day = 1; day <= daysInMonth; day++) {
             let date = new Date(year, month - 1, day);
             let dayOfWeek = date.toLocaleDateString("it-IT", { weekday: "long" });
-            let formattedDate = `<strong>${capitalizeFirstLetter(dayOfWeek)}</strong> <span>${day}</span>`;
+            let monthName = date.toLocaleDateString("it-IT", { month: "long" });
+            let formattedDate = `<strong>${capitalizeFirstLetter(dayOfWeek)}</strong>`;
+            formattedDate += `<span> ${day}</span>`;
+
+//            console.log(date);
 
             let row = document.createElement("tr");
 
@@ -236,6 +210,7 @@ document.addEventListener("DOMContentLoaded", function () {
             });
 
             tableBody.appendChild(row);
+            //console.log(date);
         }
 
         updateHiddenInput();
@@ -259,7 +234,6 @@ document.addEventListener("DOMContentLoaded", function () {
         updateHiddenInput();
     }
 
-    // Funzione per aggiornare l'input nascosto con i dati della tabella
     function updateHiddenInput() {
         let tableData = [];
 
@@ -291,21 +265,15 @@ document.addEventListener("DOMContentLoaded", function () {
         console.log("Modifica rilevata:", jsonData);
     }
 
-    // Funzione per capitalizzare la prima lettera di una stringa
+
     function capitalizeFirstLetter(string) {
         return string.charAt(0).toUpperCase() + string.slice(1);
     }
 
-    // Eventi per rigenerare la tabella quando cambiano i selettori
-    userSelect.addEventListener("change", updateRoleAndGenerateTable);
-    monthSelect.addEventListener("change", generateTable);
-    yearSelect.addEventListener("change", generateTable);
+    monthSelect.addEventListener("change", generateTableRows);
+    yearSelect.addEventListener("change", generateTableRows);
 
-    // Genera la tabella iniziale
-    updateRoleAndGenerateTable();
-
-
-
+    generateTable();
 
 
     //***********************************************************************//

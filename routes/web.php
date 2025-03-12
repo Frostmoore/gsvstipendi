@@ -7,6 +7,7 @@ use App\Http\Middleware\AdminMiddleware;
 use App\Http\Controllers\UtenteController;
 use App\Http\Controllers\TimesheetController;
 use App\Http\Controllers\UserSearchController;
+use App\Http\Controllers\UserTimesheetController;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
 
@@ -124,6 +125,20 @@ Route::controller(TimesheetController::class)
     Route::get('/{timesheet}/edit', 'edit')->name('edit');
     Route::patch('/{timesheet}/update', 'update')->name('update');
     Route::delete('/{timesheet}/destroy', 'destroy')->name('destroy');
+});
+
+Route::controller(UserTimesheetController::class)
+->prefix('user-timesheets')
+->name('user-timesheets.')
+->middleware(['auth', AdminMiddleware::class])
+->group(function () {
+    Route::get('/', 'index')->name('index');
+    Route::get('/create', 'create')->name('create');
+    Route::post('/', 'store')->name('store');
+    Route::get('/{userTimesheet}', 'show')->name('show');
+    Route::get('/{userTimesheet}/edit', 'edit')->name('edit');
+    Route::patch('/{userTimesheet}/update', 'update')->name('update');
+    Route::delete('/{userTimesheet}/destroy', 'destroy')->name('destroy');
 });
 
 Route::get('/search-users', [UserSearchController::class, 'search'])->name('search.users');

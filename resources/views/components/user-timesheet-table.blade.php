@@ -52,39 +52,19 @@ document.addEventListener("DOMContentLoaded", function () {
     let yearSelect = document.getElementById("year");
     let hiddenInput = document.getElementById("link");
     let userSelect = document.getElementById("user-select");
+    let il_ruolo = document.getElementById("role");
+    let ruolo_name = il_ruolo.value;
+    //console.log(ruolo_scelto);
 
     let roles = JSON.parse(`<?= json_encode($roles); ?>`);
     let utenti = JSON.parse(`<?= json_encode($users); ?>`);
 
-    let user = userSelect.value;
+    //let user = userSelect.value;
     let ruolo = 0;
-    let ruolo_name = '';
+    //let ruolo_name = '';
     let columns = [];
 
     function updateRoleAndGenerateTable() {
-        let userVal = userSelect.value;
-        console.log("Nuovo user selezionato:", userVal);
-
-        // Cerca l'utente nell'array
-        let selectedUser = utenti.find(utente => utente.id.toString() === userVal);
-        if (!selectedUser) {
-            console.error("Utente non trovato");
-            return;
-        }
-        
-        // Imposta il ruolo dell'utente
-        ruolo = selectedUser.role;
-        console.log("Ruolo trovato:", ruolo);
-        
-        // Cerca il record del ruolo nell'array roles
-        let roleEntry = roles.find(r => r.id.toString() === ruolo.toString());
-        if (!roleEntry) {
-            console.log("Ruolo non trovato in roles, impostiamo come Superadmin");
-            ruolo_name = "Superadmin";
-        } else {
-            ruolo_name = roleEntry.role;
-        }
-        console.log("Ruolo aggiornato:", ruolo_name);
 
         // Aggiorna le colonne in base al ruolo aggiornato
         if (ruolo_name === 'Autista') {
@@ -297,7 +277,10 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // Eventi per rigenerare la tabella quando cambiano i selettori
-    userSelect.addEventListener("change", updateRoleAndGenerateTable);
+    il_ruolo.addEventListener("change", function(){
+        ruolo_name = il_ruolo.value;
+        updateRoleAndGenerateTable();
+    });
     monthSelect.addEventListener("change", generateTable);
     yearSelect.addEventListener("change", generateTable);
 

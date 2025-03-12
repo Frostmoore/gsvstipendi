@@ -1,28 +1,19 @@
 <?php
 
 use App\Helpers\DateHelper;
-
-$id = $timesheet_one->id;
-$_month = $timesheet_one->month;
+$timesheet = $userTimesheet;
+$id = $timesheet->id;
+$_month = $timesheet->month;
 $month = $months[$_month];
-$year = $timesheet_one->year;
-$userid = $timesheet_one->user;
-$timesheet_one = json_decode($timesheet_one->link);
+$year = $timesheet->year;
+$userid = $timesheet->user;
+$role = $timesheet->role;
+$timesheet = json_decode($timesheet->link);
 $compensi = [];
 
 foreach($users as $u) {
     if($u->id == $userid) {
         $user_fullname = $u->surname . ' ' . $u->name;
-        $role = $u->role;
-    }
-}
-
-// var_dump($roles);
-
-foreach($roles as $r) {
-    if($r->id == $role) {
-        $role_id = $r->id;
-        $role = $r->role;
     }
 }
 
@@ -330,55 +321,7 @@ $totale = $trasferte + $pernotti + $presidi + $trasferte_lunghe + $esteri + $gio
     </h2>
 </div>
 
-
 <div class="w-full overflow-x-auto">
-    <div class="mb-8">
-        <p class="text-lg text-gray-800 dark:text-gray-200 leading-tight">
-            <strong>Totale Compenso:</strong> <span style="padding: 5px;background-color:orange;color:black; font-size: 1.5rem;font-weight:bolder;">{{ $totale }}€</span>
-        </p><br />
-        <p class="text-lg text-gray-800 dark:text-gray-200 leading-tight">
-            <strong>Distinta:</strong>
-        </p><br />
-        <table class="table-fixed w-full gsv-timesheet-table">
-            <thead class="bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-200">
-                <tr>
-                    <th class="px-4 py-2"></th>
-                    <th class="px-4 py-2">Giornate</th>
-                    <th class="px-4 py-2">Festivi</th>
-                    <th class="px-4 py-2">Straordinari</th>
-                    <th class="px-4 py-2">Trasferte</th>
-                    <th class="px-4 py-2">Pernotti</th>
-                    <th class="px-4 py-2">Presidi</th>
-                    <th class="px-4 py-2">Trasferte Lunghe</th>
-                    <th class="px-4 py-2">Estero</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr class="odd:bg-white odd:dark:bg-gray-700 even:bg-gray-50 even:dark:bg-gray-800 even:color-gray-700 dark:text-gray-200">
-                    <td class="px-4 py-2">NUMERO</td>
-                    <td class="px-4 py-2">{{ $giornate_num }}</td>
-                    <td class="px-4 py-2">{{ $festivi_num }}</td>
-                    <td class="px-4 py-2">{{ $straordinari_num }}</td>
-                    <td class="px-4 py-2">{{ $trasferte_num }}</td>
-                    <td class="px-4 py-2">{{ $pernotti_num }}</td>
-                    <td class="px-4 py-2">{{ $presidi_num }}</td>
-                    <td class="px-4 py-2">{{ $trasferte_lunghe_num }}</td>
-                    <td class="px-4 py-2">{{ $esteri_num }}</td>
-                </tr>
-                <tr class="odd:bg-white odd:dark:bg-gray-700 even:bg-gray-50 even:dark:bg-gray-800 even:color-gray-700 dark:text-gray-200">
-                    <td class="px-4 py-2">COMPENSO</td>
-                    <td class="px-4 py-2">{{ $giornate }} €</td>
-                    <td class="px-4 py-2">{{ $festivi }} €</td>
-                    <td class="px-4 py-2">{{ $straordinari }} €</td>
-                    <td class="px-4 py-2">{{ $trasferte }} €</td>
-                    <td class="px-4 py-2">{{ $pernotti }} €</td>
-                    <td class="px-4 py-2">{{ $presidi }} €</td>
-                    <td class="px-4 py-2">{{ $trasferte_lunghe }} €</td>
-                    <td class="px-4 py-2">{{ $esteri }} €</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
     <h2 class="text-lg text-gray-800 dark:text-gray-200 leading-tight mb-4">
         <strong>Foglio Orario Complessivo:</strong>
     </h2>

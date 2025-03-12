@@ -35,7 +35,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
         // Seleziona il valore quando viene cambiato
         userSelect.on('change', function(value) {
-            console.log("ID selezionato:", value); // Debug per controllare se il valore viene aggiornato
+            //console.log("ID selezionato:", value); // Debug per controllare se il valore viene aggiornato
         });
     } else {
         console.error("TomSelect is not defined. Assicurati che lo script sia caricato correttamente.");

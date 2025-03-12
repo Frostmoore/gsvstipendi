@@ -1,12 +1,20 @@
 @csrf
 <div class="gsv-timesheet-form">
-    <input type="hidden" id="role_id" name="role" value="">
+    <input type="hidden" id="user_id" name="user" value="{{ Auth::id() }}">
     <div class="mb-4">
         <x-input-label for="company" :value="__('Azienda')" />
         <x-text-input id="company" class="block mt-1 w-full" type="text" name="company" :value="old('company', $role->company ?? '')" required autofocus />
         <x-input-error :messages="$errors->get('company')" class="mt-2" />
     </div>
-    <x-user-search />
+    <div class="mb-4">
+        <x-input-label for="role" :value="__('Ruolo')" />
+        <x-select-input id="role" class="block mt-1 w-full" type="text" name="role" :value="old('role', $role->role ?? '')" required autofocus>
+            @foreach($roles as $key => $role)
+                <option value="{{ $role['role'] }}">{{ $role['role'] }}</option>
+            @endforeach
+        </x-select-input>
+        <x-input-error :messages="$errors->get('role')" class="mt-2" />
+    </div>
     <div class="mb-4">
         <x-input-label for="month" :value="__('Mese')" />
         <x-select-input id="month" class="block mt-1 w-full" type="text" name="month" :value="old('month', $role->month ?? '')" required autofocus>
@@ -27,7 +35,7 @@
     </div>
 </div>
 <div class="mb-4 gsv-timesheet-table-container" style="width: 100%; overflow-x: auto;">
-    <x-timesheet-table :roles="$roles" :compensations="$compensations" :users="$users"/>
+    <x-user-timesheet-table :roles="$roles" :compensations="$compensations" :users="$users"/>
 </div>
 
 <div class="gsv-timesheet-form">

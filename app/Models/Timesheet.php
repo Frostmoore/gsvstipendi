@@ -11,6 +11,7 @@ class Timesheet extends Model
         'month',
         'year',
         'user',
+        'role',
         'link',
         'company'
     ];

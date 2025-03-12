@@ -19,8 +19,8 @@
                 @auth
                     @if(Auth::user()->role != 'admin' && Auth::user()->role != 'superadmin')
                         <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                            <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                                {{ __('Foglio Orario') }}
+                            <x-nav-link :href="route('user-timesheets.index')" :active="request()->routeIs('user-timesheets.index')">
+                                {{ __('Fogli Orarii') }}
                             </x-nav-link>
                         </div>
                     @endif
