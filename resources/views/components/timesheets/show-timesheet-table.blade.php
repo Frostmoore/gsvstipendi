@@ -2,12 +2,12 @@
 
 use App\Helpers\DateHelper;
 
-$id = $timesheet_one->id;
-$_month = $timesheet_one->month;
+$id = $timesheet->id;
+$_month = $timesheet->month;
 $month = $months[$_month];
-$year = $timesheet_one->year;
-$userid = $timesheet_one->user;
-$timesheet_one = json_decode($timesheet_one->link);
+$year = $timesheet->year;
+$userid = $timesheet->user;
+$timesheet = json_decode($timesheet->link);
 $compensi = [];
 
 foreach($users as $u) {
