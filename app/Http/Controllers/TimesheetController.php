@@ -6,6 +6,7 @@ use App\Models\Timesheet;
 use App\Models\Roles;
 use App\Models\Utente;
 use App\Models\Compensation;
+use App\Models\Companies;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -32,6 +33,7 @@ class TimesheetController extends Controller
                 'timesheets.year',
                 DB::raw("COALESCE(CONCAT(users.surname, ' ', users.name), 'Sconosciuto') as user_fullname"),
                 'timesheets.link',
+                'timesheets.role',
                 'timesheets.user as user_id'
             )
             ->get()
@@ -53,6 +55,7 @@ class TimesheetController extends Controller
        // Recupera dati standard
         $users = Utente::all();
         $roles = Roles::all();
+        $companies = Companies::all();
         $compensations = Compensation::all();
 
         $months = [
@@ -71,6 +74,7 @@ class TimesheetController extends Controller
             'users'           => $users,
             'roles'           => $roles,
             'compensations'   => $compensations,
+            'companies'       => $companies,
             'months'          => $months,
             'years'           => $years
         ]);

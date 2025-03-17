@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Gestione Fogli Orari') }}
+            {{ __('Gestione Aziende') }}
         </h2>
     </x-slot>
         
@@ -9,7 +9,7 @@
     <x-std-content>
         <div class="title-container mb-4">
             <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                {{ __('Elenco Fogli Orari') }}
+                {{ __('Elenco Aziende') }}
             </h2>
         </div>
 
@@ -19,10 +19,10 @@
             <input 
                 type="text" 
                 x-model.debounce.200ms="search"
-                placeholder="Cerca fogli orari..." 
+                placeholder="Cerca aziende..." 
                 class="px-4 py-2 border rounded-lg focus:ring focus:ring-blue-300 w-full mb-4 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-200 gsv-search"
             />
-                <a href="{{ route('timesheets.create') }}" class="btn btn-primary mb-3">
+                <a href="{{ route('companies.create') }}" class="btn btn-primary mb-3">
                     <i class="fa-solid fa-plus-circle gsv-add px-2 py-2"></i>
                 </a>
         </div>
@@ -31,30 +31,18 @@
                 <table class="table-auto w-full std-table">
                     <thead class="bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-200">
                         <tr>
-                            <th class="px-4 py-2">Mese</th>
-                            <th class="px-4 py-2">Anno</th>
-                            <th class="px-4 py-2">Operatore</th>
                             <th class="px-4 py-2">Ruolo</th>
-                            <th class="px-4 py-2">Link</th>
                             <th class="px-4 py-2">Azioni</th>
                         </tr>
                     </thead>
                     <tbody class="text-gray-700 dark:text-gray-200">
-                        @foreach($timesheets_worked as $timesheet_worked) 
+                        @foreach($companies as $role) 
                             <tr class="odd:bg-white odd:dark:bg-gray-700 even:bg-gray-50 even:dark:bg-gray-800 hover:bg-gray-100 hover:dark:bg-gray-600"
                                 x-show="search === '' || 
-                                        '{{ $timesheet_worked->month }}'.toLowerCase().includes(search.toLowerCase()) || 
-                                        '{{ $timesheet_worked->year }}'.toLowerCase().includes(search.toLowerCase()) || 
-                                        '{{ $timesheet_worked->user_fullname }}'.toLowerCase().includes(search.toLowerCase()) || 
-                                        '{{ $timesheet_worked->link }}'.toLowerCase().includes(search.toLowerCase())">
-                                        {{-- @dd($timesheet_worked); --}}
-                                <td class="px-4 py-2">{{ $timesheet_worked->month }}</td>
-                                <td class="px-4 py-2">{{ $timesheet_worked->year }}</td>
-                                <td class="px-4 py-2">{{ $timesheet_worked->user_fullname }}</td>
-                                <td class="px-4 py-2">{{ $timesheet_worked->role }}</td>
-                                <td class="px-4 py-2"><a href="{{ route('timesheets.show', $timesheet_worked->id) }}"><i class="fa-solid fa-file-invoice gsv-document px-2 py-2"></i></a></td>
+                                        '{{ $role->name }}'.toLowerCase().includes(search.toLowerCase())">
+                                <td class="px-4 py-2">{{ $role->name }}</td>
                                 <td class="px-4 py-2">
-                                    <form action="{{ route('timesheets.destroy', $timesheet_worked->id) }}" method="POST" style="display: inline;">
+                                    <form action="{{ route('companies.destroy', $role) }}" method="POST" style="display: inline;">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-danger">

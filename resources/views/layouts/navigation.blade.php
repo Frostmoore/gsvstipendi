@@ -20,7 +20,7 @@
                     @if(Auth::user()->role != 'admin' && Auth::user()->role != 'superadmin')
                         <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                             <x-nav-link :href="route('user-timesheets.index')" :active="request()->routeIs('user-timesheets.index')">
-                                {{ __('Fogli Orarii') }}
+                                {{ __('Fogli Orari') }}
                             </x-nav-link>
                         </div>
                     @endif
@@ -35,6 +35,11 @@
                         <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                             <x-nav-link :href="route('roles.index')" :active="request()->routeIs('roles.index')">
                                 {{ __('Ruoli') }}
+                            </x-nav-link>
+                        </div>
+                        <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                            <x-nav-link :href="route('companies.index')" :active="request()->routeIs('companies.index')">
+                                {{ __('Aziende') }}
                             </x-nav-link>
                         </div>
                         <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">

@@ -8,6 +8,8 @@ use App\Http\Controllers\UtenteController;
 use App\Http\Controllers\TimesheetController;
 use App\Http\Controllers\UserSearchController;
 use App\Http\Controllers\UserTimesheetController;
+use App\Http\Controllers\OperatorRolesController;
+use App\Http\Controllers\CompaniesController;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
 
@@ -139,6 +141,34 @@ Route::controller(UserTimesheetController::class)
     Route::get('/{userTimesheet}/edit', 'edit')->name('edit');
     Route::patch('/{userTimesheet}/update', 'update')->name('update');
     Route::delete('/{userTimesheet}/destroy', 'destroy')->name('destroy');
+});
+
+Route::controller(OperatorRolesController::class)
+->prefix('operatorRoles')
+->name('operatorRoles.')
+->middleware(['auth', AdminMiddleware::class])
+->group(function () {
+    Route::get('/', 'index')->name('index');
+    Route::get('/create', 'create')->name('create');
+    Route::post('/', 'store')->name('store');
+    Route::get('/{operatorRoles}', 'show')->name('show');
+    Route::get('/{operatorRoles}/edit', 'edit')->name('edit');
+    Route::patch('/{operatorRoles}/update', 'update')->name('update');
+    Route::delete('/{operatorRoles}/destroy', 'destroy')->name('destroy');
+});
+
+Route::controller(CompaniesController::class)
+->prefix('companies')
+->name('companies.')
+->middleware(['auth', AdminMiddleware::class])
+->group(function () {
+    Route::get('/', 'index')->name('index');
+    Route::get('/create', 'create')->name('create');
+    Route::post('/', 'store')->name('store');
+    Route::get('/{companies}', 'show')->name('show');
+    Route::get('/{companies}/edit', 'edit')->name('edit');
+    Route::patch('/{companies}/update', 'update')->name('update');
+    Route::delete('/{companies}/destroy', 'destroy')->name('destroy');
 });
 
 Route::get('/search-users', [UserSearchController::class, 'search'])->name('search.users');

@@ -7,6 +7,7 @@ $_month = $timesheet->month;
 $month = $months[$_month];
 $year = $timesheet->year;
 $userid = $timesheet->user;
+$ruolo = $timesheet->role;
 $timesheet = json_decode($timesheet->link);
 $compensi = [];
 
@@ -25,6 +26,8 @@ foreach($roles as $r) {
         $role = $r->role;
     }
 }
+
+$role = $ruolo;
 
 switch($role) {
     case 'Magazziniere FIGC':

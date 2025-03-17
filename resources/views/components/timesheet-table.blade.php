@@ -52,6 +52,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let yearSelect = document.getElementById("year");
     let hiddenInput = document.getElementById("link");
     let userSelect = document.getElementById("user-select");
+    let roleSelect = document.getElementById("role");
 
     let roles = JSON.parse(`<?= json_encode($roles); ?>`);
     let utenti = JSON.parse(`<?= json_encode($users); ?>`);
@@ -59,6 +60,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let user = userSelect.value;
     let ruolo = 0;
     let ruolo_name = '';
+    let ruolo_right = '';
     let columns = [];
 
     function updateRoleAndGenerateTable() {
@@ -85,9 +87,10 @@ document.addEventListener("DOMContentLoaded", function () {
             ruolo_name = roleEntry.role;
         }
         console.log("Ruolo aggiornato:", ruolo_name);
+        
 
         // Aggiorna le colonne in base al ruolo aggiornato
-        if (ruolo_name === 'Autista') {
+        if (ruolo_right === 'Autista') {
             columns = [
                 { name: "Data", type: "text", editable: false },
                 { name: "Cliente", type: "text", editable: true },
@@ -98,14 +101,14 @@ document.addEventListener("DOMContentLoaded", function () {
                 { name: "Pernotto", type: "checkbox", editable: false },
                 { name: "Presidio", type: "checkbox", editable: false }
             ];
-        } else if (ruolo_name === 'Magazziniere FIGC') {
+        } else if (ruolo_right === 'Magazziniere FIGC') {
             columns = [
                 { name: "Data", type: "text", editable: false },
                 { name: "Cliente", type: "text", editable: true },
                 { name: "Luogo", type: "text", editable: true },
                 { name: "Estero", type: "checkbox", editable: false }
             ];
-        } else if (ruolo_name === 'Facchino') {
+        } else if (ruolo_right === 'Facchino') {
             columns = [
                 { name: "Data", type: "text", editable: false },
                 { name: "Cliente", type: "text", editable: true },
@@ -114,7 +117,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 { name: "Uscita", type: "time", editable: true },
                 { name: "Trasferta", type: "checkbox", editable: false }
             ];
-        } else if (ruolo_name === 'Superadmin') {
+        } else if (ruolo_right === 'Superadmin') {
             // Definisci le colonne per Superadmin (oppure usa quelle di default)
             columns = [
                 { name: "Data", type: "text", editable: false },
@@ -300,6 +303,10 @@ document.addEventListener("DOMContentLoaded", function () {
     userSelect.addEventListener("change", updateRoleAndGenerateTable);
     monthSelect.addEventListener("change", generateTable);
     yearSelect.addEventListener("change", generateTable);
+    roleSelect.addEventListener("change", function() {
+        ruolo_right = roleSelect.value;
+        updateRoleAndGenerateTable();
+    });
 
     // Genera la tabella iniziale
     updateRoleAndGenerateTable();

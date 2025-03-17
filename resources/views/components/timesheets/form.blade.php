@@ -3,10 +3,26 @@
     <input type="hidden" id="role_id" name="role" value="">
     <div class="mb-4">
         <x-input-label for="company" :value="__('Azienda')" />
-        <x-text-input id="company" class="block mt-1 w-full" type="text" name="company" :value="old('company', $role->company ?? '')" required autofocus />
+        <x-select-input id="company" class="block mt-1 w-full" type="text" name="company" :value="old('company', $company->name ?? '')" required autofocus>
+        <option value="">Seleziona un'azienda</option>
+            @foreach($companies as $company)
+                <option value="{{ $company->name }}">{{ $company->name }}</option>
+            @endforeach
+        </x-select-input>
+        {{-- <x-text-input id="company" class="block mt-1 w-full" type="text" name="company" :value="old('company', $role->company ?? '')" required autofocus /> --}}
         <x-input-error :messages="$errors->get('company')" class="mt-2" />
     </div>
     <x-user-search />
+    <div class="mb-4">
+        <x-input-label for="role" :value="__('Ruolo')" />
+        <x-select-input id="role" class="block mt-1 w-full" type="text" name="role" :value="old('role', $role->role ?? '')" required autofocus>
+            <option value="">Seleziona un ruolo</option>
+            @foreach($roles as $role)
+                <option value="{{ $role->role }}">{{ $role->role }}</option>
+            @endforeach
+        </x-select-input>
+        <x-input-error :messages="$errors->get('role')" class="mt-2" />
+    </div>
     <div class="mb-4">
         <x-input-label for="month" :value="__('Mese')" />
         <x-select-input id="month" class="block mt-1 w-full" type="text" name="month" :value="old('month', $role->month ?? '')" required autofocus>
