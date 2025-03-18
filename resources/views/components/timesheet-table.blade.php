@@ -248,17 +248,17 @@ document.addEventListener("DOMContentLoaded", function () {
         let value = element.innerText ? element.innerText.trim() : element.value;
         let columnIndex = Array.from(element.closest("tr").children).indexOf(element.closest("td"));
 
-        document.querySelectorAll(`#editableTable tbody tr`).forEach((row, rowIndex) => {
-            if (rowIndex > Array.from(tableBody.children).indexOf(element.closest("tr"))) {
-                let targetCell = row.children[columnIndex];
-
-                if (columnName === "Cliente" || columnName === "Luogo") {
-                    targetCell.innerText = value;
-                } else if (columnName === "Entrata" || columnName === "Uscita") {
-                    targetCell.querySelector("input[type='time']").value = value;
-                }
-            }
-        });
+        //document.querySelectorAll(`#editableTable tbody tr`).forEach((row, rowIndex) => {
+        //    if (rowIndex > Array.from(tableBody.children).indexOf(element.closest("tr"))) {
+        //        let targetCell = row.children[columnIndex];
+        //
+        //        if (columnName === "Cliente" || columnName === "Luogo") {
+        //            targetCell.innerText = value;
+        //        } else if (columnName === "Entrata" || columnName === "Uscita") {
+        //            targetCell.querySelector("input[type='time']").value = value;
+        //        }
+        //    }
+        //});
         updateHiddenInput();
     }
 

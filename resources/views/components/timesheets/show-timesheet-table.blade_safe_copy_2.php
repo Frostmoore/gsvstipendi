@@ -193,75 +193,38 @@ foreach ($timesheet as $t) {
         // DA CONTROLLARE IL CALCOLO PER I MAGAZZINIERI FIGC, IN PARTICOLARE PER I FESTIVI E LE GIORNATE ALL'ESTERO //
         //                                                                                                          //
         //----------------------------------------------------------------------------------------------------------//
-        $baseGiornata = 0;
-        foreach($compensations as $d) {
-            if($d->name =='Feriale Italia') {
-                $baseGiornata = $d->value;
-            }
-        }
-
         if($estero == 1) {
-            if(!$festivo) {
-                foreach($compensations as $c) {
+            foreach($compensations as $c) {
+                if(!$festivo) {
                     if($c->name == 'Feriale Estero') {
-                        $rowCompensi['giornata'] = $baseGiornata;
-                        $rowCompensi['estero'] = $c->value - $baseGiornata;
+                        $rowCompensi['giornata'] = (float)$c->value;
                     }
-                }
-            } else {
-                foreach($compensations as $c) {
+                    if($estero > 0) {
+                        $rowCompensi['estero'] = (float)$c->value;
+                    }
+                } else {
                     if($c->name == 'Festivo Estero') {
-                        $rowCompensi['giornata'] = $baseGiornata;
-                        $rowCompensi['Festivo'] = ((float)$c->value - $baseGiornata)/2;
-                        $rowCompensi['estero'] = ((float)$c->value - $baseGiornata)/2;
+                        $rowCompensi['giornata'] = (float)$c->value;
+                        $rowCompensi['Festivo'] = (float)$c->value;
+                    }
+                    if($estero > 0) {
+                        $rowCompensi['estero'] = (float)$c->value;
                     }
                 }
             }
-            //foreach($compensations as $c) {
-            //    if(!$festivo) {
-            //        if($c->name == 'Feriale Estero') {
-            //            $rowCompensi['giornata'] = (float)$c->value;
-            //        }
-            //        if($estero > 0) {
-            //            $rowCompensi['estero'] = (float)$c->value;
-            //        }
-            //    } else {
-            //        if($c->name == 'Festivo Estero') {
-            //            $rowCompensi['giornata'] = (float)$c->value;
-            //            $rowCompensi['Festivo'] = (float)$c->value;
-            //        }
-            //        if($estero > 0) {
-            //            $rowCompensi['estero'] = (float)$c->value;
-            //        }
-            //    }
-            //}
         } else {
-            if(!$festivo) {
-                foreach($compensations as $c) {
+            foreach($compensations as $c) {
+                if(!$festivo){
                     if($c->name == 'Feriale Italia') {
-                        $rowCompensi['giornata'] = $baseGiornata;
+                        $rowCompensi['giornata'] = (float)$c->value;
                     }
-                }
-            } else {
-                foreach($compensations as $c) {
+                } else {
                     if($c->name == 'Festivo Italia') {
-                        $rowCompensi['giornata'] = $baseGiornata;
-                        $rowCompensi['Festivo'] = (float)$c->value - $baseGiornata;
+                        $rowCompensi['giornata'] = (float)$c->value;
+                        $rowCompensi['Festivo'] = 0;
                     }
                 }
             }
-            //foreach($compensations as $c) {
-            //    if(!$festivo){
-            //        if($c->name == 'Feriale Italia') {
-            //            $rowCompensi['giornata'] = (float)$c->value;
-            //        }
-            //    } else {
-            //        if($c->name == 'Festivo Italia') {
-            //            $rowCompensi['giornata'] = (float)$c->value;
-            //            $rowCompensi['Festivo'] = 0;
-            //        }
-            //    }
-            //}
         }
 
     } else {

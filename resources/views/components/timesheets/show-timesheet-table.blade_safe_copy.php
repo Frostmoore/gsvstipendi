@@ -81,6 +81,9 @@ foreach ($timesheet as $t) {
     $t = json_decode(json_encode($t), true);
     $rowCompensi = [];
 
+    //-----------------------------------------------------------------------//
+    //------------------------ Calcolo Festivi ------------------------------//
+    //-----------------------------------------------------------------------//
     $day = explode(' ', $t['Data'])[1];
     $_month = str_pad($_month, 2, '0', STR_PAD_LEFT);
     $day = str_pad($day, 2, '0', STR_PAD_LEFT);
@@ -90,31 +93,16 @@ foreach ($timesheet as $t) {
     }
     $rowCompensi['data'] = $true_date_str;
 
+    //-----------------------------------------------------------------------//
+    //------------------------ Calcolo Compensi -----------------------------//
+    //-----------------------------------------------------------------------//
     $entrata = array_key_exists('Entrata', $t) ? $t['Entrata'] : null;
     $uscita = array_key_exists('Uscita', $t) ? $t['Uscita'] : null;
-
-    // NUOVO CONTROLLO: salta la giornata se manca entrata o uscita
-    if($role != 'Magazziniere FIGC') {
-        if (empty($entrata) || empty($uscita)) {
-            continue;
-        }
-    } else {
-        $cliente = array_key_exists('Cliente', $t) ? $t['Cliente'] : null;
-        $luogo = array_key_exists('Luogo', $t) ? $t['Luogo'] : null;
-        if (empty($cliente)) {
-            continue;
-        }
-        if(empty($luogo)) {
-            continue;
-        }
-    }
-
-    $trasferta = array_key_exists('Trasferta', $t) ? $t['Trasferta'] : null;
-    $pernotto = array_key_exists('Pernotto', $t) ? $t['Pernotto'] : null;
-    $presidio = array_key_exists('Presidio', $t) ? $t['Presidio'] : null;
-    $trasferta_lunga = array_key_exists('TrasfLunga', $t) ? $t['TrasfLunga'] : null;
+    $trasferta = array_key_exists('Trasferta', $t) ? $t['Trasferta'] : null;;
+    $pernotto = array_key_exists('Pernotto', $t) ? $t['Pernotto'] : null;;
+    $presidio = array_key_exists('Presidio', $t) ? $t['Presidio'] : null;;
+    $trasferta_lunga = array_key_exists('TrasfLunga', $t) ? $t['TrasfLunga'] : null;;
     $estero = array_key_exists('Estero', $t) ? $t['Estero'] : null;
-
 
     // Creazione oggetti DateTime
     if($entrata != '' && $uscita != '') {
@@ -193,75 +181,38 @@ foreach ($timesheet as $t) {
         // DA CONTROLLARE IL CALCOLO PER I MAGAZZINIERI FIGC, IN PARTICOLARE PER I FESTIVI E LE GIORNATE ALL'ESTERO //
         //                                                                                                          //
         //----------------------------------------------------------------------------------------------------------//
-        $baseGiornata = 0;
-        foreach($compensations as $d) {
-            if($d->name =='Feriale Italia') {
-                $baseGiornata = $d->value;
-            }
-        }
-
         if($estero == 1) {
-            if(!$festivo) {
-                foreach($compensations as $c) {
+            foreach($compensations as $c) {
+                if(!$festivo) {
                     if($c->name == 'Feriale Estero') {
-                        $rowCompensi['giornata'] = $baseGiornata;
-                        $rowCompensi['estero'] = $c->value - $baseGiornata;
+                        $rowCompensi['giornata'] = (float)$c->value;
                     }
-                }
-            } else {
-                foreach($compensations as $c) {
+                    if($estero > 0) {
+                        $rowCompensi['estero'] = (float)$c->value;
+                    }
+                } else {
                     if($c->name == 'Festivo Estero') {
-                        $rowCompensi['giornata'] = $baseGiornata;
-                        $rowCompensi['Festivo'] = ((float)$c->value - $baseGiornata)/2;
-                        $rowCompensi['estero'] = ((float)$c->value - $baseGiornata)/2;
+                        $rowCompensi['giornata'] = (float)$c->value;
+                        $rowCompensi['Festivo'] = (float)$c->value;
+                    }
+                    if($estero > 0) {
+                        $rowCompensi['estero'] = (float)$c->value;
                     }
                 }
             }
-            //foreach($compensations as $c) {
-            //    if(!$festivo) {
-            //        if($c->name == 'Feriale Estero') {
-            //            $rowCompensi['giornata'] = (float)$c->value;
-            //        }
-            //        if($estero > 0) {
-            //            $rowCompensi['estero'] = (float)$c->value;
-            //        }
-            //    } else {
-            //        if($c->name == 'Festivo Estero') {
-            //            $rowCompensi['giornata'] = (float)$c->value;
-            //            $rowCompensi['Festivo'] = (float)$c->value;
-            //        }
-            //        if($estero > 0) {
-            //            $rowCompensi['estero'] = (float)$c->value;
-            //        }
-            //    }
-            //}
         } else {
-            if(!$festivo) {
-                foreach($compensations as $c) {
+            foreach($compensations as $c) {
+                if(!$festivo){
                     if($c->name == 'Feriale Italia') {
-                        $rowCompensi['giornata'] = $baseGiornata;
+                        $rowCompensi['giornata'] = (float)$c->value;
                     }
-                }
-            } else {
-                foreach($compensations as $c) {
+                } else {
                     if($c->name == 'Festivo Italia') {
-                        $rowCompensi['giornata'] = $baseGiornata;
-                        $rowCompensi['Festivo'] = (float)$c->value - $baseGiornata;
+                        $rowCompensi['giornata'] = (float)$c->value;
+                        $rowCompensi['Festivo'] = 0;
                     }
                 }
             }
-            //foreach($compensations as $c) {
-            //    if(!$festivo){
-            //        if($c->name == 'Feriale Italia') {
-            //            $rowCompensi['giornata'] = (float)$c->value;
-            //        }
-            //    } else {
-            //        if($c->name == 'Festivo Italia') {
-            //            $rowCompensi['giornata'] = (float)$c->value;
-            //            $rowCompensi['Festivo'] = 0;
-            //        }
-            //    }
-            //}
         }
 
     } else {
