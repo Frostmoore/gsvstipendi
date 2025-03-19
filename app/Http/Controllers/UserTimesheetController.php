@@ -104,11 +104,12 @@ class UserTimesheetController extends Controller
         $users = Utente::all();
         $roles = Roles::all();
         $compensations = Compensation::all();
+        $companies = Companies::all();
         $timesheet_one = Timesheet::where('id', $userTimesheet->id)->first();
 
         // dd(get_defined_vars());
 
-        return view('user-timesheets.show', ['timesheet_one'=>$timesheet_one, 'timesheet' => $userTimesheet, 'users' => $users, 'roles' => $roles, 'compensations' => $compensations, 'months' => $months]);
+        return view('user-timesheets.show', ['timesheet_one'=>$timesheet_one, 'companies' => $companies, 'timesheet' => $userTimesheet, 'users' => $users, 'roles' => $roles, 'compensations' => $compensations, 'months' => $months]);
     }
 
     /**

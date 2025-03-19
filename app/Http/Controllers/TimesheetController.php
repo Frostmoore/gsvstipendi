@@ -105,7 +105,8 @@ class TimesheetController extends Controller
         $roles = Roles::all();
         $compensations = Compensation::all();
         $timesheet = Timesheet::find($timesheet->id);
-        return view('timesheets.show', ['timesheet' => $timesheet, 'users' => $users, 'roles' => $roles, 'compensations' => $compensations, 'months' => $months]);
+        $companies = Companies::all();
+        return view('timesheets.show', ['timesheet' => $timesheet, 'companies' => $companies, 'users' => $users, 'roles' => $roles, 'compensations' => $compensations, 'months' => $months]);
     }
 
     /**
@@ -121,7 +122,8 @@ class TimesheetController extends Controller
      */
     public function update(Request $request, Timesheet $timesheet)
     {
-        //
+        $timesheet->update($request->all());
+        return redirect()->route('timesheets.index')->with('success', 'Foglio Orario Aggiornato con successo!');
     }
 
     /**

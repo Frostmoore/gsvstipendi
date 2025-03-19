@@ -3,7 +3,6 @@
 use App\Helpers\DateHelper;
 
 $id = $timesheet->id;
-$ts = $timesheet;
 $_month = $timesheet->month;
 $month = $months[$_month];
 $year = $timesheet->year;
@@ -437,14 +436,43 @@ $totale = $trasferte + $pernotti + $presidi + $trasferte_lunghe + $esteri + $gio
     <h2 class="text-lg text-gray-800 dark:text-gray-200 leading-tight mb-4">
         <strong>Foglio Orario Complessivo:</strong>
     </h2>
-    <form class="gsv-form" method="POST" action="{{ route('timesheets.update', $ts) }}">
-        @csrf
-        @method('PATCH')
-        <x-timesheets.show-edit-timesheet-table :timesheet="$ts" :months="$months" :cols="$cols" />
-        <div class="flex items-center justify-end mt-4">
-            <x-primary-button class="ms-3">
-                {{ __('Salva') }}
-            </x-primary-button>
-        </div>
-    </form>
+    <table class="table-fixed w-full gsv-timesheet-table">
+        <thead class="bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-200">
+            <tr>
+                @foreach($cols as $col)
+                    <th class="px-4 py-2">{{ $col }}</th>
+                @endforeach
+            </tr>
+        </thead>
+        <tbody>
+            @foreach($timesheet as $row)
+                <tr class="odd:bg-white odd:dark:bg-gray-700 even:bg-gray-50 even:dark:bg-gray-800 even:color-gray-700 dark:text-gray-200">
+                    @foreach($row as $key => $value)
+                        <td class="px-4 py-2">
+                            @switch($key)
+                                @case('Trasferta')
+                                    {{ $value == 1 ? '✔️' : '' }}
+                                    @break
+                                @case('Pernotto')
+                                    {{ $value == 1 ? '✔️' : '' }}
+                                    @break
+                                @case('Presidio')
+                                    {{ $value == 1 ? '✔️' : '' }}
+                                    @break
+                                @case('TrasfLunga')
+                                    {{ $value == 1 ? '✔️' : '' }}
+                                    @break
+                                @case('Estero')
+                                    {{ $value == 1 ? '✔️' : '' }}
+                                    @break
+                                @default
+                                    {{ $value }}
+                                    @break
+                            @endswitch
+                        </td>
+                    @endforeach
+                </tr>
+            @endforeach
+        </tbody>
+    </table>
 </div>
