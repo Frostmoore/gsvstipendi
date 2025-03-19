@@ -3,7 +3,13 @@
     <input type="hidden" id="user_id" name="user" value="{{ Auth::id() }}">
     <div class="mb-4">
         <x-input-label for="company" :value="__('Azienda')" />
-        <x-text-input id="company" class="block mt-1 w-full" type="text" name="company" :value="old('company', $role->company ?? '')" required autofocus />
+        <x-select-input id="company" class="block mt-1 w-full" type="text" name="company" :value="old('company', $company->name ?? '')" required autofocus>
+        <option value="">Seleziona un'azienda</option>
+            @foreach($companies as $company)
+                <option value="{{ $company->name }}">{{ $company->name }}</option>
+            @endforeach
+        </x-select-input>
+        {{-- <x-text-input id="company" class="block mt-1 w-full" type="text" name="company" :value="old('company', $role->company ?? '')" required autofocus /> --}}
         <x-input-error :messages="$errors->get('company')" class="mt-2" />
     </div>
     <div class="mb-4">

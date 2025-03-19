@@ -6,6 +6,7 @@ use App\Models\Timesheet;
 use App\Models\Roles;
 use App\Models\Utente;
 use App\Models\Compensation;
+use App\Models\Companies;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -55,6 +56,7 @@ class UserTimesheetController extends Controller
         $users = Utente::all();
         $roles = Roles::all();
         $compensations = Compensation::all();
+        $companies = Companies::all();
 
         $months = [
             '1' => 'Gennaio', '2' => 'Febbraio', '3' => 'Marzo',
@@ -73,6 +75,7 @@ class UserTimesheetController extends Controller
             'roles'           => $roles,
             'compensations'   => $compensations,
             'months'          => $months,
+            'companies'       => $companies,
             'years'           => $years
         ]);
     }
