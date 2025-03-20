@@ -77,7 +77,7 @@
 <div class="mt-4" id="fasciaPrezzo" class="hidden">
     <x-input-label for="fascia" :value="__('Fascia Retributiva')" />
     <x-select-input id="fascia" class="block mt-1 w-full" type="text" name="fascia" autocomplete="fascia">
-        <option value="">Nessuna Fascia</option>
+        <option value="0">Nessuna Fascia</option>
         <option value="50">50€</option>
         <option value="55">55€</option>
         <option value="60">60€</option>
@@ -135,7 +135,7 @@
                     retriFissa.style.display = "none";
                     fasciaPrezzo.style.display = "block";
                     speciale.style.display = "block";
-                    trasfFissa.style.display = "block";
+                    trasfFissa.style.display = "none";
                     break;
                 default:
                     retriFissa.style.display = "none";
@@ -144,6 +144,12 @@
                     speciale.style.display = "none";
                     break;
             }
+        });
+
+        document.querySelectorAll("#fissa, #special, #trasferta, #incremento").forEach(function(input) {
+            input.addEventListener("input", function () {
+                this.value = this.value.replace(/[^0-9]/g, ""); // Rimuove tutto ciò che non è un numero
+            });
         });
     });
 </script>
