@@ -15,11 +15,17 @@ $compensi = [];
 foreach($users as $u) {
     if($u->id == $userid) {
         $user_fullname = $u->surname . ' ' . $u->name;
+        $u_fissa = (float)$u->fissa > 0 ? (float)$u->fissa : 0;
+        $u_fascia = (float)$u->fascia > 0 ? (float)$u->fascia : 0;
+        $u_special = (float)$u->special > 0 ? (float)$u->special : 0;
+        $u_trasferta = (float)$u->trasferta > 0 ? (float)$u->trasferta : 0;
+        $u_incremento = (float)$u->incremento > 0 ? (float)$u->incremento : 0;
         $role = $u->role;
     }
 }
 
 // var_dump($roles);
+
 
 foreach($roles as $r) {
     if($r->id == $role) {
@@ -79,6 +85,8 @@ switch($role) {
         break;
 }
 
+$sabati_lavorati = 0;
+
 foreach ($timesheet as $t) {
     $festivo = false;
     $t = json_decode(json_encode($t), true);
@@ -112,12 +120,19 @@ foreach ($timesheet as $t) {
         }
     }
 
+    // NUOVO CONTROLLO: conta i sabati lavorati
+    if (strpos($t['Data'], 'Sabato') !== false && !empty($entrata) && !empty($uscita)) {
+        $sabati_lavorati++;
+    }
+
     $trasferta = array_key_exists('Trasferta', $t) ? $t['Trasferta'] : null;
     $pernotto = array_key_exists('Pernotto', $t) ? $t['Pernotto'] : null;
     $presidio = array_key_exists('Presidio', $t) ? $t['Presidio'] : null;
     $trasferta_lunga = array_key_exists('TrasfLunga', $t) ? $t['TrasfLunga'] : null;
     $trasferta_breve = array_key_exists('TrasfBreve', $t) ? $t['TrasfBreve'] : null;
     $estero = array_key_exists('Estero', $t) ? $t['Estero'] : null;
+
+
 
 
     // Creazione oggetti DateTime
@@ -150,7 +165,11 @@ foreach ($timesheet as $t) {
         foreach($compensations as $c) {
             if(!$festivo) {
                 if($c->name == 'Giornata Lavorativa') {
-                    $rowCompensi['giornata'] = (float)$c->value;
+                    if($u_fascia > 0) {
+                        $rowCompensi['giornata'] = (float)$u_fascia;
+                    } else {
+                        $rowCompensi['giornata'] = (float)$c->value;
+                    }
                 }
                 if($estero > 0) {
                     $rowCompensi['estero'] = 1;
@@ -160,7 +179,11 @@ foreach ($timesheet as $t) {
                     $rowCompensi['Festivo'] = (float)$c->value;
                 }
                 if($c->name == 'Giornata Lavorativa') {
-                    $rowCompensi['giornata'] = (float)$c->value;
+                    if($u_fascia > 0) {
+                        $rowCompensi['giornata'] = (float)$u_fascia;
+                    } else {
+                        $rowCompensi['giornata'] = (float)$c->value;
+                    }
                 }
                 if($estero > 0) {
                     $rowCompensi['estero'] = 1;
@@ -173,7 +196,15 @@ foreach ($timesheet as $t) {
         foreach($compensations as $c) {
             if(!$festivo) {
                 if($c->name == 'Giornata Lavorativa') {
-                    $rowCompensi['giornata'] = (float)$c->value;
+                    if($u_fissa > 0) {
+                        if($sabati_lavorati <= 3) {
+                            $rowCompensi['giornata'] = (float)$u_fissa;
+                        } else {
+                            $rowCompensi['giornata'] = (float)$c->value;
+                        }
+                    } else {
+                        $rowCompensi['giornata'] = (float)$c->value;
+                    }
                 }
                 if($estero > 0) {
                     $rowCompensi['estero'] = 1;
@@ -183,7 +214,15 @@ foreach ($timesheet as $t) {
                     $rowCompensi['Festivo'] = (float)$c->value;
                 }
                 if($c->name == 'Giornata Lavorativa') {
-                    $rowCompensi['giornata'] = (float)$c->value;
+                    if($u_fissa > 0) {
+                        if($sabati_lavorati <= 3) {
+                            $rowCompensi['giornata'] = (float)$u_fissa;
+                        } else {
+                            $rowCompensi['giornata'] = (float)$c->value;
+                        }
+                    } else {
+                        $rowCompensi['giornata'] = (float)$c->value;
+                    }
                 }
                 if($estero > 0) {
                     $rowCompensi['estero'] = 1;
@@ -302,6 +341,8 @@ foreach ($timesheet as $t) {
         }
     }
 
+    $rowCompensi['incremento'] = (float)$u_incremento;
+
     array_push($compensi, $rowCompensi);
 }
 
@@ -319,6 +360,7 @@ $esteri = 0;
 $giornate = 0;
 $festivi = 0;
 $straordinari = 0;
+$incrementi = 0;
 
 $trasferte_num = 0;
 $pernotti_num = 0;
@@ -340,6 +382,7 @@ foreach($compensi as $y => $z) {
     $giornate += $z['giornata'] ?? 0;
     $festivi += $z['Festivo'] ?? 0;
     $straordinari += $z['straordinari'] ?? 0;
+    $incrementi += $z['incremento'] ?? 0;
 
     array_key_exists('trasferta', $z) ? $trasferte_num++ : null;
     array_key_exists('pernotto', $z) ? $pernotti_num++ : null;
@@ -358,7 +401,12 @@ foreach($compensi as $y => $z) {
     }
 }
 
-$totale = $trasferte + $pernotti + $presidi + $trasferte_lunghe + $trasferte_brevi + $esteri + $giornate + $festivi + $straordinari;
+if($u_trasferta > 0) {
+    $trasferte_lunghe = (float)$u_trasferta;
+    $trasferte_brevi = (float)$u_trasferta;
+}
+
+$totale = $trasferte + $pernotti + $presidi + $trasferte_lunghe + $trasferte_brevi + $esteri + $giornate + $festivi + $straordinari + $incrementi;
 
 
 
