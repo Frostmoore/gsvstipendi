@@ -21,8 +21,8 @@ $compensi = [];
                 <th>Luogo</th>
                 <th>Entrata</th>
                 <th>Uscita</th>
-                <th>Trasf. Breve</th>
                 <th>Trasf. Lunga</th>
+                <th>Trasf. Breve</th>
                 <th>Pernotto</th>
                 <th>Presidio</th>
                 <th>Estero</th>
@@ -65,6 +65,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 { name: "Entrata", type: "time", editable: true },
                 { name: "Uscita", type: "time", editable: true },
                 { name: "TrasfLunga", type: "checkbox", editable: false },
+                { name: "TrasfBreve", type: "checkbox", editable: false },
                 { name: "Pernotto", type: "checkbox", editable: false },
                 { name: "Presidio", type: "checkbox", editable: false }
             ];

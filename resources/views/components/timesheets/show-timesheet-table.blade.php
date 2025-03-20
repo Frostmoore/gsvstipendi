@@ -47,6 +47,7 @@ switch($role) {
             'Entrata',
             'Uscita',
             'Trasf. Lunga',
+            'Trasferta breve',
             'Pernotto',
             'Presidio'
         ];
@@ -70,6 +71,7 @@ switch($role) {
             'Uscita',
             'Trasferta',
             'Trasf. Lunga',
+            'Trasferta breve',
             'Pernotto',
             'Presidio',
             'Estero'
@@ -114,6 +116,7 @@ foreach ($timesheet as $t) {
     $pernotto = array_key_exists('Pernotto', $t) ? $t['Pernotto'] : null;
     $presidio = array_key_exists('Presidio', $t) ? $t['Presidio'] : null;
     $trasferta_lunga = array_key_exists('TrasfLunga', $t) ? $t['TrasfLunga'] : null;
+    $trasferta_breve = array_key_exists('TrasfBreve', $t) ? $t['TrasfBreve'] : null;
     $estero = array_key_exists('Estero', $t) ? $t['Estero'] : null;
 
 
@@ -218,24 +221,6 @@ foreach ($timesheet as $t) {
                     }
                 }
             }
-            //foreach($compensations as $c) {
-            //    if(!$festivo) {
-            //        if($c->name == 'Feriale Estero') {
-            //            $rowCompensi['giornata'] = (float)$c->value;
-            //        }
-            //        if($estero > 0) {
-            //            $rowCompensi['estero'] = (float)$c->value;
-            //        }
-            //    } else {
-            //        if($c->name == 'Festivo Estero') {
-            //            $rowCompensi['giornata'] = (float)$c->value;
-            //            $rowCompensi['Festivo'] = (float)$c->value;
-            //        }
-            //        if($estero > 0) {
-            //            $rowCompensi['estero'] = (float)$c->value;
-            //        }
-            //    }
-            //}
         } else {
             if(!$festivo) {
                 foreach($compensations as $c) {
@@ -251,18 +236,6 @@ foreach ($timesheet as $t) {
                     }
                 }
             }
-            //foreach($compensations as $c) {
-            //    if(!$festivo){
-            //        if($c->name == 'Feriale Italia') {
-            //            $rowCompensi['giornata'] = (float)$c->value;
-            //        }
-            //    } else {
-            //        if($c->name == 'Festivo Italia') {
-            //            $rowCompensi['giornata'] = (float)$c->value;
-            //            $rowCompensi['Festivo'] = 0;
-            //        }
-            //    }
-            //}
         }
 
     } else {
@@ -321,6 +294,14 @@ foreach ($timesheet as $t) {
         }
     }
 
+    if($trasferta_breve == 1) {
+        foreach($compensations as $c) {
+            if($c->name == 'Trasferta breve') {
+                $rowCompensi['trasferta_breve'] = $c->value;
+            }
+        }
+    }
+
     array_push($compensi, $rowCompensi);
 }
 
@@ -333,6 +314,7 @@ $trasferte = 0;
 $pernotti = 0;
 $presidi = 0;
 $trasferte_lunghe = 0;
+$trasferte_brevi = 0;
 $esteri = 0;
 $giornate = 0;
 $festivi = 0;
@@ -342,6 +324,7 @@ $trasferte_num = 0;
 $pernotti_num = 0;
 $presidi_num = 0;
 $trasferte_lunghe_num = 0;
+$trasferte_brevi_num = 0;
 $esteri_num = 0;
 $giornate_num = 0;
 $festivi_num = 0;
@@ -352,6 +335,7 @@ foreach($compensi as $y => $z) {
     $pernotti += $z['pernotto'] ?? 0;
     $presidi += $z['presidio'] ?? 0;
     $trasferte_lunghe += $z['trasferta_lunga'] ?? 0;
+    $trasferte_brevi += $z['trasferta_breve'] ?? 0;
     $esteri += $z['estero'] ?? 0;
     $giornate += $z['giornata'] ?? 0;
     $festivi += $z['Festivo'] ?? 0;
@@ -361,6 +345,7 @@ foreach($compensi as $y => $z) {
     array_key_exists('pernotto', $z) ? $pernotti_num++ : null;
     array_key_exists('presidio', $z) ? $presidi_num++ : null;
     array_key_exists('trasferta_lunga', $z) ? $trasferte_lunghe_num++ : null;
+    array_key_exists('trasferta_breve', $z) ? $trasferte_brevi_num++ : null;
     array_key_exists('estero', $z) ? $esteri_num++ : null;
     array_key_exists('giornata', $z) ? $giornate_num++ : null;
     array_key_exists('Festivo', $z) ? $festivi_num++ : null;
@@ -373,7 +358,7 @@ foreach($compensi as $y => $z) {
     }
 }
 
-$totale = $trasferte + $pernotti + $presidi + $trasferte_lunghe + $esteri + $giornate + $festivi + $straordinari;
+$totale = $trasferte + $pernotti + $presidi + $trasferte_lunghe + $trasferte_brevi + $esteri + $giornate + $festivi + $straordinari;
 
 
 
@@ -405,6 +390,7 @@ $totale = $trasferte + $pernotti + $presidi + $trasferte_lunghe + $esteri + $gio
                     <th class="px-4 py-2">Pernotti</th>
                     <th class="px-4 py-2">Presidi</th>
                     <th class="px-4 py-2">Trasferte Lunghe</th>
+                    <th class="px-4 py-2">Trasferte Brevi</th>
                     <th class="px-4 py-2">Estero</th>
                 </tr>
             </thead>
@@ -418,6 +404,7 @@ $totale = $trasferte + $pernotti + $presidi + $trasferte_lunghe + $esteri + $gio
                     <td class="px-4 py-2">{{ $pernotti_num }}</td>
                     <td class="px-4 py-2">{{ $presidi_num }}</td>
                     <td class="px-4 py-2">{{ $trasferte_lunghe_num }}</td>
+                    <td class="px-4 py-2">{{ $trasferte_brevi_num }}</td>
                     <td class="px-4 py-2">{{ $esteri_num }}</td>
                 </tr>
                 <tr class="odd:bg-white odd:dark:bg-gray-700 even:bg-gray-50 even:dark:bg-gray-800 even:color-gray-700 dark:text-gray-200">
@@ -429,6 +416,7 @@ $totale = $trasferte + $pernotti + $presidi + $trasferte_lunghe + $esteri + $gio
                     <td class="px-4 py-2">{{ $pernotti }} €</td>
                     <td class="px-4 py-2">{{ $presidi }} €</td>
                     <td class="px-4 py-2">{{ $trasferte_lunghe }} €</td>
+                    <td class="px-4 py-2">{{ $trasferte_brevi }} €</td>
                     <td class="px-4 py-2">{{ $esteri }} €</td>
                 </tr>
             </tbody>

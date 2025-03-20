@@ -98,6 +98,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 { name: "Entrata", type: "time", editable: true },
                 { name: "Uscita", type: "time", editable: true },
                 { name: "TrasfLunga", type: "checkbox", editable: false },
+                { name: "TrasfBreve", type: "checkbox", editable: false },
                 { name: "Pernotto", type: "checkbox", editable: false },
                 { name: "Presidio", type: "checkbox", editable: false }
             ];
@@ -127,6 +128,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 { name: "Uscita", type: "time", editable: true },
                 { name: "Trasferta", type: "checkbox", editable: false },
                 { name: "TrasfLunga", type: "checkbox", editable: false },
+                { name: "TrasfBreve", type: "checkbox", editable: false },
                 { name: "Pernotto", type: "checkbox", editable: false },
                 { name: "Presidio", type: "checkbox", editable: false },
                 { name: "Estero", type: "checkbox", editable: false }
@@ -141,6 +143,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 { name: "Uscita", type: "time", editable: true },
                 { name: "Trasferta", type: "checkbox", editable: false },
                 { name: "TrasfLunga", type: "checkbox", editable: false },
+                { name: "TrasfBreve", type: "checkbox", editable: false },
                 { name: "Pernotto", type: "checkbox", editable: false },
                 { name: "Presidio", type: "checkbox", editable: false },
                 { name: "Estero", type: "checkbox", editable: false }

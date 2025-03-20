@@ -4,8 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Models\Utente;
 use App\Models\Roles;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
+use App\Models\User;
+use Illuminate\Auth\Events\Registered;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules;
+use Illuminate\View\View;
 
 class UtenteController extends Controller
 {
@@ -51,7 +58,34 @@ class UtenteController extends Controller
      */
     public function store(Request $request)
     {
-        $utenti = Utente::create($request->all());
+        $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'surname' => ['required', 'string', 'max:255'],
+            'username' => ['required', 'string', 'max:255', 'unique:'.User::class],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            // 'role' => ['required', 'string', 'max:255'],
+            // 'fissa' => ['string', 'max:255'],
+            // 'fascia' => ['string', 'max:255'],
+            // 'special' => ['string', 'max:255'],
+            // 'trasferta' => ['string', 'max:255'],
+            // 'incremento' => ['string', 'max:255'],
+        ]);
+
+        $user = User::create([
+            'name' => $request->name,
+            'surname' => $request->surname,
+            'username' => $request->username,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'role' => $request->role,
+            'fissa' => $request->fissa,
+            'fascia' => $request->fascia,
+            'special' => $request->special,
+            'trasferta' => $request->trasferta,
+            'incremento' => $request->incremento
+        ]);
+
         return redirect()->route('utenti.index')->with('success', 'Utente Aggiunto con successo!');
     }
 
