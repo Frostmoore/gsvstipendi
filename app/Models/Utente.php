@@ -13,6 +13,11 @@ class Utente extends Model
         'username',
         'email',
         'password',
-        'role'
+        'role',
+        'fissa',
+        'fascia',
+        'special',
+        'trasferta',
+        'incremento'
     ];
 }
