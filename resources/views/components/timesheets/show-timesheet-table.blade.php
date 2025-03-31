@@ -106,7 +106,7 @@ foreach ($timesheet as $t) {
 
     // NUOVO CONTROLLO: salta la giornata se manca entrata o uscita
     if($role != 'Magazziniere FIGC') {
-        if (empty($entrata) || empty($uscita)) {
+        if (empty($entrata) || empty($uscita) || $entrata == '00:00' || $uscita == '00:00') {
             continue;
         }
     } else {
@@ -500,7 +500,7 @@ if($o_compensation > 0) {
             $selectedFascia = old('override_fascia', $o_fascia);
         @endphp
 
-        @if($role == "Facchino")
+        @if($role == "Facchino" && $u_role != "Facchino")
             <x-input-label for="override_fascia" :value="__('Fascia')" />
             <x-select-input id="override_fascia" class="block mt-1 w-full mb-4" type="text" name="override_fascia" :value="old('override_fascia', $u_fascia)" autofocus>
                 <option value="">Seleziona una fascia</option>
