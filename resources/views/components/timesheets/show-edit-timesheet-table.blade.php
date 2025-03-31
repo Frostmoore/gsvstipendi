@@ -12,6 +12,7 @@ $timesheet = json_decode($timesheet->link);
 $compensi = [];
 ?>
 
+
 <div class="shadow-md rounded-lg">
     <table id="editableTable" class="table-fixed w-full gsv-timesheet-table">
         <thead class="bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-200">
@@ -33,7 +34,7 @@ $compensi = [];
     </table>
 
     <!-- Campo nascosto per memorizzare i dati JSON -->
-    <input type="hidden" name="link" id="link" value="">
+    <input type="hidden" name="link" id="link" value="{{ old('link', json_encode($timesheet)) }}">
 </div>
 
 <script>
@@ -337,8 +338,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 });
-
-
 
 
 </script>

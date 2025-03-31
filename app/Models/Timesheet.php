@@ -13,6 +13,8 @@ class Timesheet extends Model
         'user',
         'role',
         'link',
-        'company'
+        'company',
+        'override_compensation',
+        'override_fascia',
     ];
 }

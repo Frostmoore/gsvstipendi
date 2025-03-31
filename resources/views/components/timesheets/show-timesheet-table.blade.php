@@ -9,6 +9,8 @@ $month = $months[$_month];
 $year = $timesheet->year;
 $userid = $timesheet->user;
 $ruolo = $timesheet->role;
+$o_compensation = $timesheet->override_compensation;
+$o_fascia = $timesheet->override_fascia;
 $timesheet = json_decode($timesheet->link);
 $compensi = [];
 
@@ -24,9 +26,6 @@ foreach($users as $u) {
     }
 }
 
-// var_dump($roles);
-
-
 foreach($roles as $r) {
     if($r->id == $role) {
         $role_id = $r->id;
@@ -34,6 +33,7 @@ foreach($roles as $r) {
     }
 }
 
+$u_role = $role;
 $role = $ruolo;
 
 switch($role) {
@@ -197,7 +197,7 @@ foreach ($timesheet as $t) {
             if(!$festivo) {
                 if($c->name == 'Giornata Lavorativa') {
                     if($u_fissa > 0) {
-                        if($sabati_lavorati <= 3) {
+                        if($sabati_lavorati < 3) {
                             $rowCompensi['giornata'] = (float)$u_fissa;
                         } else {
                             $rowCompensi['giornata'] = (float)$c->value;
@@ -406,7 +406,27 @@ if($u_trasferta > 0) {
     $trasferte_brevi = (float)$u_trasferta;
 }
 
+if($u_fissa > 0) {
+    $giornate = (float)$u_fissa;
+    if($sabati_lavorati > 2) {
+        $giornate = (float)$u_fissa + (($giornate / $giornate_num) * ($sabati_lavorati - 2));
+    }
+}
+
+if($u_fascia > 0) {
+    $giornate = (float)$u_fascia * $giornate_num;
+}
+
+if($o_fascia > 0) {
+    $giornate = (float)$o_fascia * $giornate_num;
+}
+
+
 $totale = $trasferte + $pernotti + $presidi + $trasferte_lunghe + $trasferte_brevi + $esteri + $giornate + $festivi + $straordinari + $incrementi;
+
+if($o_compensation > 0) {
+    $totale = (float)$o_compensation;
+}
 
 
 
@@ -417,7 +437,6 @@ $totale = $trasferte + $pernotti + $presidi + $trasferte_lunghe + $trasferte_bre
         {{ $user_fullname }} ({{ $role }}) - {{ $month }} {{ $year }}
     </h2>
 </div>
-
 
 <div class="w-full overflow-x-auto">
     <div class="mb-8">
@@ -476,6 +495,26 @@ $totale = $trasferte + $pernotti + $presidi + $trasferte_lunghe + $trasferte_bre
     <form class="gsv-form" method="POST" action="{{ route('timesheets.update', $ts) }}">
         @csrf
         @method('PATCH')
+
+        @php
+            $selectedFascia = old('override_fascia', $o_fascia);
+        @endphp
+
+        @if($role == "Facchino")
+            <x-input-label for="override_fascia" :value="__('Fascia')" />
+            <x-select-input id="override_fascia" class="block mt-1 w-full mb-4" type="text" name="override_fascia" :value="old('override_fascia', $u_fascia)" autofocus>
+                <option value="">Seleziona una fascia</option>
+                <option value="50" {{ $selectedFascia == '50' ? 'selected' : '' }}>50€</option>
+                <option value="55" {{ $selectedFascia == '55' ? 'selected' : '' }}>55€</option>
+                <option value="60" {{ $selectedFascia == '60' ? 'selected' : '' }}>60€</option>
+                <option value="70" {{ $selectedFascia == '70' ? 'selected' : '' }}>70€</option>
+            </x-select-input>
+        @endif
+
+
+        <x-input-label for="override_compensation" :value="__('Override Compenso')" />
+        <x-text-input id="override_compensation" class="block mt-1 w-full mb-4" type="text" name="override_compensation" :value="old('override_compensation', $o_compensation)" autofocus />
+
         <x-timesheets.show-edit-timesheet-table :timesheet="$ts" :months="$months" :cols="$cols" />
         <div class="flex items-center justify-end mt-4">
             <x-primary-button class="ms-3">
@@ -484,3 +523,13 @@ $totale = $trasferte + $pernotti + $presidi + $trasferte_lunghe + $trasferte_bre
         </div>
     </form>
 </div>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        let override_compensation = document.getElementById('override_compensation');
+        override_compensation.addEventListener('input', function() {
+            this.value = this.value.replace(/[^0-9.]/g, '');
+        });
+    });
+</script>

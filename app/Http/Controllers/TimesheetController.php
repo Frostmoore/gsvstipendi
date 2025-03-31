@@ -123,7 +123,8 @@ class TimesheetController extends Controller
     public function update(Request $request, Timesheet $timesheet)
     {
         $timesheet->update($request->all());
-        return redirect()->route('timesheets.index')->with('success', 'Foglio Orario Aggiornato con successo!');
+        // return redirect()->route('timesheets.index')->with('success', 'Foglio Orario Aggiornato con successo!');
+        return redirect()->route('timesheets.show', ['timesheet' => $timesheet])->with('success', 'Foglio Orario Aggiornato con successo!');
     }
 
     /**
