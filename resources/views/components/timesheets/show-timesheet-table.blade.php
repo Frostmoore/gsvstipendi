@@ -10,7 +10,9 @@ $year = $timesheet->year;
 $userid = $timesheet->user;
 $ruolo = $timesheet->role;
 $o_compensation = $timesheet->override_compensation;
-$o_fascia = $timesheet->override_fascia;
+$o_fascia       = $timesheet->override_fascia;
+$bonus_list     = is_array($ts->bonuses) ? $ts->bonuses : (json_decode($ts->bonuses ?? '[]', true) ?? []);
+$totale_bonus   = array_sum(array_column($bonus_list, 'amount'));
 $timesheet = json_decode($timesheet->link);
 $compensi = [];
 
@@ -447,7 +449,8 @@ if($o_compensation > 0) {
     $totale = (float)$o_compensation;
 }
 
-
+// I bonus/detrazioni si sommano sempre, anche sopra l'override_compensation
+$totale += $totale_bonus;
 
 ?>
 
@@ -568,6 +571,32 @@ if($o_compensation > 0) {
         <x-input-label for="override_compensation" :value="__('Override Compenso')" />
         <x-text-input id="override_compensation" class="block mt-1 w-full mb-4" type="text" name="override_compensation" :value="old('override_compensation', $o_compensation)" autofocus />
 
+        @if(Auth::user()->role == 'admin' || Auth::user()->role == 'superadmin')
+        <fieldset class="border border-gray-300 dark:border-gray-600 rounded-lg p-4 mb-6">
+            <legend class="px-2 text-sm font-semibold text-gray-700 dark:text-gray-300">Bonus e Detrazioni</legend>
+
+            <div class="flex gap-3 items-end mb-4">
+                <div class="w-40">
+                    <x-input-label for="bonus_amount" :value="__('Importo (€)')" />
+                    <x-text-input id="bonus_amount" class="block mt-1 w-full" type="number" step="0.01" placeholder="es. 50 o -30" />
+                </div>
+                <div class="flex-1">
+                    <x-input-label for="bonus_note" :value="__('Motivazione')" />
+                    <x-text-input id="bonus_note" class="block mt-1 w-full" type="text" placeholder="es. Bonus produttività" />
+                </div>
+                <div class="flex-shrink-0 pb-0.5">
+                    <button type="button" id="add_bonus_btn"
+                        class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 focus:outline-none transition ease-in-out duration-150">
+                        + Aggiungi
+                    </button>
+                </div>
+            </div>
+
+            <div id="bonus_list_container"></div>
+            <input type="hidden" name="bonuses" id="bonuses_hidden" value="{{ old('bonuses', json_encode($bonus_list)) }}" />
+        </fieldset>
+        @endif
+
         <x-timesheets.show-edit-timesheet-table :timesheet="$ts" :months="$months" :cols="$cols" />
         <div class="flex items-center justify-end mt-4">
             <x-primary-button class="ms-3">
@@ -580,9 +609,85 @@ if($o_compensation > 0) {
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+
+        // ── Override compenso: solo numeri ──────────────────────────────────
         let override_compensation = document.getElementById('override_compensation');
         override_compensation.addEventListener('input', function() {
             this.value = this.value.replace(/[^0-9.]/g, '');
         });
+
+        // ── Bonus e Detrazioni ──────────────────────────────────────────────
+        const bonusContainer = document.getElementById('bonus_list_container');
+        if (!bonusContainer) return; // sezione non presente (utente non admin)
+
+        let bonusEntries = JSON.parse(document.getElementById('bonuses_hidden').value || '[]');
+
+        function renderBonusList() {
+            const hidden = document.getElementById('bonuses_hidden');
+            hidden.value = JSON.stringify(bonusEntries);
+
+            if (bonusEntries.length === 0) {
+                bonusContainer.innerHTML =
+                    '<p class="text-sm text-gray-400 dark:text-gray-500 italic">Nessun bonus o detrazione aggiunto.</p>';
+                return;
+            }
+
+            let html = '<table class="w-full text-sm border-collapse rounded overflow-hidden">';
+            html += '<thead><tr class="text-left bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">';
+            html += '<th class="px-3 py-1.5 w-28">Importo</th>';
+            html += '<th class="px-3 py-1.5">Motivazione</th>';
+            html += '<th class="px-3 py-1.5 w-20"></th>';
+            html += '</tr></thead><tbody>';
+
+            bonusEntries.forEach(function(entry, index) {
+                const isBonus  = parseFloat(entry.amount) >= 0;
+                const rowClass = isBonus
+                    ? 'bg-green-50 dark:bg-green-950 text-green-800 dark:text-green-200'
+                    : 'bg-red-50 dark:bg-red-950 text-red-800 dark:text-red-200';
+                const sign     = isBonus ? '+' : '';
+                const amount   = sign + parseFloat(entry.amount).toFixed(2) + ' €';
+
+                html += `<tr class="${rowClass} border-t border-gray-200 dark:border-gray-600">`;
+                html += `<td class="px-3 py-1.5 font-semibold">${amount}</td>`;
+                html += `<td class="px-3 py-1.5">${entry.note}</td>`;
+                html += `<td class="px-3 py-1.5 text-right">`;
+                html += `<button type="button" onclick="removeBonus(${index})"`;
+                html += ` class="text-xs text-red-600 dark:text-red-400 hover:underline">Elimina</button>`;
+                html += `</td></tr>`;
+            });
+
+            html += '</tbody></table>';
+            bonusContainer.innerHTML = html;
+        }
+
+        window.removeBonus = function(index) {
+            bonusEntries.splice(index, 1);
+            renderBonusList(); // aggiorna il hidden input prima del submit
+            document.querySelector('form.gsv-form').submit();
+        };
+
+        document.getElementById('add_bonus_btn').addEventListener('click', function() {
+            const amountInput = document.getElementById('bonus_amount');
+            const noteInput   = document.getElementById('bonus_note');
+            const amount      = parseFloat(amountInput.value);
+            const note        = noteInput.value.trim();
+
+            if (isNaN(amount) || amount === 0) {
+                amountInput.focus();
+                return;
+            }
+            if (!note) {
+                noteInput.focus();
+                return;
+            }
+
+            bonusEntries.push({ amount: amount, note: note });
+            renderBonusList(); // aggiorna il hidden input prima del submit
+
+            // Salva e ricarica la pagina così i totali vengono ricalcolati dal server
+            document.querySelector('form.gsv-form').submit();
+        });
+
+        renderBonusList(); // render iniziale con i dati salvati
     });
 </script>

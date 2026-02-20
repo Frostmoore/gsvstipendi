@@ -16,5 +16,10 @@ class Timesheet extends Model
         'company',
         'override_compensation',
         'override_fascia',
+        'bonuses',
+    ];
+
+    protected $casts = [
+        'bonuses' => 'array',
     ];
 }
