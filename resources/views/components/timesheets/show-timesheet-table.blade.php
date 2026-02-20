@@ -189,18 +189,12 @@ foreach ($timesheet as $t) {
                     $rowCompensi['estero'] = 1;
                 }
             } else {
+                // Giorno festivo: solo il compenso festivo, non anche la giornata normale
                 if($c->name == 'Festivo') {
                     if ($estero > 0) {
                         $rowCompensi['festivo_estero'] = (float)$c->value;
                     } else {
                         $rowCompensi['festivo_italia'] = (float)$c->value;
-                    }
-                }
-                if($c->name == 'Giornata Lavorativa') {
-                    if($u_fascia > 0) {
-                        $rowCompensi['giornata'] = (float)$u_fascia;
-                    } else {
-                        $rowCompensi['giornata'] = (float)$c->value;
                     }
                 }
                 if($estero > 0) {
@@ -215,7 +209,9 @@ foreach ($timesheet as $t) {
             if(!$festivo) {
                 if($c->name == 'Giornata Lavorativa') {
                     if($u_fissa > 0) {
-                        if($sabati_lavorati < 3) {
+                        // Dal 3° sabato in poi (sabati_lavorati già incrementato prima di questo blocco)
+                        // il compenso passa alla tariffa standard
+                        if($sabati_lavorati <= 2) {
                             $rowCompensi['giornata'] = (float)$u_fissa;
                         } else {
                             $rowCompensi['giornata'] = (float)$c->value;
@@ -228,22 +224,12 @@ foreach ($timesheet as $t) {
                     $rowCompensi['estero'] = 1;
                 }
             } else {
+                // Giorno festivo: solo il compenso festivo, non anche la giornata normale
                 if($c->name == 'Festivo') {
                     if ($estero > 0) {
                         $rowCompensi['festivo_estero'] = (float)$c->value;
                     } else {
                         $rowCompensi['festivo_italia'] = (float)$c->value;
-                    }
-                }
-                if($c->name == 'Giornata Lavorativa') {
-                    if($u_fissa > 0) {
-                        if($sabati_lavorati <= 3) {
-                            $rowCompensi['giornata'] = (float)$u_fissa;
-                        } else {
-                            $rowCompensi['giornata'] = (float)$c->value;
-                        }
-                    } else {
-                        $rowCompensi['giornata'] = (float)$c->value;
                     }
                 }
                 if($estero > 0) {
@@ -253,45 +239,39 @@ foreach ($timesheet as $t) {
         }
 
     } else if($role == 'Magazziniere FIGC') {
-        //----------------------------------------------------------------------------------------------------------//
-        //                                                                                                          //
-        // DA CONTROLLARE IL CALCOLO PER I MAGAZZINIERI FIGC, IN PARTICOLARE PER I FESTIVI E LE GIORNATE ALL'ESTERO //
-        //                                                                                                          //
-        //----------------------------------------------------------------------------------------------------------//
-        $baseGiornata = 0;
+        // Pre-carica le tariffe base per FIGC così le usiamo nei calcoli sottostanti
+        $baseGiornata   = 0; // Feriale Italia
+        $feriale_estero = 0; // Feriale Estero
         foreach($compensations as $d) {
-            if($d->name =='Feriale Italia') {
-                $baseGiornata = $d->value;
-            }
+            if($d->name == 'Feriale Italia') $baseGiornata   = (float)$d->value;
+            if($d->name == 'Feriale Estero') $feriale_estero = (float)$d->value;
         }
 
         if($estero == 1) {
             if(!$festivo) {
-                foreach($compensations as $c) {
-                    if($c->name == 'Feriale Estero') {
-                        $rowCompensi['giornata'] = $baseGiornata;
-                        $rowCompensi['estero'] = $c->value - $baseGiornata;
-                    }
-                }
+                // Feriale estero: giornata base + extra per essere all'estero
+                $rowCompensi['giornata'] = $baseGiornata;
+                $rowCompensi['estero']   = $feriale_estero - $baseGiornata;
             } else {
                 foreach($compensations as $c) {
                     if($c->name == 'Festivo Estero') {
+                        // Stessa logica del festivo italia, ma con l'extra estero separato:
+                        // - estero        = bonus trasferta (Feriale Estero - Feriale Italia)
+                        // - festivo_estero = bonus festivo  (Festivo Estero  - Feriale Estero)
                         $rowCompensi['giornata']       = $baseGiornata;
-                        $rowCompensi['festivo_estero'] = ((float)$c->value - $baseGiornata)/2;
-                        $rowCompensi['estero']         = ((float)$c->value - $baseGiornata)/2;
+                        $rowCompensi['estero']         = $feriale_estero - $baseGiornata;
+                        $rowCompensi['festivo_estero'] = (float)$c->value - $feriale_estero;
                     }
                 }
             }
         } else {
             if(!$festivo) {
-                foreach($compensations as $c) {
-                    if($c->name == 'Feriale Italia') {
-                        $rowCompensi['giornata'] = $baseGiornata;
-                    }
-                }
+                // Feriale italia: solo la giornata base
+                $rowCompensi['giornata'] = $baseGiornata;
             } else {
                 foreach($compensations as $c) {
                     if($c->name == 'Festivo Italia') {
+                        // Festivo italia: giornata base + extra festivo
                         $rowCompensi['giornata']       = $baseGiornata;
                         $rowCompensi['festivo_italia'] = (float)$c->value - $baseGiornata;
                     }
@@ -310,15 +290,13 @@ foreach ($timesheet as $t) {
                     $rowCompensi['estero'] = 1;
                 }
             } else {
+                // Giorno festivo: solo il compenso festivo, non anche la giornata normale
                 if($c->name == 'Festivo') {
                     if ($estero > 0) {
                         $rowCompensi['festivo_estero'] = (float)$c->value;
                     } else {
                         $rowCompensi['festivo_italia'] = (float)$c->value;
                     }
-                }
-                if($c->name == 'Giornata Lavorativa') {
-                    $rowCompensi['giornata'] = (float)$c->value;
                 }
                 if($estero > 0) {
                     $rowCompensi['estero'] = 1;
@@ -366,8 +344,6 @@ foreach ($timesheet as $t) {
             }
         }
     }
-
-    $rowCompensi['incremento'] = (float)$u_incremento;
 
     array_push($compensi, $rowCompensi);
 }
@@ -427,7 +403,6 @@ foreach($compensi as $y => $z) {
     $festivi_italia   += $z['festivo_italia']   ?? 0;
     $festivi_estero   += $z['festivo_estero']   ?? 0;
     $straordinari     += $z['straordinari']     ?? 0;
-    $incrementi       += $z['incremento']       ?? 0;
     $straordinari_ore += $z['straordinari_ore'] ?? 0;
 
     array_key_exists('trasferta', $z)       ? $trasferte_num++        : null;
@@ -439,25 +414,22 @@ foreach($compensi as $y => $z) {
     array_key_exists('giornata', $z)        ? $giornate_num++         : null;
     array_key_exists('festivo_italia', $z)  ? $festivi_italia_num++   : null;
     array_key_exists('festivo_estero', $z)  ? $festivi_estero_num++   : null;
-    if(array_key_exists('straordinari', $z)) {
-        if($z['straordinari'] > 0) {
-            // (contatore giorni rimosso: ora si usano le ore in $straordinari_ore)
-        }
-    } else {
-        $straordinari_num == null;
-    }
 }
 
+// L'incremento è un importo mensile fisso, non dipende dai giorni lavorati
+$incrementi = (float)$u_incremento;
+
 if($u_trasferta > 0) {
-    $trasferte_lunghe = (float)$u_trasferta;
-    $trasferte_brevi = (float)$u_trasferta;
+    // Tariffa personalizzata per evento: moltiplica per il numero di eventi effettivi
+    $trasferte_lunghe = (float)$u_trasferta * $trasferte_lunghe_num;
+    $trasferte_brevi  = (float)$u_trasferta * $trasferte_brevi_num;
 }
 
 if($u_fissa > 0) {
-    $giornate = (float)$u_fissa;
-    if($sabati_lavorati > 2) {
-        $giornate = (float)$u_fissa + (($giornate / $giornate_num) * ($sabati_lavorati - 2));
-    }
+    // Paga base mensile fissa, più un rateo per ogni sabato lavorato oltre i primi 2
+    $sabati_extra   = max(0, $sabati_lavorati - 2);
+    $tariffa_sabato = $giornate_num > 0 ? (float)$u_fissa / $giornate_num : 0;
+    $giornate       = (float)$u_fissa + ($tariffa_sabato * $sabati_extra);
 }
 
 if($u_fascia > 0) {
