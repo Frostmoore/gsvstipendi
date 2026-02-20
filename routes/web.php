@@ -10,6 +10,7 @@ use App\Http\Controllers\UserSearchController;
 use App\Http\Controllers\UserTimesheetController;
 use App\Http\Controllers\OperatorRolesController;
 use App\Http\Controllers\CompaniesController;
+use App\Http\Controllers\DatabaseBackupController;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
 
@@ -169,6 +170,16 @@ Route::controller(CompaniesController::class)
     Route::get('/{companies}/edit', 'edit')->name('edit');
     Route::patch('/{companies}/update', 'update')->name('update');
     Route::delete('/{companies}/destroy', 'destroy')->name('destroy');
+});
+
+Route::controller(DatabaseBackupController::class)
+->prefix('backup')
+->name('backup.')
+->middleware(['auth', AdminMiddleware::class])
+->group(function () {
+    Route::get('/', 'index')->name('index');
+    Route::get('/export', 'export')->name('export');
+    Route::post('/restore', 'restore')->name('restore');
 });
 
 Route::get('/search-users', [UserSearchController::class, 'search'])->name('search.users');

@@ -40,8 +40,7 @@
         {{-- <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script> --}}
         <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
 
-
-        {{-- <script defer src="https://unpkg.com/alpinejs@3.x.x" x-ignore></script> --}}
+        @stack('scripts')
 
     </body>
 </html>
