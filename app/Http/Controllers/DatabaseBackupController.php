@@ -73,8 +73,9 @@ class DatabaseBackupController extends Controller
             return back()->with('error', 'Formato non riconosciuto: manca la chiave "tables".');
         }
 
-        $existingTables = Schema::getAllTables();
-        $existingNames  = array_map(fn ($t) => array_values((array) $t)[0], $existingTables);
+        $database      = config('database.connections.mysql.database');
+        $key           = 'Tables_in_' . $database;
+        $existingNames = array_map(fn ($t) => $t->$key, DB::select('SHOW TABLES'));
 
         $unknownTables = array_diff(array_keys($data['tables']), $existingNames);
         if (! empty($unknownTables)) {
