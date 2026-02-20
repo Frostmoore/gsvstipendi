@@ -1,3 +1,9 @@
+@props([
+    'timesheet'     => null,
+    'roles'         => [],
+    'compensations' => [],
+    'users'         => [],
+])
 <x-input-label for="editableTable" :value="__('Foglio Orario')" />
 <div class="gsv-description-container mb-4">
     <p class="text-xs text-gray-800 dark:text-gray-200 leading-tight" style="color:orange;">
@@ -33,6 +39,7 @@
                 <th>Pernotto</th>
                 <th>Presidio</th>
                 <th>Estero</th>
+                <th>Note</th>
             </tr>
         </thead>
         <tbody class="text-gray-700 dark:text-gray-200">
@@ -42,6 +49,44 @@
     <!-- Campo nascosto per memorizzare i dati JSON -->
     <input type="hidden" name="link" id="link" value="">
 </div>
+
+<style>
+    .note-pills {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        padding: 3px;
+    }
+    .note-pill {
+        display: flex;
+        align-items: center;
+        padding: 2px 8px;
+        border-radius: 9999px;
+        font-size: 0.65rem;
+        font-weight: 600;
+        cursor: pointer;
+        border: 1px solid #e5e7eb;
+        background: #f9fafb;
+        color: #9ca3af;
+        transition: background 0.1s, color 0.1s, border-color 0.1s;
+        user-select: none;
+        white-space: nowrap;
+    }
+    .note-pill input[type="checkbox"] { display: none; }
+    .note-pill-blue.note-pill-active   { background: #3b82f6; color: #ffffff; border-color: #2563eb; }
+    .note-pill-yellow.note-pill-active { background: #f59e0b; color: #ffffff; border-color: #d97706; }
+    .note-pill-red.note-pill-active    { background: #ef4444; color: #ffffff; border-color: #dc2626; }
+    .note-pill-purple.note-pill-active { background: #8b5cf6; color: #ffffff; border-color: #7c3aed; }
+    .note-pill-blue:hover   { background: #dbeafe; color: #1e40af; border-color: #93c5fd; }
+    .note-pill-yellow:hover { background: #fef3c7; color: #92400e; border-color: #fde68a; }
+    .note-pill-red:hover    { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+    .note-pill-purple:hover { background: #ede9fe; color: #5b21b6; border-color: #c4b5fd; }
+    .dark .note-pill { background: #1e293b; color: #64748b; border-color: #334155; }
+    .dark .note-pill-blue.note-pill-active   { background: #3b82f6; color: #ffffff; border-color: #2563eb; }
+    .dark .note-pill-yellow.note-pill-active { background: #f59e0b; color: #ffffff; border-color: #d97706; }
+    .dark .note-pill-red.note-pill-active    { background: #ef4444; color: #ffffff; border-color: #dc2626; }
+    .dark .note-pill-purple.note-pill-active { background: #8b5cf6; color: #ffffff; border-color: #7c3aed; }
+</style>
 
 <script>
 
@@ -54,14 +99,17 @@ document.addEventListener("DOMContentLoaded", function () {
     let userSelect = document.getElementById("user-select");
     let il_ruolo = document.getElementById("role");
     let ruolo_name = il_ruolo.value;
-    //console.log(ruolo_scelto);
+
+    // Dati esistenti da caricare al primo render (null in modalità creazione)
+    let existingData = <?= json_encode($timesheet ? json_decode($timesheet->link, true) : null) ?>;
+    let hasLoadedExisting = false;
+
+    const NOTE_OPTIONS = ["Ferie", "Permesso", "Malattia", "104"];
 
     let roles = JSON.parse(`<?= json_encode($roles); ?>`);
     let utenti = JSON.parse(`<?= json_encode($users); ?>`);
 
-    //let user = userSelect.value;
     let ruolo = 0;
-    //let ruolo_name = '';
     let columns = [];
 
     function updateRoleAndGenerateTable() {
@@ -76,14 +124,16 @@ document.addEventListener("DOMContentLoaded", function () {
                 { name: "Uscita", type: "time", editable: true },
                 { name: "TrasfLunga", type: "checkbox", editable: false },
                 { name: "Pernotto", type: "checkbox", editable: false },
-                { name: "Presidio", type: "checkbox", editable: false }
+                { name: "Presidio", type: "checkbox", editable: false },
+                { name: "Note", type: "multiselect", editable: false }
             ];
         } else if (ruolo_name === 'Magazziniere FIGC') {
             columns = [
                 { name: "Data", type: "text", editable: false },
                 { name: "Cliente", type: "text", editable: true },
                 { name: "Luogo", type: "text", editable: true },
-                { name: "Estero", type: "checkbox", editable: false }
+                { name: "Estero", type: "checkbox", editable: false },
+                { name: "Note", type: "multiselect", editable: false }
             ];
         } else if (ruolo_name === 'Facchino') {
             columns = [
@@ -92,10 +142,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 { name: "Luogo", type: "text", editable: true },
                 { name: "Entrata", type: "time", editable: true },
                 { name: "Uscita", type: "time", editable: true },
-                { name: "Trasferta", type: "checkbox", editable: false }
+                { name: "Trasferta", type: "checkbox", editable: false },
+                { name: "Note", type: "multiselect", editable: false }
             ];
         } else if (ruolo_name === 'Superadmin') {
-            // Definisci le colonne per Superadmin (oppure usa quelle di default)
             columns = [
                 { name: "Data", type: "text", editable: false },
                 { name: "Cliente", type: "text", editable: true },
@@ -106,10 +156,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 { name: "TrasfLunga", type: "checkbox", editable: false },
                 { name: "Pernotto", type: "checkbox", editable: false },
                 { name: "Presidio", type: "checkbox", editable: false },
-                { name: "Estero", type: "checkbox", editable: false }
+                { name: "Estero", type: "checkbox", editable: false },
+                { name: "Note", type: "multiselect", editable: false }
             ];
         } else {
-            // Caso default, se necessario
+            // Caso default
             columns = [
                 { name: "Data", type: "text", editable: false },
                 { name: "Cliente", type: "text", editable: true },
@@ -120,7 +171,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 { name: "TrasfLunga", type: "checkbox", editable: false },
                 { name: "Pernotto", type: "checkbox", editable: false },
                 { name: "Presidio", type: "checkbox", editable: false },
-                { name: "Estero", type: "checkbox", editable: false }
+                { name: "Estero", type: "checkbox", editable: false },
+                { name: "Note", type: "multiselect", editable: false }
             ];
         }
         console.log("Colonne aggiornate:", columns);
@@ -132,11 +184,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Funzione per generare la tabella
     function generateTable() {
-        // Prendi l'elemento tabella e ricrea interamente i suoi figli
         let table = document.getElementById("editableTable");
-        table.innerHTML = ""; // Rimuove tutti i nodi figli
+        table.innerHTML = "";
 
-        // Crea nuovi elementi thead e tbody
         tableHead = document.createElement("thead");
         tableHead.classList.add("bg-gray-50", "dark:bg-gray-800", "text-gray-700", "dark:text-gray-200");
         tableBody = document.createElement("tbody");
@@ -144,7 +194,6 @@ document.addEventListener("DOMContentLoaded", function () {
         table.appendChild(tableHead);
         table.appendChild(tableBody);
 
-        // Crea l'intestazione della tabella
         let headerRow = document.createElement("tr");
         columns.forEach(col => {
             let th = document.createElement("th");
@@ -153,7 +202,6 @@ document.addEventListener("DOMContentLoaded", function () {
         });
         tableHead.appendChild(headerRow);
 
-        // Genera le righe della tabella
         generateTableRows();
     }
 
@@ -180,6 +228,32 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (col.name === "Data") {
                     td.innerHTML = formattedDate;
                     td.style.textAlign = "left";
+                } else if (col.type === "multiselect") {
+                    const NOTE_COLORS = {
+                        "Ferie": "note-pill-blue",
+                        "Permesso": "note-pill-yellow",
+                        "Malattia": "note-pill-red",
+                        "104": "note-pill-purple"
+                    };
+                    let wrapper = document.createElement("div");
+                    wrapper.classList.add("note-pills");
+                    NOTE_OPTIONS.forEach(opt => {
+                        let label = document.createElement("label");
+                        label.classList.add("note-pill", NOTE_COLORS[opt] || "note-pill-gray");
+                        let checkbox = document.createElement("input");
+                        checkbox.type = "checkbox";
+                        checkbox.value = opt;
+                        checkbox.classList.add("note-check");
+                        checkbox.addEventListener("change", function () {
+                            if (this.checked) label.classList.add("note-pill-active");
+                            else label.classList.remove("note-pill-active");
+                            updateHiddenInput();
+                        });
+                        label.appendChild(checkbox);
+                        label.appendChild(document.createTextNode(opt));
+                        wrapper.appendChild(label);
+                    });
+                    td.appendChild(wrapper);
                 } else if (col.type === "checkbox") {
                     let input = document.createElement("input");
                     input.type = "checkbox";
@@ -218,24 +292,47 @@ document.addEventListener("DOMContentLoaded", function () {
             tableBody.appendChild(row);
         }
 
+        // Pre-popola le righe con i dati salvati (solo al primo caricamento)
+        if (!hasLoadedExisting && existingData && existingData.length > 0) {
+            document.querySelectorAll("#editableTable tbody tr").forEach((row, rowIndex) => {
+                let rowData = existingData[rowIndex];
+                if (!rowData) return;
+
+                row.querySelectorAll("td").forEach((td, colIndex) => {
+                    let col = columns[colIndex];
+                    if (!col || col.name === "Data") return;
+
+                    let val = rowData[col.name];
+                    if (val === undefined || val === null) return;
+
+                    if (col.type === "multiselect") {
+                        if (val) {
+                            let selectedVals = String(val).split(",").map(v => v.trim()).filter(v => v);
+                            td.querySelectorAll("input.note-check").forEach(cb => {
+                                cb.checked = selectedVals.includes(cb.value);
+                                if (cb.checked) cb.closest("label").classList.add("note-pill-active");
+                            });
+                        }
+                    } else if (col.type === "checkbox") {
+                        let cb = td.querySelector("input[type='checkbox']");
+                        if (cb) cb.checked = (val === "1" || val === 1 || val === true);
+                    } else if (col.type === "time") {
+                        let inp = td.querySelector("input[type='time']");
+                        if (inp) inp.value = val;
+                    } else {
+                        td.innerText = val;
+                    }
+                });
+            });
+            hasLoadedExisting = true;
+        }
+
         updateHiddenInput();
     }
 
     function propagateValue(element, columnName) {
         let value = element.innerText ? element.innerText.trim() : element.value;
         let columnIndex = Array.from(element.closest("tr").children).indexOf(element.closest("td"));
-
-        //document.querySelectorAll(`#editableTable tbody tr`).forEach((row, rowIndex) => {
-        //    if (rowIndex > Array.from(tableBody.children).indexOf(element.closest("tr"))) {
-        //        let targetCell = row.children[columnIndex];
-        //
-        //        if (columnName === "Cliente" || columnName === "Luogo") {
-        //            targetCell.innerText = value;
-        //        } else if (columnName === "Entrata" || columnName === "Uscita") {
-        //            targetCell.querySelector("input[type='time']").value = value;
-        //        }
-        //    }
-        //});
         updateHiddenInput();
     }
 
@@ -246,10 +343,14 @@ document.addEventListener("DOMContentLoaded", function () {
         document.querySelectorAll("#editableTable tbody tr").forEach(row => {
             let rowData = {};
             row.querySelectorAll("td").forEach((cell, index) => {
-                let columnName = columns[index].name; // Nome della colonna
+                let columnName = columns[index].name;
+                let col = columns[index];
                 let cellValue = "";
 
-                if (cell.querySelector("input[type='checkbox']")) {
+                if (col.type === "multiselect") {
+                    let checks = cell.querySelectorAll("input.note-check:checked");
+                    cellValue = Array.from(checks).map(c => c.value).join(",");
+                } else if (cell.querySelector("input[type='checkbox']")) {
                     cellValue = cell.querySelector("input[type='checkbox']").checked ? "1" : "0";
                 } else if (cell.querySelector("input[type='time']")) {
                     cellValue = cell.querySelector("input[type='time']").value;
@@ -266,7 +367,6 @@ document.addEventListener("DOMContentLoaded", function () {
         let jsonData = JSON.stringify(tableData);
         hiddenInput.value = jsonData;
 
-        //console.clear();
         console.log(ruolo_name);
         console.log("Modifica rilevata:", jsonData);
     }
@@ -288,9 +388,6 @@ document.addEventListener("DOMContentLoaded", function () {
     updateRoleAndGenerateTable();
 
 
-
-
-
     //***********************************************************************//
     //************************** Movimento Celle ****************************//
     //***********************************************************************//
@@ -299,7 +396,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     table.addEventListener("keydown", function (event) {
         let target = event.target;
-        if (target.tagName !== "TD" && target.tagName !== "INPUT") return;
+        if (target.tagName !== "TD" && target.tagName !== "INPUT" && target.tagName !== "SELECT") return;
 
         let currentRow = target.closest("tr");
         let currentCellIndex = Array.from(currentRow.children).indexOf(target.closest("td"));
@@ -349,7 +446,9 @@ document.addEventListener("DOMContentLoaded", function () {
         if (row >= 1 && row < table.rows.length && cell >= 0 && cell < table.rows[row].cells.length) {
             let nextCell = table.rows[row].cells[cell];
 
-            if (nextCell.querySelector("input[type='checkbox']")) {
+            if (nextCell.querySelector("input.note-check")) {
+                nextCell.querySelector("input.note-check").focus();
+            } else if (nextCell.querySelector("input[type='checkbox']")) {
                 nextCell.querySelector("input[type='checkbox']").focus();
             } else if (nextCell.querySelector("input[type='time']")) {
                 nextCell.querySelector("input[type='time']").focus();

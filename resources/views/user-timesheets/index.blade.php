@@ -50,7 +50,7 @@
                                 <td class="px-4 py-2">{{ $timesheet_worked->month }}</td>
                                 <td class="px-4 py-2">{{ $timesheet_worked->year }}</td>
                                 <td class="px-4 py-2">{{ $timesheet_worked->user_fullname }}</td>
-                                <td class="px-4 py-2"><a href="{{ route('user-timesheets.show', $timesheet_worked->id) }}"><i class="fa-solid fa-file-invoice gsv-document px-2 py-2"></i></a></td>
+                                <td class="px-4 py-2"><a href="{{ route('user-timesheets.edit', $timesheet_worked->id) }}"><i class="fa-solid fa-pen-to-square gsv-edit px-2 py-2"></i></a></td>
                                 <td class="px-4 py-2">
                                     <form action="{{ route('user-timesheets.destroy', $timesheet_worked->id) }}" method="POST" style="display: inline;">
                                         @csrf

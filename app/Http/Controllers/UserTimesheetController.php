@@ -115,17 +115,42 @@ class UserTimesheetController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Timesheet $timesheet)
+    public function edit(Timesheet $userTimesheet)
     {
-        //
+        $users = Utente::all();
+        $roles = Roles::all();
+        $compensations = Compensation::all();
+        $companies = Companies::all();
+
+        $months = [
+            '1' => 'Gennaio', '2' => 'Febbraio', '3' => 'Marzo',
+            '4' => 'Aprile', '5' => 'Maggio', '6' => 'Giugno',
+            '7' => 'Luglio', '8' => 'Agosto', '9' => 'Settembre',
+            '10' => 'Ottobre', '11' => 'Novembre', '12' => 'Dicembre'
+        ];
+
+        for ($i = -1; $i < 2; $i++) {
+            $years[Carbon::now()->subYears($i)->year] = Carbon::now()->subYears($i)->year;
+        }
+
+        return view('user-timesheets.edit', [
+            'timesheet'     => $userTimesheet,
+            'users'         => $users,
+            'roles'         => $roles,
+            'compensations' => $compensations,
+            'months'        => $months,
+            'companies'     => $companies,
+            'years'         => $years,
+        ]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Timesheet $timesheet)
+    public function update(Request $request, Timesheet $userTimesheet)
     {
-        //
+        $userTimesheet->update($request->all());
+        return redirect()->route('user-timesheets.index')->with('success', 'Foglio Orario aggiornato con successo!');
     }
 
     /**

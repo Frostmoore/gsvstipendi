@@ -42,7 +42,8 @@ switch($role) {
             'Data',
             'Cliente',
             'Luogo',
-            'Estero'
+            'Estero',
+            'Note'
         ];
         break;
     case 'Autista':
@@ -55,7 +56,8 @@ switch($role) {
             'Trasf. Lunga',
             'Trasferta breve',
             'Pernotto',
-            'Presidio'
+            'Presidio',
+            'Note'
         ];
         break;
     case 'Facchino':
@@ -65,7 +67,8 @@ switch($role) {
             'Luogo',
             'Entrata',
             'Uscita',
-            'Trasferta'
+            'Trasferta',
+            'Note'
         ];
         break;
     default:
@@ -80,7 +83,8 @@ switch($role) {
             'Trasferta breve',
             'Pernotto',
             'Presidio',
-            'Estero'
+            'Estero',
+            'Note'
         ];
         break;
 }
@@ -346,6 +350,20 @@ foreach ($timesheet as $t) {
     array_push($compensi, $rowCompensi);
 }
 
+// Raccoglie le note da TUTTE le giornate (anche senza entrata/uscita)
+$note_summary = ['Ferie' => 0, 'Permesso' => 0, 'Malattia' => 0, '104' => 0];
+foreach ($timesheet as $dayRow) {
+    $dayRow = json_decode(json_encode($dayRow), true);
+    if (!empty($dayRow['Note'])) {
+        $noteVals = array_map('trim', explode(',', $dayRow['Note']));
+        foreach ($noteVals as $nv) {
+            if (array_key_exists($nv, $note_summary)) {
+                $note_summary[$nv]++;
+            }
+        }
+    }
+}
+
 //var_dump($compensi);
 
 //-----------------------------------------------------------------------//
@@ -489,6 +507,37 @@ if($o_compensation > 0) {
             </tbody>
         </table>
     </div>
+
+    @if(array_sum($note_summary) > 0)
+    <div class="mb-6">
+        <p class="text-lg text-gray-800 dark:text-gray-200 leading-tight mb-2">
+            <strong>Note:</strong>
+        </p>
+        <div class="flex flex-wrap gap-2">
+            @if($note_summary['Ferie'] > 0)
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                    Ferie &mdash; {{ $note_summary['Ferie'] }} {{ $note_summary['Ferie'] == 1 ? 'giorno' : 'giorni' }}
+                </span>
+            @endif
+            @if($note_summary['Permesso'] > 0)
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+                    Permesso &mdash; {{ $note_summary['Permesso'] }} {{ $note_summary['Permesso'] == 1 ? 'giorno' : 'giorni' }}
+                </span>
+            @endif
+            @if($note_summary['Malattia'] > 0)
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
+                    Malattia &mdash; {{ $note_summary['Malattia'] }} {{ $note_summary['Malattia'] == 1 ? 'giorno' : 'giorni' }}
+                </span>
+            @endif
+            @if($note_summary['104'] > 0)
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+                    104 &mdash; {{ $note_summary['104'] }} {{ $note_summary['104'] == 1 ? 'giorno' : 'giorni' }}
+                </span>
+            @endif
+        </div>
+    </div>
+    @endif
+
     <h2 class="text-lg text-gray-800 dark:text-gray-200 leading-tight mb-4">
         <strong>Foglio Orario Complessivo:</strong>
     </h2>

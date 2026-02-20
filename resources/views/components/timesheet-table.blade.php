@@ -33,6 +33,7 @@
                 <th>Pernotto</th>
                 <th>Presidio</th>
                 <th>Estero</th>
+                <th>Note</th>
             </tr>
         </thead>
         <tbody class="text-gray-700 dark:text-gray-200">
@@ -42,6 +43,25 @@
     <!-- Campo nascosto per memorizzare i dati JSON -->
     <input type="hidden" name="link" id="link" value="">
 </div>
+
+<style>
+    .note-select {
+        width: 100%;
+        min-width: 90px;
+        font-size: 0.7rem;
+        border: 1px solid #d1d5db;
+        border-radius: 4px;
+        background: transparent;
+        padding: 1px 2px;
+    }
+    .dark .note-select {
+        border-color: #4b5563;
+        color: #e5e7eb;
+    }
+    .note-select option {
+        padding: 1px 2px;
+    }
+</style>
 
 <script>
 
@@ -53,6 +73,8 @@ document.addEventListener("DOMContentLoaded", function () {
     let hiddenInput = document.getElementById("link");
     let userSelect = document.getElementById("user-select");
     let roleSelect = document.getElementById("role");
+
+    const NOTE_OPTIONS = ["Ferie", "Permesso", "Malattia", "104"];
 
     let roles = JSON.parse(`<?= json_encode($roles); ?>`);
     let utenti = JSON.parse(`<?= json_encode($users); ?>`);
@@ -73,11 +95,11 @@ document.addEventListener("DOMContentLoaded", function () {
             console.error("Utente non trovato");
             return;
         }
-        
+
         // Imposta il ruolo dell'utente
         ruolo = selectedUser.role;
         console.log("Ruolo trovato:", ruolo);
-        
+
         // Cerca il record del ruolo nell'array roles
         let roleEntry = roles.find(r => r.id.toString() === ruolo.toString());
         if (!roleEntry) {
@@ -87,7 +109,6 @@ document.addEventListener("DOMContentLoaded", function () {
             ruolo_name = roleEntry.role;
         }
         console.log("Ruolo aggiornato:", ruolo_name);
-        
 
         // Aggiorna le colonne in base al ruolo aggiornato
         if (ruolo_right === 'Autista') {
@@ -100,14 +121,16 @@ document.addEventListener("DOMContentLoaded", function () {
                 { name: "TrasfLunga", type: "checkbox", editable: false },
                 { name: "TrasfBreve", type: "checkbox", editable: false },
                 { name: "Pernotto", type: "checkbox", editable: false },
-                { name: "Presidio", type: "checkbox", editable: false }
+                { name: "Presidio", type: "checkbox", editable: false },
+                { name: "Note", type: "multiselect", editable: false }
             ];
         } else if (ruolo_right === 'Magazziniere FIGC') {
             columns = [
                 { name: "Data", type: "text", editable: false },
                 { name: "Cliente", type: "text", editable: true },
                 { name: "Luogo", type: "text", editable: true },
-                { name: "Estero", type: "checkbox", editable: false }
+                { name: "Estero", type: "checkbox", editable: false },
+                { name: "Note", type: "multiselect", editable: false }
             ];
         } else if (ruolo_right === 'Facchino') {
             columns = [
@@ -116,10 +139,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 { name: "Luogo", type: "text", editable: true },
                 { name: "Entrata", type: "time", editable: true },
                 { name: "Uscita", type: "time", editable: true },
-                { name: "Trasferta", type: "checkbox", editable: false }
+                { name: "Trasferta", type: "checkbox", editable: false },
+                { name: "Note", type: "multiselect", editable: false }
             ];
         } else if (ruolo_right === 'Superadmin') {
-            // Definisci le colonne per Superadmin (oppure usa quelle di default)
             columns = [
                 { name: "Data", type: "text", editable: false },
                 { name: "Cliente", type: "text", editable: true },
@@ -131,10 +154,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 { name: "TrasfBreve", type: "checkbox", editable: false },
                 { name: "Pernotto", type: "checkbox", editable: false },
                 { name: "Presidio", type: "checkbox", editable: false },
-                { name: "Estero", type: "checkbox", editable: false }
+                { name: "Estero", type: "checkbox", editable: false },
+                { name: "Note", type: "multiselect", editable: false }
             ];
         } else {
-            // Caso default, se necessario
+            // Caso default
             columns = [
                 { name: "Data", type: "text", editable: false },
                 { name: "Cliente", type: "text", editable: true },
@@ -146,7 +170,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 { name: "TrasfBreve", type: "checkbox", editable: false },
                 { name: "Pernotto", type: "checkbox", editable: false },
                 { name: "Presidio", type: "checkbox", editable: false },
-                { name: "Estero", type: "checkbox", editable: false }
+                { name: "Estero", type: "checkbox", editable: false },
+                { name: "Note", type: "multiselect", editable: false }
             ];
         }
         console.log("Colonne aggiornate:", columns);
@@ -158,11 +183,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Funzione per generare la tabella
     function generateTable() {
-        // Prendi l'elemento tabella e ricrea interamente i suoi figli
         let table = document.getElementById("editableTable");
-        table.innerHTML = ""; // Rimuove tutti i nodi figli
+        table.innerHTML = "";
 
-        // Crea nuovi elementi thead e tbody
         tableHead = document.createElement("thead");
         tableHead.classList.add("bg-gray-50", "dark:bg-gray-800", "text-gray-700", "dark:text-gray-200");
         tableBody = document.createElement("tbody");
@@ -170,7 +193,6 @@ document.addEventListener("DOMContentLoaded", function () {
         table.appendChild(tableHead);
         table.appendChild(tableBody);
 
-        // Crea l'intestazione della tabella
         let headerRow = document.createElement("tr");
         columns.forEach(col => {
             let th = document.createElement("th");
@@ -179,7 +201,6 @@ document.addEventListener("DOMContentLoaded", function () {
         });
         tableHead.appendChild(headerRow);
 
-        // Genera le righe della tabella
         generateTableRows();
     }
 
@@ -206,6 +227,20 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (col.name === "Data") {
                     td.innerHTML = formattedDate;
                     td.style.textAlign = "left";
+                } else if (col.type === "multiselect") {
+                    let select = document.createElement("select");
+                    select.multiple = true;
+                    select.size = NOTE_OPTIONS.length;
+                    select.classList.add("note-select");
+                    NOTE_OPTIONS.forEach(opt => {
+                        let option = document.createElement("option");
+                        option.value = opt;
+                        option.textContent = opt;
+                        select.appendChild(option);
+                    });
+                    select.addEventListener("change", updateHiddenInput);
+                    td.style.textAlign = "center";
+                    td.appendChild(select);
                 } else if (col.type === "checkbox") {
                     let input = document.createElement("input");
                     input.type = "checkbox";
@@ -250,18 +285,6 @@ document.addEventListener("DOMContentLoaded", function () {
     function propagateValue(element, columnName) {
         let value = element.innerText ? element.innerText.trim() : element.value;
         let columnIndex = Array.from(element.closest("tr").children).indexOf(element.closest("td"));
-
-        //document.querySelectorAll(`#editableTable tbody tr`).forEach((row, rowIndex) => {
-        //    if (rowIndex > Array.from(tableBody.children).indexOf(element.closest("tr"))) {
-        //        let targetCell = row.children[columnIndex];
-        //
-        //        if (columnName === "Cliente" || columnName === "Luogo") {
-        //            targetCell.innerText = value;
-        //        } else if (columnName === "Entrata" || columnName === "Uscita") {
-        //            targetCell.querySelector("input[type='time']").value = value;
-        //        }
-        //    }
-        //});
         updateHiddenInput();
     }
 
@@ -272,10 +295,16 @@ document.addEventListener("DOMContentLoaded", function () {
         document.querySelectorAll("#editableTable tbody tr").forEach(row => {
             let rowData = {};
             row.querySelectorAll("td").forEach((cell, index) => {
-                let columnName = columns[index].name; // Nome della colonna
+                let columnName = columns[index].name;
+                let col = columns[index];
                 let cellValue = "";
 
-                if (cell.querySelector("input[type='checkbox']")) {
+                if (col.type === "multiselect") {
+                    let sel = cell.querySelector("select[multiple]");
+                    cellValue = sel
+                        ? Array.from(sel.selectedOptions).map(o => o.value).join(",")
+                        : "";
+                } else if (cell.querySelector("input[type='checkbox']")) {
                     cellValue = cell.querySelector("input[type='checkbox']").checked ? "1" : "0";
                 } else if (cell.querySelector("input[type='time']")) {
                     cellValue = cell.querySelector("input[type='time']").value;
@@ -292,7 +321,6 @@ document.addEventListener("DOMContentLoaded", function () {
         let jsonData = JSON.stringify(tableData);
         hiddenInput.value = jsonData;
 
-        //console.clear();
         console.log(ruolo_name);
         console.log("Modifica rilevata:", jsonData);
     }
@@ -315,9 +343,6 @@ document.addEventListener("DOMContentLoaded", function () {
     updateRoleAndGenerateTable();
 
 
-
-
-
     //***********************************************************************//
     //************************** Movimento Celle ****************************//
     //***********************************************************************//
@@ -326,7 +351,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     table.addEventListener("keydown", function (event) {
         let target = event.target;
-        if (target.tagName !== "TD" && target.tagName !== "INPUT") return;
+        if (target.tagName !== "TD" && target.tagName !== "INPUT" && target.tagName !== "SELECT") return;
 
         let currentRow = target.closest("tr");
         let currentCellIndex = Array.from(currentRow.children).indexOf(target.closest("td"));
@@ -376,7 +401,9 @@ document.addEventListener("DOMContentLoaded", function () {
         if (row >= 1 && row < table.rows.length && cell >= 0 && cell < table.rows[row].cells.length) {
             let nextCell = table.rows[row].cells[cell];
 
-            if (nextCell.querySelector("input[type='checkbox']")) {
+            if (nextCell.querySelector("select[multiple]")) {
+                nextCell.querySelector("select[multiple]").focus();
+            } else if (nextCell.querySelector("input[type='checkbox']")) {
                 nextCell.querySelector("input[type='checkbox']").focus();
             } else if (nextCell.querySelector("input[type='time']")) {
                 nextCell.querySelector("input[type='time']").focus();
