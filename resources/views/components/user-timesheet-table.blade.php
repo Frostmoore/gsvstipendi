@@ -51,41 +51,21 @@
 </div>
 
 <style>
-    .note-pills {
-        display: flex;
-        flex-direction: column;
-        gap: 3px;
-        padding: 3px;
+    /* Dice al browser di usare i colori nativi scuri per tutti i controlli form in dark mode */
+    html.dark { color-scheme: dark; }
+
+    .note-select {
+        width: 100%;
+        font-size: 0.75rem;
+        border: 1px solid #d1d5db;
+        border-radius: 4px;
+        background: transparent;
+        padding: 2px 4px;
+        color: inherit;
     }
-    .note-pill {
-        display: flex;
-        align-items: center;
-        padding: 2px 8px;
-        border-radius: 9999px;
-        font-size: 0.65rem;
-        font-weight: 600;
-        cursor: pointer;
-        border: 1px solid #e5e7eb;
-        background: #f9fafb;
-        color: #9ca3af;
-        transition: background 0.1s, color 0.1s, border-color 0.1s;
-        user-select: none;
-        white-space: nowrap;
+    .dark .note-select {
+        border-color: #4b5563;
     }
-    .note-pill input[type="checkbox"] { display: none; }
-    .note-pill-blue.note-pill-active   { background: #3b82f6; color: #ffffff; border-color: #2563eb; }
-    .note-pill-yellow.note-pill-active { background: #f59e0b; color: #ffffff; border-color: #d97706; }
-    .note-pill-red.note-pill-active    { background: #ef4444; color: #ffffff; border-color: #dc2626; }
-    .note-pill-purple.note-pill-active { background: #8b5cf6; color: #ffffff; border-color: #7c3aed; }
-    .note-pill-blue:hover   { background: #dbeafe; color: #1e40af; border-color: #93c5fd; }
-    .note-pill-yellow:hover { background: #fef3c7; color: #92400e; border-color: #fde68a; }
-    .note-pill-red:hover    { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
-    .note-pill-purple:hover { background: #ede9fe; color: #5b21b6; border-color: #c4b5fd; }
-    .dark .note-pill { background: #1e293b; color: #64748b; border-color: #334155; }
-    .dark .note-pill-blue.note-pill-active   { background: #3b82f6; color: #ffffff; border-color: #2563eb; }
-    .dark .note-pill-yellow.note-pill-active { background: #f59e0b; color: #ffffff; border-color: #d97706; }
-    .dark .note-pill-red.note-pill-active    { background: #ef4444; color: #ffffff; border-color: #dc2626; }
-    .dark .note-pill-purple.note-pill-active { background: #8b5cf6; color: #ffffff; border-color: #7c3aed; }
 </style>
 
 <script>
@@ -229,31 +209,27 @@ document.addEventListener("DOMContentLoaded", function () {
                     td.innerHTML = formattedDate;
                     td.style.textAlign = "left";
                 } else if (col.type === "multiselect") {
-                    const NOTE_COLORS = {
-                        "Ferie": "note-pill-blue",
-                        "Permesso": "note-pill-yellow",
-                        "Malattia": "note-pill-red",
-                        "104": "note-pill-purple"
-                    };
-                    let wrapper = document.createElement("div");
-                    wrapper.classList.add("note-pills");
+                    let select = document.createElement("select");
+                    select.classList.add("note-select");
+
+                    let emptyOpt = document.createElement("option");
+                    emptyOpt.value = "";
+                    emptyOpt.textContent = "—";
+                    emptyOpt.style.color = "black";
+                    emptyOpt.style.backgroundColor = "white";
+                    select.appendChild(emptyOpt);
+
                     NOTE_OPTIONS.forEach(opt => {
-                        let label = document.createElement("label");
-                        label.classList.add("note-pill", NOTE_COLORS[opt] || "note-pill-gray");
-                        let checkbox = document.createElement("input");
-                        checkbox.type = "checkbox";
-                        checkbox.value = opt;
-                        checkbox.classList.add("note-check");
-                        checkbox.addEventListener("change", function () {
-                            if (this.checked) label.classList.add("note-pill-active");
-                            else label.classList.remove("note-pill-active");
-                            updateHiddenInput();
-                        });
-                        label.appendChild(checkbox);
-                        label.appendChild(document.createTextNode(opt));
-                        wrapper.appendChild(label);
+                        let option = document.createElement("option");
+                        option.value = opt;
+                        option.textContent = opt;
+                        option.style.color = "black";
+                        option.style.backgroundColor = "white";
+                        select.appendChild(option);
                     });
-                    td.appendChild(wrapper);
+
+                    select.addEventListener("change", updateHiddenInput);
+                    td.appendChild(select);
                 } else if (col.type === "checkbox") {
                     let input = document.createElement("input");
                     input.type = "checkbox";
@@ -306,13 +282,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     if (val === undefined || val === null) return;
 
                     if (col.type === "multiselect") {
-                        if (val) {
-                            let selectedVals = String(val).split(",").map(v => v.trim()).filter(v => v);
-                            td.querySelectorAll("input.note-check").forEach(cb => {
-                                cb.checked = selectedVals.includes(cb.value);
-                                if (cb.checked) cb.closest("label").classList.add("note-pill-active");
-                            });
-                        }
+                        let sel = td.querySelector("select.note-select");
+                        if (sel) sel.value = val || "";
                     } else if (col.type === "checkbox") {
                         let cb = td.querySelector("input[type='checkbox']");
                         if (cb) cb.checked = (val === "1" || val === 1 || val === true);
@@ -348,8 +319,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 let cellValue = "";
 
                 if (col.type === "multiselect") {
-                    let checks = cell.querySelectorAll("input.note-check:checked");
-                    cellValue = Array.from(checks).map(c => c.value).join(",");
+                    let sel = cell.querySelector("select.note-select");
+                    cellValue = sel ? sel.value : "";
                 } else if (cell.querySelector("input[type='checkbox']")) {
                     cellValue = cell.querySelector("input[type='checkbox']").checked ? "1" : "0";
                 } else if (cell.querySelector("input[type='time']")) {
@@ -446,8 +417,8 @@ document.addEventListener("DOMContentLoaded", function () {
         if (row >= 1 && row < table.rows.length && cell >= 0 && cell < table.rows[row].cells.length) {
             let nextCell = table.rows[row].cells[cell];
 
-            if (nextCell.querySelector("input.note-check")) {
-                nextCell.querySelector("input.note-check").focus();
+            if (nextCell.querySelector("select.note-select")) {
+                nextCell.querySelector("select.note-select").focus();
             } else if (nextCell.querySelector("input[type='checkbox']")) {
                 nextCell.querySelector("input[type='checkbox']").focus();
             } else if (nextCell.querySelector("input[type='time']")) {

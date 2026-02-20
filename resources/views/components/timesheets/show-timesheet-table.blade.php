@@ -129,38 +129,48 @@ foreach ($timesheet as $t) {
         $sabati_lavorati++;
     }
 
-    $trasferta = array_key_exists('Trasferta', $t) ? $t['Trasferta'] : null;
-    $pernotto = array_key_exists('Pernotto', $t) ? $t['Pernotto'] : null;
-    $presidio = array_key_exists('Presidio', $t) ? $t['Presidio'] : null;
-    $trasferta_lunga = array_key_exists('TrasfLunga', $t) ? $t['TrasfLunga'] : null;
-    $trasferta_breve = array_key_exists('TrasfBreve', $t) ? $t['TrasfBreve'] : null;
-    $estero = array_key_exists('Estero', $t) ? $t['Estero'] : null;
+    $trasferta        = array_key_exists('Trasferta', $t)  ? $t['Trasferta']  : null;
+    $pernotto         = array_key_exists('Pernotto', $t)   ? $t['Pernotto']   : null;
+    $presidio         = array_key_exists('Presidio', $t)   ? $t['Presidio']   : null;
+    $trasferta_lunga  = array_key_exists('TrasfLunga', $t) ? $t['TrasfLunga'] : null;
+    $trasferta_breve  = array_key_exists('TrasfBreve', $t) ? $t['TrasfBreve'] : null;
+    $estero           = array_key_exists('Estero', $t)     ? $t['Estero']     : null;
 
+    // -----------------------------------------------------------------------
+    // Flag che annullano il calcolo degli straordinari per la giornata.
+    // Aggiungere o rimuovere condizioni qui per cambiare il comportamento.
+    // -----------------------------------------------------------------------
+    $ha_flag_speciale = (
+        $trasferta       == 1 ||
+        $pernotto        == 1 ||
+        $presidio        == 1 ||
+        $trasferta_lunga == 1 ||
+        $trasferta_breve == 1 ||
+        $estero          == 1
+    );
 
+    // Calcolo straordinari (ore oltre la 9ª) — azzerato se c'è una flag speciale
+    $rowCompensi['straordinari']     = 0;
+    $rowCompensi['straordinari_ore'] = 0;
 
-
-    // Creazione oggetti DateTime
-    if($entrata != '' && $uscita != '') {
+    if (!$ha_flag_speciale && $entrata != '' && $uscita != '') {
         $t1 = DateTime::createFromFormat('H:i', $entrata);
         $t2 = DateTime::createFromFormat('H:i', $uscita);
 
-        if ($t1 && $t2) { // Controllo validità degli orari
+        if ($t1 && $t2) {
             $difference = $t1->diff($t2);
-            $totalHours = $difference->h + ($difference->i / 60); // Differenza in ore decimali
+            $totalHours = $difference->h + ($difference->i / 60);
 
             if ($totalHours > 9) {
-                $extraHours = floor($totalHours - 9); // Numero di ore extra oltre le 9
-                foreach($compensations as $c) {
-                    if($c->name == 'Straordinari') {
+                $extraHours = floor($totalHours - 9); // ore intere oltre la soglia
+                foreach ($compensations as $c) {
+                    if ($c->name == 'Straordinari') {
                         $x = $c->value;
                     }
                 }
-                $rowCompensi['straordinari'] = $extraHours * (float)$x; // Calcolo compenso extra //CONTROLLARE!!!!!!!!
-            } else {
-                $rowCompensi['straordinari'] = 0; // Nessun extra se non supera le 9 ore
+                $rowCompensi['straordinari']     = $extraHours * (float)$x; // valore in €
+                $rowCompensi['straordinari_ore'] = $extraHours;              // ore di straordinario
             }
-        } else {
-            $rowCompensi['straordinari'] = 0; // In caso di errore nei dati
         }
     }
 
@@ -180,7 +190,11 @@ foreach ($timesheet as $t) {
                 }
             } else {
                 if($c->name == 'Festivo') {
-                    $rowCompensi['Festivo'] = (float)$c->value;
+                    if ($estero > 0) {
+                        $rowCompensi['festivo_estero'] = (float)$c->value;
+                    } else {
+                        $rowCompensi['festivo_italia'] = (float)$c->value;
+                    }
                 }
                 if($c->name == 'Giornata Lavorativa') {
                     if($u_fascia > 0) {
@@ -215,7 +229,11 @@ foreach ($timesheet as $t) {
                 }
             } else {
                 if($c->name == 'Festivo') {
-                    $rowCompensi['Festivo'] = (float)$c->value;
+                    if ($estero > 0) {
+                        $rowCompensi['festivo_estero'] = (float)$c->value;
+                    } else {
+                        $rowCompensi['festivo_italia'] = (float)$c->value;
+                    }
                 }
                 if($c->name == 'Giornata Lavorativa') {
                     if($u_fissa > 0) {
@@ -258,9 +276,9 @@ foreach ($timesheet as $t) {
             } else {
                 foreach($compensations as $c) {
                     if($c->name == 'Festivo Estero') {
-                        $rowCompensi['giornata'] = $baseGiornata;
-                        $rowCompensi['Festivo'] = ((float)$c->value - $baseGiornata)/2;
-                        $rowCompensi['estero'] = ((float)$c->value - $baseGiornata)/2;
+                        $rowCompensi['giornata']       = $baseGiornata;
+                        $rowCompensi['festivo_estero'] = ((float)$c->value - $baseGiornata)/2;
+                        $rowCompensi['estero']         = ((float)$c->value - $baseGiornata)/2;
                     }
                 }
             }
@@ -274,8 +292,8 @@ foreach ($timesheet as $t) {
             } else {
                 foreach($compensations as $c) {
                     if($c->name == 'Festivo Italia') {
-                        $rowCompensi['giornata'] = $baseGiornata;
-                        $rowCompensi['Festivo'] = (float)$c->value - $baseGiornata;
+                        $rowCompensi['giornata']       = $baseGiornata;
+                        $rowCompensi['festivo_italia'] = (float)$c->value - $baseGiornata;
                     }
                 }
             }
@@ -293,7 +311,11 @@ foreach ($timesheet as $t) {
                 }
             } else {
                 if($c->name == 'Festivo') {
-                    $rowCompensi['Festivo'] = (float)$c->value;
+                    if ($estero > 0) {
+                        $rowCompensi['festivo_estero'] = (float)$c->value;
+                    } else {
+                        $rowCompensi['festivo_italia'] = (float)$c->value;
+                    }
                 }
                 if($c->name == 'Giornata Lavorativa') {
                     $rowCompensi['giornata'] = (float)$c->value;
@@ -369,50 +391,57 @@ foreach ($timesheet as $dayRow) {
 //-----------------------------------------------------------------------//
 //------------------------ Calcolo Totali -------------------------------//
 //-----------------------------------------------------------------------//
-$trasferte = 0;
-$pernotti = 0;
-$presidi = 0;
+// Totali compensi (€)
+$trasferte       = 0;
+$pernotti        = 0;
+$presidi         = 0;
 $trasferte_lunghe = 0;
 $trasferte_brevi = 0;
-$esteri = 0;
-$giornate = 0;
-$festivi = 0;
-$straordinari = 0;
-$incrementi = 0;
+$esteri          = 0;
+$giornate        = 0;
+$festivi_italia  = 0; // festivi in Italia
+$festivi_estero  = 0; // festivi all'estero
+$straordinari    = 0;
+$incrementi      = 0;
 
-$trasferte_num = 0;
-$pernotti_num = 0;
-$presidi_num = 0;
+// Totali numerici (conteggi/ore)
+$trasferte_num        = 0;
+$pernotti_num         = 0;
+$presidi_num          = 0;
 $trasferte_lunghe_num = 0;
-$trasferte_brevi_num = 0;
-$esteri_num = 0;
-$giornate_num = 0;
-$festivi_num = 0;
-$straordinari_num = 0;
+$trasferte_brevi_num  = 0;
+$esteri_num           = 0;
+$giornate_num         = 0;
+$festivi_italia_num   = 0; // giorni festivi in Italia
+$festivi_estero_num   = 0; // giorni festivi all'estero
+$straordinari_ore     = 0; // ore totali di straordinario (non giorni)
 
 foreach($compensi as $y => $z) {
-    $trasferte += $z['trasferta'] ?? 0;
-    $pernotti += $z['pernotto'] ?? 0;
-    $presidi += $z['presidio'] ?? 0;
+    $trasferte        += $z['trasferta']       ?? 0;
+    $pernotti         += $z['pernotto']        ?? 0;
+    $presidi          += $z['presidio']        ?? 0;
     $trasferte_lunghe += $z['trasferta_lunga'] ?? 0;
-    $trasferte_brevi += $z['trasferta_breve'] ?? 0;
-    $esteri += $z['estero'] ?? 0;
-    $giornate += $z['giornata'] ?? 0;
-    $festivi += $z['Festivo'] ?? 0;
-    $straordinari += $z['straordinari'] ?? 0;
-    $incrementi += $z['incremento'] ?? 0;
+    $trasferte_brevi  += $z['trasferta_breve'] ?? 0;
+    $esteri           += $z['estero']          ?? 0;
+    $giornate         += $z['giornata']        ?? 0;
+    $festivi_italia   += $z['festivo_italia']   ?? 0;
+    $festivi_estero   += $z['festivo_estero']   ?? 0;
+    $straordinari     += $z['straordinari']     ?? 0;
+    $incrementi       += $z['incremento']       ?? 0;
+    $straordinari_ore += $z['straordinari_ore'] ?? 0;
 
-    array_key_exists('trasferta', $z) ? $trasferte_num++ : null;
-    array_key_exists('pernotto', $z) ? $pernotti_num++ : null;
-    array_key_exists('presidio', $z) ? $presidi_num++ : null;
+    array_key_exists('trasferta', $z)       ? $trasferte_num++        : null;
+    array_key_exists('pernotto', $z)        ? $pernotti_num++         : null;
+    array_key_exists('presidio', $z)        ? $presidi_num++          : null;
     array_key_exists('trasferta_lunga', $z) ? $trasferte_lunghe_num++ : null;
-    array_key_exists('trasferta_breve', $z) ? $trasferte_brevi_num++ : null;
-    array_key_exists('estero', $z) ? $esteri_num++ : null;
-    array_key_exists('giornata', $z) ? $giornate_num++ : null;
-    array_key_exists('Festivo', $z) ? $festivi_num++ : null;
+    array_key_exists('trasferta_breve', $z) ? $trasferte_brevi_num++  : null;
+    array_key_exists('estero', $z)          ? $esteri_num++           : null;
+    array_key_exists('giornata', $z)        ? $giornate_num++         : null;
+    array_key_exists('festivo_italia', $z)  ? $festivi_italia_num++   : null;
+    array_key_exists('festivo_estero', $z)  ? $festivi_estero_num++   : null;
     if(array_key_exists('straordinari', $z)) {
         if($z['straordinari'] > 0) {
-            $straordinari_num++;
+            // (contatore giorni rimosso: ora si usano le ore in $straordinari_ore)
         }
     } else {
         $straordinari_num == null;
@@ -440,7 +469,7 @@ if($o_fascia > 0) {
 }
 
 
-$totale = $trasferte + $pernotti + $presidi + $trasferte_lunghe + $trasferte_brevi + $esteri + $giornate + $festivi + $straordinari + $incrementi;
+$totale = $trasferte + $pernotti + $presidi + $trasferte_lunghe + $trasferte_brevi + $esteri + $giornate + $festivi_italia + $festivi_estero + $straordinari + $incrementi;
 
 if($o_compensation > 0) {
     $totale = (float)$o_compensation;
@@ -469,7 +498,8 @@ if($o_compensation > 0) {
                 <tr>
                     <th class="px-4 py-2"></th>
                     <th class="px-4 py-2">Giornate</th>
-                    <th class="px-4 py-2">Festivi</th>
+                    <th class="px-4 py-2">Festivi IT</th>
+                    <th class="px-4 py-2">Festivi EST</th>
                     <th class="px-4 py-2">Straordinari</th>
                     <th class="px-4 py-2">Trasferte</th>
                     <th class="px-4 py-2">Pernotti</th>
@@ -483,8 +513,9 @@ if($o_compensation > 0) {
                 <tr class="odd:bg-white odd:dark:bg-gray-700 even:bg-gray-50 even:dark:bg-gray-800 even:color-gray-700 dark:text-gray-200">
                     <td class="px-4 py-2">NUMERO</td>
                     <td class="px-4 py-2">{{ $giornate_num }}</td>
-                    <td class="px-4 py-2">{{ $festivi_num }}</td>
-                    <td class="px-4 py-2">{{ $straordinari_num }}</td>
+                    <td class="px-4 py-2">{{ $festivi_italia_num ?: '—' }}</td>
+                    <td class="px-4 py-2">{{ $festivi_estero_num ?: '—' }}</td>
+                    <td class="px-4 py-2">{{ $straordinari_ore > 0 ? $straordinari_ore . 'h' : '—' }}</td>
                     <td class="px-4 py-2">{{ $trasferte_num }}</td>
                     <td class="px-4 py-2">{{ $pernotti_num }}</td>
                     <td class="px-4 py-2">{{ $presidi_num }}</td>
@@ -495,7 +526,8 @@ if($o_compensation > 0) {
                 <tr class="odd:bg-white odd:dark:bg-gray-700 even:bg-gray-50 even:dark:bg-gray-800 even:color-gray-700 dark:text-gray-200">
                     <td class="px-4 py-2">COMPENSO</td>
                     <td class="px-4 py-2">{{ $giornate }} €</td>
-                    <td class="px-4 py-2">{{ $festivi }} €</td>
+                    <td class="px-4 py-2">{{ $festivi_italia > 0 ? $festivi_italia . ' €' : '—' }}</td>
+                    <td class="px-4 py-2">{{ $festivi_estero > 0 ? $festivi_estero . ' €' : '—' }}</td>
                     <td class="px-4 py-2">{{ $straordinari }} €</td>
                     <td class="px-4 py-2">{{ $trasferte }} €</td>
                     <td class="px-4 py-2">{{ $pernotti }} €</td>
