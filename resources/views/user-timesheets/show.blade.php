@@ -12,6 +12,6 @@
         </div>
         {{-- @dd($timesheet_one); --}}
         {{-- @dd(get_defined_vars()); --}}
-        <x-user-timesheets.show-timesheet-table :userTimesheet="$timesheet_one" :users="$users" :roles="$roles" :compensations="$compensations" :months="$months" />
+        <x-user-timesheets.show-timesheet-table :userTimesheet="$timesheet_one" :users="$users" :months="$months" />
     </x-std-content>
 </x-app-layout>

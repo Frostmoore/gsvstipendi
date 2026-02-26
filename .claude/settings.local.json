@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(php artisan view:clear)"
+      "Bash(php artisan view:clear)",
+      "Bash(php artisan migrate)"
     ]
   }
 }

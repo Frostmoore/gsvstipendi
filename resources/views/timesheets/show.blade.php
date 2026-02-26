@@ -10,6 +10,6 @@
                 {{ __('Vedi Foglio Orario') }}
             </h2>
         </div>
-        <x-timesheets.show-timesheet-table :timesheet="$timesheet" :users="$users" :roles="$roles" :compensations="$compensations" :months="$months" />
+        <x-timesheets.show-timesheet-table :timesheet="$timesheet" :users="$users" :months="$months" />
     </x-std-content>
 </x-app-layout>

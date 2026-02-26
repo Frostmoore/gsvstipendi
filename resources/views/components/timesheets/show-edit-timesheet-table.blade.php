@@ -71,80 +71,29 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const NOTE_OPTIONS = ["Ferie", "Permesso", "Malattia", "104"];
 
-    let ruolo = "<?=$ruolo?>";
-    let ruolo_name = '';
-    let ruolo_right = '<?=$ruolo?>';
+    const allowedColKeys = <?= json_encode($colKeys ?? []) ?>;
+
+    const allColumns = [
+        { name: "Data",       type: "text",        editable: false },
+        { name: "Cliente",    type: "text",        editable: true  },
+        { name: "Luogo",      type: "text",        editable: true  },
+        { name: "Entrata",    type: "time",        editable: true  },
+        { name: "Uscita",     type: "time",        editable: true  },
+        { name: "TrasfBreve", label: "Trasferta",  type: "checkbox", editable: false },
+        { name: "TrasfLunga", type: "checkbox",    editable: false },
+        { name: "Pernotto",   type: "checkbox",    editable: false },
+        { name: "Presidio",   type: "checkbox",    editable: false },
+        { name: "Estero",     type: "checkbox",    editable: false },
+        { name: "Note",       type: "multiselect", editable: false }
+    ];
+
     let columns = [];
     let timesheetData = [];
 
     function updateRoleAndGenerateTable() {
-
-        // Aggiorna le colonne in base al ruolo aggiornato
-        console.log("Ruolo: " + ruolo_right);
-        if (ruolo_right === 'Autista') {
-            columns = [
-                { name: "Data", type: "text", editable: false },
-                { name: "Cliente", type: "text", editable: true },
-                { name: "Luogo", type: "text", editable: true },
-                { name: "Entrata", type: "time", editable: true },
-                { name: "Uscita", type: "time", editable: true },
-                { name: "TrasfLunga", type: "checkbox", editable: false },
-                { name: "TrasfBreve", type: "checkbox", editable: false },
-                { name: "Pernotto", type: "checkbox", editable: false },
-                { name: "Presidio", type: "checkbox", editable: false },
-                { name: "Note", type: "multiselect", editable: false }
-            ];
-        } else if (ruolo_right === 'Magazziniere FIGC') {
-            columns = [
-                { name: "Data", type: "text", editable: false },
-                { name: "Cliente", type: "text", editable: true },
-                { name: "Luogo", type: "text", editable: true },
-                { name: "Estero", type: "checkbox", editable: false },
-                { name: "Note", type: "multiselect", editable: false }
-            ];
-        } else if (ruolo_right === 'Facchino') {
-            columns = [
-                { name: "Data", type: "text", editable: false },
-                { name: "Cliente", type: "text", editable: true },
-                { name: "Luogo", type: "text", editable: true },
-                { name: "Entrata", type: "time", editable: true },
-                { name: "Uscita", type: "time", editable: true },
-                { name: "Trasferta", type: "checkbox", editable: false },
-                { name: "Note", type: "multiselect", editable: false }
-            ];
-        } else if (ruolo_right === 'Superadmin') {
-            columns = [
-                { name: "Data", type: "text", editable: false },
-                { name: "Cliente", type: "text", editable: true },
-                { name: "Luogo", type: "text", editable: true },
-                { name: "Entrata", type: "time", editable: true },
-                { name: "Uscita", type: "time", editable: true },
-                { name: "Trasferta", type: "checkbox", editable: false },
-                { name: "TrasfLunga", type: "checkbox", editable: false },
-                { name: "Pernotto", type: "checkbox", editable: false },
-                { name: "Presidio", type: "checkbox", editable: false },
-                { name: "Estero", type: "checkbox", editable: false },
-                { name: "Note", type: "multiselect", editable: false }
-            ];
-        } else {
-            // Caso default
-            columns = [
-                { name: "Data", type: "text", editable: false },
-                { name: "Cliente", type: "text", editable: true },
-                { name: "Luogo", type: "text", editable: true },
-                { name: "Entrata", type: "time", editable: true },
-                { name: "Uscita", type: "time", editable: true },
-                { name: "Trasferta", type: "checkbox", editable: false },
-                { name: "TrasfLunga", type: "checkbox", editable: false },
-                { name: "Pernotto", type: "checkbox", editable: false },
-                { name: "Presidio", type: "checkbox", editable: false },
-                { name: "Estero", type: "checkbox", editable: false },
-                { name: "Note", type: "multiselect", editable: false }
-            ];
-        }
-        console.log("Colonne aggiornate:", columns);
-
-        // Rigenera la tabella
+        columns = allowedColKeys.length > 0
+            ? allColumns.filter(col => allowedColKeys.includes(col.name))
+            : allColumns;
         generateTable();
     }
 
@@ -165,7 +114,7 @@ document.addEventListener("DOMContentLoaded", function () {
         let headerRow = document.createElement("tr");
         columns.forEach(col => {
             let th = document.createElement("th");
-            th.textContent = col.name;
+            th.textContent = col.label || col.name;
             headerRow.appendChild(th);
         });
         tableHead.appendChild(headerRow);
@@ -285,7 +234,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 label.classList.add(
                     "text-xs", "text-gray-500", "dark:text-gray-400", "flex-shrink-0", "w-24"
                 );
-                label.textContent = col.name;
+                label.textContent = col.label || col.name;
                 fieldRow.appendChild(label);
 
                 let inputWrap = document.createElement("div");

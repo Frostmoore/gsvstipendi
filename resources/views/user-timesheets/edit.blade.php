@@ -16,10 +16,9 @@
                 :months="$months"
                 :companies="$companies"
                 :years="$years"
-                :roles="$roles"
-                :compensations="$compensations"
                 :users="$users"
                 :timesheet="$timesheet"
+                :userRates="$userRates"
             />
         </form>
     </x-std-content>

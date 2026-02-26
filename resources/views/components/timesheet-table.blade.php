@@ -74,98 +74,46 @@ document.addEventListener("DOMContentLoaded", function () {
     let yearSelect = document.getElementById("year");
     let hiddenInput = document.getElementById("link");
     let userSelect = document.getElementById("user-select");
-    let roleSelect = document.getElementById("role");
 
     const NOTE_OPTIONS = ["Ferie", "Permesso", "Malattia", "104"];
 
-    let roles = JSON.parse(`<?= json_encode($roles); ?>`);
     let utenti = JSON.parse(`<?= json_encode($users); ?>`);
+    const usersRatesMap = <?= json_encode($usersRates ?? []) ?>;
 
-    let user = userSelect.value;
-    let ruolo = 0;
-    let ruolo_name = '';
-    let ruolo_right = '';
+    const allColumns = [
+        { name: "Data",       type: "text",        editable: false },
+        { name: "Cliente",    type: "text",        editable: true  },
+        { name: "Luogo",      type: "text",        editable: true  },
+        { name: "Entrata",    type: "time",        editable: true  },
+        { name: "Uscita",     type: "time",        editable: true  },
+        { name: "TrasfBreve", label: "Trasferta",  type: "checkbox", editable: false },
+        { name: "TrasfLunga", type: "checkbox",    editable: false },
+        { name: "Pernotto",   type: "checkbox",    editable: false },
+        { name: "Presidio",   type: "checkbox",    editable: false },
+        { name: "Estero",     type: "checkbox",    editable: false },
+        { name: "Note",       type: "multiselect", editable: false }
+    ];
+
+    function getColumnsForRates(rates) {
+        return allColumns.filter(function(col) {
+            switch (col.name) {
+                case "TrasfBreve": return rates && parseFloat(rates.trasferta || 0) > 0;
+                case "TrasfLunga": return rates && parseFloat(rates.trasferta_lunga || 0) > 0;
+                case "Pernotto":   return rates && parseFloat(rates.pernotto || 0) > 0;
+                case "Presidio":   return rates && parseFloat(rates.presidio || 0) > 0;
+                case "Estero":     return rates && (parseFloat(rates.feriale_estero || 0) > 0 || parseFloat(rates.festivo_estero || 0) > 0);
+                default:           return true;
+            }
+        });
+    }
+
     let columns = [];
     let timesheetData = [];
 
     function updateRoleAndGenerateTable() {
-        let userVal = userSelect.value;
-        let selectedUser = utenti.find(utente => utente.id.toString() === userVal);
-        if (!selectedUser) {
-            return;
-        }
-
-        ruolo = selectedUser.role;
-        let roleEntry = roles.find(r => r.id.toString() === ruolo.toString());
-        if (!roleEntry) {
-            ruolo_name = "Superadmin";
-        } else {
-            ruolo_name = roleEntry.role;
-        }
-
-        if (ruolo_right === 'Autista') {
-            columns = [
-                { name: "Data", type: "text", editable: false },
-                { name: "Cliente", type: "text", editable: true },
-                { name: "Luogo", type: "text", editable: true },
-                { name: "Entrata", type: "time", editable: true },
-                { name: "Uscita", type: "time", editable: true },
-                { name: "TrasfLunga", type: "checkbox", editable: false },
-                { name: "TrasfBreve", type: "checkbox", editable: false },
-                { name: "Pernotto", type: "checkbox", editable: false },
-                { name: "Presidio", type: "checkbox", editable: false },
-                { name: "Note", type: "multiselect", editable: false }
-            ];
-        } else if (ruolo_right === 'Magazziniere FIGC') {
-            columns = [
-                { name: "Data", type: "text", editable: false },
-                { name: "Cliente", type: "text", editable: true },
-                { name: "Luogo", type: "text", editable: true },
-                { name: "Estero", type: "checkbox", editable: false },
-                { name: "Note", type: "multiselect", editable: false }
-            ];
-        } else if (ruolo_right === 'Facchino') {
-            columns = [
-                { name: "Data", type: "text", editable: false },
-                { name: "Cliente", type: "text", editable: true },
-                { name: "Luogo", type: "text", editable: true },
-                { name: "Entrata", type: "time", editable: true },
-                { name: "Uscita", type: "time", editable: true },
-                { name: "Trasferta", type: "checkbox", editable: false },
-                { name: "Note", type: "multiselect", editable: false }
-            ];
-        } else if (ruolo_right === 'Superadmin') {
-            columns = [
-                { name: "Data", type: "text", editable: false },
-                { name: "Cliente", type: "text", editable: true },
-                { name: "Luogo", type: "text", editable: true },
-                { name: "Entrata", type: "time", editable: true },
-                { name: "Uscita", type: "time", editable: true },
-                { name: "Trasferta", type: "checkbox", editable: false },
-                { name: "TrasfLunga", type: "checkbox", editable: false },
-                { name: "TrasfBreve", type: "checkbox", editable: false },
-                { name: "Pernotto", type: "checkbox", editable: false },
-                { name: "Presidio", type: "checkbox", editable: false },
-                { name: "Estero", type: "checkbox", editable: false },
-                { name: "Note", type: "multiselect", editable: false }
-            ];
-        } else {
-            columns = [
-                { name: "Data", type: "text", editable: false },
-                { name: "Cliente", type: "text", editable: true },
-                { name: "Luogo", type: "text", editable: true },
-                { name: "Entrata", type: "time", editable: true },
-                { name: "Uscita", type: "time", editable: true },
-                { name: "Trasferta", type: "checkbox", editable: false },
-                { name: "TrasfLunga", type: "checkbox", editable: false },
-                { name: "TrasfBreve", type: "checkbox", editable: false },
-                { name: "Pernotto", type: "checkbox", editable: false },
-                { name: "Presidio", type: "checkbox", editable: false },
-                { name: "Estero", type: "checkbox", editable: false },
-                { name: "Note", type: "multiselect", editable: false }
-            ];
-        }
-
+        const userId = userSelect ? userSelect.value : null;
+        const rates  = (userId && usersRatesMap[userId]) ? usersRatesMap[userId] : null;
+        columns = getColumnsForRates(rates);
         generateTable();
     }
 
@@ -184,7 +132,7 @@ document.addEventListener("DOMContentLoaded", function () {
         let headerRow = document.createElement("tr");
         columns.forEach(col => {
             let th = document.createElement("th");
-            th.textContent = col.name;
+            th.textContent = col.label || col.name;
             headerRow.appendChild(th);
         });
         tableHead.appendChild(headerRow);
@@ -317,7 +265,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 label.classList.add(
                     "text-xs", "text-gray-500", "dark:text-gray-400", "flex-shrink-0", "w-24"
                 );
-                label.textContent = col.name;
+                label.textContent = col.label || col.name;
                 fieldRow.appendChild(label);
 
                 let inputWrap = document.createElement("div");
@@ -469,11 +417,6 @@ document.addEventListener("DOMContentLoaded", function () {
     userSelect.addEventListener("change", updateRoleAndGenerateTable);
     monthSelect.addEventListener("change", generateTable);
     yearSelect.addEventListener("change", generateTable);
-    roleSelect.addEventListener("change", function() {
-        ruolo_right = roleSelect.value;
-        updateRoleAndGenerateTable();
-    });
-
     // Genera la tabella iniziale
     updateRoleAndGenerateTable();
 

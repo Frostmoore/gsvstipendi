@@ -33,18 +33,8 @@
                             </x-nav-link>
                         </div>
                         <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                            <x-nav-link :href="route('roles.index')" :active="request()->routeIs('roles.index')">
-                                {{ __('Ruoli') }}
-                            </x-nav-link>
-                        </div>
-                        <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                             <x-nav-link :href="route('companies.index')" :active="request()->routeIs('companies.index')">
                                 {{ __('Aziende') }}
-                            </x-nav-link>
-                        </div>
-                        <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                            <x-nav-link :href="route('compensations.index')" :active="request()->routeIs('compensations.index')">
-                                {{ __('Compensi') }}
                             </x-nav-link>
                         </div>
                         <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
@@ -123,14 +113,8 @@
                     <x-responsive-nav-link :href="route('utenti.index')" :active="request()->routeIs('utenti.index')">
                         {{ __('Utenti') }}
                     </x-responsive-nav-link>
-                    <x-responsive-nav-link :href="route('roles.index')" :active="request()->routeIs('roles.index')">
-                        {{ __('Ruoli') }}
-                    </x-responsive-nav-link>
                     <x-responsive-nav-link :href="route('companies.index')" :active="request()->routeIs('companies.index')">
                         {{ __('Aziende') }}
-                    </x-responsive-nav-link>
-                    <x-responsive-nav-link :href="route('compensations.index')" :active="request()->routeIs('compensations.index')">
-                        {{ __('Compensi') }}
                     </x-responsive-nav-link>
                     <x-responsive-nav-link :href="route('timesheets.index')" :active="request()->routeIs('timesheets.index')">
                         {{ __('Fogli Orari') }}

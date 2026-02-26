@@ -1,4 +1,4 @@
-@props(['roles', 'user', 'compensations', 'userCompensations' => [], 'userRoleRates' => []])
+@props(['user', 'userRates' => null])
 
 @csrf
 
@@ -17,20 +17,17 @@
 
 <div class="mt-4">
     <x-input-label for="role" :value="__('Tipo Operatore')" />
-    <x-select-input id="role" class="block mt-1 w-full" type="text" name="role" required autofocus autocomplete="role">
+    <x-select-input id="role" class="block mt-1 w-full" name="role" required>
         <option value="">Seleziona un ruolo</option>
         @auth
             @if(Auth::user()->role == 'superadmin')
-                <option value="admin">Admin</option>
-                <option value="user">Utente Semplice (Nessun Accesso)</option>
-                <option value="superadmin">Super Admin</option>
+                <option value="admin" {{ old('role', $user->role) == 'admin' ? 'selected' : '' }}>Admin</option>
+                <option value="user" {{ old('role', $user->role) == 'user' ? 'selected' : '' }}>Operatore</option>
+                <option value="superadmin" {{ old('role', $user->role) == 'superadmin' ? 'selected' : '' }}>Super Admin</option>
             @else
-                <option value="user" {{(Auth::user()->role == 'user' ? 'selected' : '')}}>Utente Semplice (Nessun Accesso)</option>
+                <option value="user" selected>Operatore</option>
             @endif
         @endauth
-        @foreach ($roles as $role)
-            <option value="{{ $role->id }}" {{$user->role == $role->id ? 'selected' : ''}}>{{ $role->role }}</option>
-        @endforeach
     </x-select-input>
     <x-input-error :messages="$errors->get('role')" class="mt-2" />
 </div>
@@ -48,18 +45,43 @@
     <x-input-error :messages="$errors->get('email')" class="mt-2" />
 </div>
 
-<div class="mt-4" id="retriFissa" style="display:none">
-    <x-input-label for="fissa" :value="__('Retribuzione Fissa (default)')" />
-    <x-text-input id="fissa" class="block mt-1 w-full" type="text" name="fissa" :value="old('fissa', $user->fissa ?? '')" autocomplete="fissa" />
+<!-- Retribuzione Fissa -->
+<div class="mt-4">
+    <x-input-label for="fissa" :value="__('Retribuzione Mensile Fissa (€) — lascia vuoto se non applicabile')" />
+    <x-text-input id="fissa" class="block mt-1 w-full" type="number" step="0.01" name="fissa" :value="old('fissa', $user->fissa ?? '')" autocomplete="off" />
 </div>
 
-<!-- Compensi Individuali -->
+<!-- Tariffe Individuali -->
 <fieldset class="border border-gray-300 dark:border-gray-600 rounded-lg p-4 mt-6 mb-2">
-    <legend class="px-2 text-sm font-semibold text-gray-700 dark:text-gray-300">Compensi Individuali</legend>
-    <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">
-        Lascia vuoto per usare il valore di default del ruolo. Puoi impostare override per qualsiasi ruolo che questo utente potrebbe ricoprire.
-    </p>
-    <div id="comp_override_fields"></div>
+    <legend class="px-2 text-sm font-semibold text-gray-700 dark:text-gray-300">Tariffe Individuali</legend>
+    <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">Lascia vuoto per usare il valore di default.</p>
+
+    @php
+        $rateFields = [
+            'giornata'        => 'Feriale Italia (€)',
+            'feriale_estero'  => 'Feriale Estero (€)',
+            'festivo'         => 'Festivo Italia (€)',
+            'festivo_estero'  => 'Festivo Estero (€)',
+            'straordinari'    => 'Straordinari (€/ora)',
+            'trasferta'       => 'Trasferta Breve (€)',
+            'trasferta_lunga' => 'Trasferta Lunga (€)',
+            'pernotto'        => 'Pernotto (€)',
+            'presidio'        => 'Presidio (€)',
+            'tariffa_sabato'  => 'Tariffa 3° Sabato (€)',
+        ];
+        $ic = 'w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-md shadow-sm text-sm px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500';
+    @endphp
+
+    <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        @foreach ($rateFields as $key => $label)
+        <div>
+            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-0.5">{{ $label }}</label>
+            <input type="number" step="0.01" name="rates[{{ $key }}]"
+                   value="{{ old("rates.$key", optional($userRates)->$key ?? '') }}"
+                   class="{{ $ic }}">
+        </div>
+        @endforeach
+    </div>
 </fieldset>
 
 <div class="flex items-center justify-end mt-4">
@@ -67,83 +89,3 @@
         {{ __('Salva') }}
     </x-primary-button>
 </div>
-
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        const allCompensations = @json($compensations);
-        const allRoles = @json($roles->pluck('role'));
-        const existingOverrides = @json($userCompensations);
-        const existingRoleRates = @json($userRoleRates);
-
-        const retriFissa = document.getElementById("retriFissa");
-        const roleSelect = document.getElementById("role");
-
-        function updateFissaVisibility() {
-            const selectedText = roleSelect.options[roleSelect.selectedIndex].text;
-            retriFissa.style.display = (selectedText === "Autista") ? "block" : "none";
-        }
-
-        updateFissaVisibility();
-        roleSelect.addEventListener("change", updateFissaVisibility);
-
-        document.getElementById("fissa").addEventListener("input", function() {
-            this.value = this.value.replace(/[^0-9.]/g, "");
-        });
-
-        renderCompOverrides(allCompensations, allRoles, existingOverrides, existingRoleRates);
-    });
-
-    function renderCompOverrides(allCompensations, allRoles, existingOverrides, existingRoleRates) {
-        const container = document.getElementById("comp_override_fields");
-        if (!container) return;
-
-        // Group compensations by role_name
-        const byRole = {};
-        allCompensations.forEach(function(c) {
-            const r = c.role_name || 'Altro';
-            if (!byRole[r]) byRole[r] = [];
-            byRole[r].push(c);
-        });
-
-        // Also include roles that have no compensations but exist in allRoles
-        allRoles.forEach(function(r) {
-            if (!byRole[r]) byRole[r] = [];
-        });
-
-        let html = '';
-        Object.keys(byRole).sort().forEach(function(roleName) {
-            const rateData = existingRoleRates[roleName] || {};
-
-            html += '<div class="mb-5">';
-            html += '<h4 class="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2 border-b border-gray-200 dark:border-gray-600 pb-1">' + roleName + '</h4>';
-            const inputClass = ' class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-md shadow-sm text-sm px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500"';
-            const labelClass = '<label class="block text-xs text-gray-500 dark:text-gray-400 mb-0.5">';
-
-            html += '<div class="grid grid-cols-2 gap-3 sm:grid-cols-3">';
-
-            // Giornata Lavorativa per-ruolo (sempre primo)
-            const giornataVal = rateData.giornata !== undefined && rateData.giornata !== null ? rateData.giornata : '';
-            html += '<div>' + labelClass + 'Giornata Lavorativa</label>';
-            html += '<input type="number" step="0.01" name="role_rates[' + roleName + '][giornata]"'
-                  + ' value="' + giornataVal + '" placeholder="es. 60"' + inputClass + '></div>';
-
-            const sabVal = rateData.tariffa_sabato !== undefined && rateData.tariffa_sabato !== null ? rateData.tariffa_sabato : '';
-            html += '<div>' + labelClass + 'Tariffa 3° Sabato</label>';
-            html += '<input type="number" step="0.01" name="role_rates[' + roleName + '][tariffa_sabato]"'
-                  + ' value="' + sabVal + '" placeholder="es. 80"' + inputClass + '></div>';
-
-            // Altre compensazioni (esclusa Giornata Lavorativa, già sopra)
-            byRole[roleName].forEach(function(c) {
-                if (c.name === 'Giornata Lavorativa') return;
-                const val = existingOverrides[c.id] !== undefined ? existingOverrides[c.id] : '';
-                html += '<div>' + labelClass + c.name + '</label>';
-                html += '<input type="number" step="0.01" name="compensation_overrides[' + c.id + ']"'
-                      + ' value="' + val + '" placeholder="' + c.value + '"' + inputClass + '></div>';
-            });
-
-            html += '</div></div>';
-        });
-
-        container.innerHTML = html || '<p class="text-sm text-gray-400">Nessun compenso configurato.</p>';
-    }
-</script>

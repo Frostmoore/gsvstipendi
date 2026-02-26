@@ -12,7 +12,7 @@
         </div>
         <form class="gsv-form" method="POST" action="{{ route('utenti.update', $user) }}">
         @method('PATCH')
-            <x-utenti.form-edit :roles="$roles" :user="$user" :compensations="$compensations" :userCompensations="$userCompensations" :userRoleRates="$userRoleRates"/>
+            <x-utenti.form-edit :user="$user" :userRates="$userRates" />
         </form>
     </x-std-content>
 </x-app-layout>

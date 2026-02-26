@@ -1,9 +1,17 @@
 @props([
-    'timesheet'     => null,
-    'roles'         => [],
-    'compensations' => [],
-    'users'         => [],
+    'timesheet'  => null,
+    'users'      => [],
+    'userRates'  => null,
 ])
+
+@php
+    $_ur = $userRates;
+    $_show_trasferta       = $_ur && (float)($_ur->trasferta       ?? 0) > 0;
+    $_show_trasferta_lunga = $_ur && (float)($_ur->trasferta_lunga ?? 0) > 0;
+    $_show_pernotto        = $_ur && (float)($_ur->pernotto        ?? 0) > 0;
+    $_show_presidio        = $_ur && (float)($_ur->presidio        ?? 0) > 0;
+    $_show_estero          = $_ur && ((float)($_ur->feriale_estero ?? 0) > 0 || (float)($_ur->festivo_estero ?? 0) > 0);
+@endphp
 <x-input-label for="editableTable" :value="__('Foglio Orario')" />
 <div class="gsv-description-container mb-4">
     <p class="text-xs text-gray-800 dark:text-gray-200 leading-tight" style="color:orange;">
@@ -79,83 +87,48 @@ document.addEventListener("DOMContentLoaded", function () {
     let yearSelect = document.getElementById("year");
     let hiddenInput = document.getElementById("link");
     let userSelect = document.getElementById("user-select");
-    let il_ruolo = document.getElementById("role");
-    let ruolo_name = il_ruolo.value;
-
     // Dati esistenti da caricare al primo render (null in modalità creazione)
     let existingData = <?= json_encode($timesheet ? json_decode($timesheet->link, true) : null) ?>;
     let hasLoadedExisting = false;
 
     const NOTE_OPTIONS = ["Ferie", "Permesso", "Malattia", "104"];
 
-    let roles = JSON.parse(`<?= json_encode($roles); ?>`);
-    let utenti = JSON.parse(`<?= json_encode($users); ?>`);
+    const userRatesConfig = {
+        showTrasferta:      <?= json_encode($_show_trasferta) ?>,
+        showTrasfertaLunga: <?= json_encode($_show_trasferta_lunga) ?>,
+        showPernotto:       <?= json_encode($_show_pernotto) ?>,
+        showPresidio:       <?= json_encode($_show_presidio) ?>,
+        showEstero:         <?= json_encode($_show_estero) ?>,
+    };
 
-    let ruolo = 0;
+    const allColumns = [
+        { name: "Data",       type: "text",        editable: false },
+        { name: "Cliente",    type: "text",        editable: true  },
+        { name: "Luogo",      type: "text",        editable: true  },
+        { name: "Entrata",    type: "time",        editable: true  },
+        { name: "Uscita",     type: "time",        editable: true  },
+        { name: "TrasfBreve", label: "Trasferta",  type: "checkbox", editable: false },
+        { name: "TrasfLunga", type: "checkbox",    editable: false },
+        { name: "Pernotto",   type: "checkbox",    editable: false },
+        { name: "Presidio",   type: "checkbox",    editable: false },
+        { name: "Estero",     type: "checkbox",    editable: false },
+        { name: "Note",       type: "multiselect", editable: false }
+    ];
+
     let columns = [];
     let timesheetData = [];
 
     function updateRoleAndGenerateTable() {
-        if (ruolo_name === 'Autista') {
-            columns = [
-                { name: "Data", type: "text", editable: false },
-                { name: "Cliente", type: "text", editable: true },
-                { name: "Luogo", type: "text", editable: true },
-                { name: "Entrata", type: "time", editable: true },
-                { name: "Uscita", type: "time", editable: true },
-                { name: "TrasfLunga", type: "checkbox", editable: false },
-                { name: "Pernotto", type: "checkbox", editable: false },
-                { name: "Presidio", type: "checkbox", editable: false },
-                { name: "Note", type: "multiselect", editable: false }
-            ];
-        } else if (ruolo_name === 'Magazziniere FIGC') {
-            columns = [
-                { name: "Data", type: "text", editable: false },
-                { name: "Cliente", type: "text", editable: true },
-                { name: "Luogo", type: "text", editable: true },
-                { name: "Estero", type: "checkbox", editable: false },
-                { name: "Note", type: "multiselect", editable: false }
-            ];
-        } else if (ruolo_name === 'Facchino') {
-            columns = [
-                { name: "Data", type: "text", editable: false },
-                { name: "Cliente", type: "text", editable: true },
-                { name: "Luogo", type: "text", editable: true },
-                { name: "Entrata", type: "time", editable: true },
-                { name: "Uscita", type: "time", editable: true },
-                { name: "Trasferta", type: "checkbox", editable: false },
-                { name: "Note", type: "multiselect", editable: false }
-            ];
-        } else if (ruolo_name === 'Superadmin') {
-            columns = [
-                { name: "Data", type: "text", editable: false },
-                { name: "Cliente", type: "text", editable: true },
-                { name: "Luogo", type: "text", editable: true },
-                { name: "Entrata", type: "time", editable: true },
-                { name: "Uscita", type: "time", editable: true },
-                { name: "Trasferta", type: "checkbox", editable: false },
-                { name: "TrasfLunga", type: "checkbox", editable: false },
-                { name: "Pernotto", type: "checkbox", editable: false },
-                { name: "Presidio", type: "checkbox", editable: false },
-                { name: "Estero", type: "checkbox", editable: false },
-                { name: "Note", type: "multiselect", editable: false }
-            ];
-        } else {
-            columns = [
-                { name: "Data", type: "text", editable: false },
-                { name: "Cliente", type: "text", editable: true },
-                { name: "Luogo", type: "text", editable: true },
-                { name: "Entrata", type: "time", editable: true },
-                { name: "Uscita", type: "time", editable: true },
-                { name: "Trasferta", type: "checkbox", editable: false },
-                { name: "TrasfLunga", type: "checkbox", editable: false },
-                { name: "Pernotto", type: "checkbox", editable: false },
-                { name: "Presidio", type: "checkbox", editable: false },
-                { name: "Estero", type: "checkbox", editable: false },
-                { name: "Note", type: "multiselect", editable: false }
-            ];
-        }
-
+        columns = allColumns.filter(function(col) {
+            switch (col.name) {
+                case "TrasfBreve": return userRatesConfig.showTrasferta;
+                case "TrasfLunga": return userRatesConfig.showTrasfertaLunga;
+                case "Pernotto":   return userRatesConfig.showPernotto;
+                case "Presidio":   return userRatesConfig.showPresidio;
+                case "Estero":     return userRatesConfig.showEstero;
+                default:           return true;
+            }
+        });
         generateTable();
     }
 
@@ -174,7 +147,7 @@ document.addEventListener("DOMContentLoaded", function () {
         let headerRow = document.createElement("tr");
         columns.forEach(col => {
             let th = document.createElement("th");
-            th.textContent = col.name;
+            th.textContent = col.label || col.name;
             headerRow.appendChild(th);
         });
         tableHead.appendChild(headerRow);
@@ -352,7 +325,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 label.classList.add(
                     "text-xs", "text-gray-500", "dark:text-gray-400", "flex-shrink-0", "w-24"
                 );
-                label.textContent = col.name;
+                label.textContent = col.label || col.name;
                 fieldRow.appendChild(label);
 
                 let inputWrap = document.createElement("div");
@@ -499,10 +472,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // Eventi per rigenerare la tabella quando cambiano i selettori
-    il_ruolo.addEventListener("change", function(){
-        ruolo_name = il_ruolo.value;
-        updateRoleAndGenerateTable();
-    });
     monthSelect.addEventListener("change", generateTable);
     yearSelect.addEventListener("change", generateTable);
 

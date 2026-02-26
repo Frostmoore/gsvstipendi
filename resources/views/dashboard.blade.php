@@ -24,20 +24,10 @@
                             <i class="fa-solid fa-users fa-2x"></i>
                             <span>Utenti</span>
                         </a>
-                        <a href="{{ route('roles.index') }}"
-                           class="flex flex-col items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-6 px-4 rounded-xl text-center transition">
-                            <i class="fa-solid fa-user-tag fa-2x"></i>
-                            <span>Ruoli</span>
-                        </a>
                         <a href="{{ route('companies.index') }}"
                            class="flex flex-col items-center justify-center gap-2 bg-teal-600 hover:bg-teal-700 text-white font-bold py-6 px-4 rounded-xl text-center transition">
                             <i class="fa-solid fa-building fa-2x"></i>
                             <span>Aziende</span>
-                        </a>
-                        <a href="{{ route('compensations.index') }}"
-                           class="flex flex-col items-center justify-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-6 px-4 rounded-xl text-center transition">
-                            <i class="fa-solid fa-euro-sign fa-2x"></i>
-                            <span>Compensi</span>
                         </a>
                         <a href="{{ route('backup.index') }}"
                            class="flex flex-col items-center justify-center gap-2 bg-gray-600 hover:bg-gray-700 text-white font-bold py-6 px-4 rounded-xl text-center transition">

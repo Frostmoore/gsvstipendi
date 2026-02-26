@@ -1,11 +1,10 @@
 @props([
-    'timesheet'     => null,
-    'companies'     => [],
-    'roles'         => [],
-    'months'        => [],
-    'years'         => [],
-    'compensations' => [],
-    'users'         => [],
+    'timesheet' => null,
+    'companies' => [],
+    'months'    => [],
+    'years'     => [],
+    'users'     => [],
+    'userRates' => null,
 ])
 @csrf
 <div class="gsv-timesheet-form">
@@ -22,17 +21,7 @@
         </x-select-input>
         <x-input-error :messages="$errors->get('company')" class="mt-2" />
     </div>
-    <div class="mb-4">
-        <x-input-label for="role" :value="__('Ruolo')" />
-        <x-select-input id="role" class="block mt-1 w-full" type="text" name="role" required autofocus>
-            @foreach($roles as $key => $role)
-                <option value="{{ $role['role'] }}" {{ $timesheet && $timesheet->role == $role['role'] ? 'selected' : '' }}>
-                    {{ $role['role'] }}
-                </option>
-            @endforeach
-        </x-select-input>
-        <x-input-error :messages="$errors->get('role')" class="mt-2" />
-    </div>
+    <input type="hidden" name="role" value="user">
     <div class="mb-4">
         <x-input-label for="month" :value="__('Mese')" />
         <x-select-input id="month" class="block mt-1 w-full" type="text" name="month" required autofocus>
@@ -61,7 +50,7 @@
     </div>
 </div>
 <div class="mb-4 gsv-timesheet-table-container" style="width: 100%; overflow-x: auto;">
-    <x-user-timesheet-table :roles="$roles" :compensations="$compensations" :users="$users" :timesheet="$timesheet ?? null"/>
+    <x-user-timesheet-table :users="$users" :timesheet="$timesheet ?? null" :userRates="$userRates" />
 </div>
 
 <div class="gsv-timesheet-form">
