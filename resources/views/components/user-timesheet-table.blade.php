@@ -46,6 +46,8 @@
         </tbody>
     </table>
 
+    <div id="mobileCardsContainer" class="space-y-2 p-2" style="display:none"></div>
+
     <!-- Campo nascosto per memorizzare i dati JSON -->
     <input type="hidden" name="link" id="link" value="">
 </div>
@@ -91,10 +93,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let ruolo = 0;
     let columns = [];
+    let timesheetData = [];
 
     function updateRoleAndGenerateTable() {
-
-        // Aggiorna le colonne in base al ruolo aggiornato
         if (ruolo_name === 'Autista') {
             columns = [
                 { name: "Data", type: "text", editable: false },
@@ -140,7 +141,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 { name: "Note", type: "multiselect", editable: false }
             ];
         } else {
-            // Caso default
             columns = [
                 { name: "Data", type: "text", editable: false },
                 { name: "Cliente", type: "text", editable: true },
@@ -155,14 +155,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 { name: "Note", type: "multiselect", editable: false }
             ];
         }
-        console.log("Colonne aggiornate:", columns);
 
-        // Rigenera la tabella
         generateTable();
     }
 
 
-    // Funzione per generare la tabella
     function generateTable() {
         let table = document.getElementById("editableTable");
         table.innerHTML = "";
@@ -186,27 +183,37 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
 
-    // Funzione per generare le righe della tabella
     function generateTableRows() {
         let month = parseInt(monthSelect.value);
         let year = parseInt(yearSelect.value);
 
         tableBody.innerHTML = "";
+        timesheetData = [];
 
         let daysInMonth = new Date(year, month, 0).getDate();
 
         for (let day = 1; day <= daysInMonth; day++) {
             let date = new Date(year, month - 1, day);
             let dayOfWeek = date.toLocaleDateString("it-IT", { weekday: "long" });
-            let formattedDate = `<strong>${capitalizeFirstLetter(dayOfWeek)}</strong> <span>${day}</span>`;
+            let formattedDate = capitalizeFirstLetter(dayOfWeek) + " " + day;
+
+            // Build data object for this day
+            let dayData = { "Data": formattedDate };
+            columns.forEach(col => {
+                if (col.name !== "Data") {
+                    dayData[col.name] = col.type === "checkbox" ? "0" : "";
+                }
+            });
+            timesheetData.push(dayData);
 
             let row = document.createElement("tr");
+            row.classList.add("odd:bg-white", "odd:dark:bg-gray-700", "even:bg-gray-50", "even:dark:bg-gray-800", "even:color-gray-700", "dark:text-gray-200");
 
             columns.forEach(col => {
                 let td = document.createElement("td");
 
                 if (col.name === "Data") {
-                    td.innerHTML = formattedDate;
+                    td.innerHTML = `<strong>${capitalizeFirstLetter(dayOfWeek)}</strong> <span>${day}</span>`;
                     td.style.textAlign = "left";
                 } else if (col.type === "multiselect") {
                     let select = document.createElement("select");
@@ -228,12 +235,16 @@ document.addEventListener("DOMContentLoaded", function () {
                         select.appendChild(option);
                     });
 
-                    select.addEventListener("change", updateHiddenInput);
+                    select.addEventListener("change", (function(d, c) {
+                        return function() { d[c.name] = this.value; updateHiddenInput(); };
+                    })(dayData, col));
                     td.appendChild(select);
                 } else if (col.type === "checkbox") {
                     let input = document.createElement("input");
                     input.type = "checkbox";
-                    input.addEventListener("change", updateHiddenInput);
+                    input.addEventListener("change", (function(d, c) {
+                        return function() { d[c.name] = this.checked ? "1" : "0"; updateHiddenInput(); };
+                    })(dayData, col));
                     td.style.textAlign = "center";
                     td.appendChild(input);
                 } else if (col.type === "time") {
@@ -241,24 +252,23 @@ document.addEventListener("DOMContentLoaded", function () {
                     input.type = "time";
                     input.classList.add("odd:bg-white", "odd:dark:bg-gray-700", "even:bg-gray-50", "even:dark:bg-gray-800", "hover:bg-gray-100", "hover:dark:bg-gray-600");
                     input.classList.add("time-column");
-                    input.addEventListener("input", function () {
-                        propagateValue(this, col.name);
-                    });
+                    input.addEventListener("input", (function(d, c) {
+                        return function() { d[c.name] = this.value; updateHiddenInput(); };
+                    })(dayData, col));
                     td.appendChild(input);
                 } else {
                     td.contentEditable = col.editable;
                     if (col.name === "Cliente") {
                         td.classList.add("cliente-column");
-                        td.addEventListener("input", function () {
-                            propagateValue(this, col.name);
-                        });
+                        td.addEventListener("input", (function(d, c) {
+                            return function() { d[c.name] = this.innerText.trim(); updateHiddenInput(); };
+                        })(dayData, col));
                     }
-
                     if (col.name === "Luogo") {
                         td.classList.add("luogo-column");
-                        td.addEventListener("input", function () {
-                            propagateValue(this, col.name);
-                        });
+                        td.addEventListener("input", (function(d, c) {
+                            return function() { d[c.name] = this.innerText.trim(); updateHiddenInput(); };
+                        })(dayData, col));
                     }
                 }
 
@@ -270,17 +280,26 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Pre-popola le righe con i dati salvati (solo al primo caricamento)
         if (!hasLoadedExisting && existingData && existingData.length > 0) {
-            document.querySelectorAll("#editableTable tbody tr").forEach((row, rowIndex) => {
-                let rowData = existingData[rowIndex];
-                if (!rowData) return;
+            existingData.forEach((rowData, rowIndex) => {
+                if (!timesheetData[rowIndex]) return;
+                columns.forEach(col => {
+                    if (col.name === "Data") return;
+                    let val = rowData[col.name];
+                    if (val === undefined || val === null) return;
+                    timesheetData[rowIndex][col.name] = String(val);
+                });
+            });
+            hasLoadedExisting = true;
 
+            // Update DOM to reflect loaded data
+            document.querySelectorAll("#editableTable tbody tr").forEach((row, rowIndex) => {
+                let rowData = timesheetData[rowIndex];
+                if (!rowData) return;
                 row.querySelectorAll("td").forEach((td, colIndex) => {
                     let col = columns[colIndex];
                     if (!col || col.name === "Data") return;
-
                     let val = rowData[col.name];
                     if (val === undefined || val === null) return;
-
                     if (col.type === "multiselect") {
                         let sel = td.querySelector("select.note-select");
                         if (sel) sel.value = val || "";
@@ -295,54 +314,186 @@ document.addEventListener("DOMContentLoaded", function () {
                     }
                 });
             });
-            hasLoadedExisting = true;
         }
 
         updateHiddenInput();
+        renderMobileCards();
+        applyLayout();
     }
 
-    function propagateValue(element, columnName) {
-        let value = element.innerText ? element.innerText.trim() : element.value;
-        let columnIndex = Array.from(element.closest("tr").children).indexOf(element.closest("td"));
-        updateHiddenInput();
-    }
 
-    // Funzione per aggiornare l'input nascosto con i dati della tabella
-    function updateHiddenInput() {
-        let tableData = [];
+    // Popola le card mobile
+    function renderMobileCards() {
+        let container = document.getElementById("mobileCardsContainer");
+        container.innerHTML = "";
 
-        document.querySelectorAll("#editableTable tbody tr").forEach(row => {
-            let rowData = {};
-            row.querySelectorAll("td").forEach((cell, index) => {
-                let columnName = columns[index].name;
-                let col = columns[index];
-                let cellValue = "";
+        timesheetData.forEach((dayData, dayIndex) => {
+            let card = document.createElement("div");
+            card.classList.add(
+                "bg-white", "dark:bg-gray-800", "rounded-lg",
+                "border", "border-gray-200", "dark:border-gray-700", "p-3"
+            );
+
+            let header = document.createElement("div");
+            header.classList.add(
+                "font-semibold", "text-sm", "text-gray-800", "dark:text-gray-200",
+                "mb-2", "pb-1", "border-b", "border-gray-200", "dark:border-gray-700"
+            );
+            header.textContent = dayData["Data"] || "";
+            card.appendChild(header);
+
+            columns.forEach((col) => {
+                if (col.name === "Data") return;
+
+                let fieldRow = document.createElement("div");
+                fieldRow.classList.add("flex", "items-center", "justify-between", "gap-2", "py-0.5");
+
+                let label = document.createElement("span");
+                label.classList.add(
+                    "text-xs", "text-gray-500", "dark:text-gray-400", "flex-shrink-0", "w-24"
+                );
+                label.textContent = col.name;
+                fieldRow.appendChild(label);
+
+                let inputWrap = document.createElement("div");
+                inputWrap.classList.add("flex-1", "min-w-0");
 
                 if (col.type === "multiselect") {
-                    let sel = cell.querySelector("select.note-select");
-                    cellValue = sel ? sel.value : "";
-                } else if (cell.querySelector("input[type='checkbox']")) {
-                    cellValue = cell.querySelector("input[type='checkbox']").checked ? "1" : "0";
-                } else if (cell.querySelector("input[type='time']")) {
-                    cellValue = cell.querySelector("input[type='time']").value;
+                    let select = document.createElement("select");
+                    select.classList.add("note-select", "w-full");
+                    select.style.backgroundColor = "white";
+                    select.style.color = "#111827";
+                    select.style.border = "1px solid #e5e7eb";
+                    select.style.borderRadius = "4px";
+
+                    let emptyOpt = document.createElement("option");
+                    emptyOpt.value = "";
+                    emptyOpt.textContent = "—";
+                    emptyOpt.style.color = "black";
+                    emptyOpt.style.backgroundColor = "white";
+                    select.appendChild(emptyOpt);
+
+                    NOTE_OPTIONS.forEach(opt => {
+                        let option = document.createElement("option");
+                        option.value = opt;
+                        option.textContent = opt;
+                        option.style.color = "black";
+                        option.style.backgroundColor = "white";
+                        select.appendChild(option);
+                    });
+
+                    select.value = dayData[col.name] || "";
+                    select.addEventListener("change", (function(d, c) {
+                        return function() {
+                            d[c.name] = this.value;
+                            // sync to table
+                            let tableRow = document.querySelectorAll("#editableTable tbody tr")[dayIndex];
+                            if (tableRow) {
+                                let colIdx = columns.findIndex(x => x.name === c.name);
+                                let sel = tableRow.cells[colIdx] && tableRow.cells[colIdx].querySelector("select.note-select");
+                                if (sel) sel.value = this.value;
+                            }
+                            updateHiddenInput();
+                        };
+                    })(dayData, col));
+                    inputWrap.appendChild(select);
+
+                } else if (col.type === "checkbox") {
+                    let input = document.createElement("input");
+                    input.type = "checkbox";
+                    input.checked = dayData[col.name] === "1";
+                    input.classList.add("h-4", "w-4");
+                    input.addEventListener("change", (function(d, c) {
+                        return function() {
+                            d[c.name] = this.checked ? "1" : "0";
+                            let tableRow = document.querySelectorAll("#editableTable tbody tr")[dayIndex];
+                            if (tableRow) {
+                                let colIdx = columns.findIndex(x => x.name === c.name);
+                                let cb = tableRow.cells[colIdx] && tableRow.cells[colIdx].querySelector("input[type='checkbox']");
+                                if (cb) cb.checked = this.checked;
+                            }
+                            updateHiddenInput();
+                        };
+                    })(dayData, col));
+                    inputWrap.classList.add("text-right");
+                    inputWrap.appendChild(input);
+
+                } else if (col.type === "time") {
+                    let input = document.createElement("input");
+                    input.type = "time";
+                    input.value = dayData[col.name] || "";
+                    input.classList.add(
+                        "time-column", "bg-white", "text-gray-900",
+                        "border", "border-gray-200", "dark:border-gray-500",
+                        "rounded", "px-2", "py-0.5", "w-full",
+                        "focus:outline-none", "focus:ring-1", "focus:ring-blue-400"
+                    );
+                    input.addEventListener("input", (function(d, c) {
+                        return function() {
+                            d[c.name] = this.value;
+                            let tableRow = document.querySelectorAll("#editableTable tbody tr")[dayIndex];
+                            if (tableRow) {
+                                let colIdx = columns.findIndex(x => x.name === c.name);
+                                let inp = tableRow.cells[colIdx] && tableRow.cells[colIdx].querySelector("input[type='time']");
+                                if (inp) inp.value = this.value;
+                            }
+                            updateHiddenInput();
+                        };
+                    })(dayData, col));
+                    inputWrap.appendChild(input);
+
                 } else {
-                    cellValue = cell.innerText.trim();
+                    let input = document.createElement("input");
+                    input.type = "text";
+                    input.value = dayData[col.name] || "";
+                    input.classList.add(
+                        "text-sm", "bg-white", "text-gray-900",
+                        "border", "border-gray-200", "dark:border-gray-500",
+                        "rounded", "px-2", "py-0.5", "w-full",
+                        "focus:outline-none", "focus:ring-1", "focus:ring-blue-400"
+                    );
+                    input.addEventListener("input", (function(d, c) {
+                        return function() {
+                            d[c.name] = this.value;
+                            let tableRow = document.querySelectorAll("#editableTable tbody tr")[dayIndex];
+                            if (tableRow) {
+                                let colIdx = columns.findIndex(x => x.name === c.name);
+                                let cell = tableRow.cells[colIdx];
+                                if (cell) cell.innerText = this.value;
+                            }
+                            updateHiddenInput();
+                        };
+                    })(dayData, col));
+                    inputWrap.appendChild(input);
                 }
 
-                rowData[columnName] = cellValue;
+                fieldRow.appendChild(inputWrap);
+                card.appendChild(fieldRow);
             });
 
-            tableData.push(rowData);
+            container.appendChild(card);
         });
-
-        let jsonData = JSON.stringify(tableData);
-        hiddenInput.value = jsonData;
-
-        console.log(ruolo_name);
-        console.log("Modifica rilevata:", jsonData);
     }
 
-    // Funzione per capitalizzare la prima lettera di una stringa
+
+    // Mostra tabella su desktop, card su mobile
+    function applyLayout() {
+        let table = document.getElementById("editableTable");
+        let mobileContainer = document.getElementById("mobileCardsContainer");
+        if (window.innerWidth < 768) {
+            table.style.display = "none";
+            mobileContainer.style.display = "";
+        } else {
+            table.style.display = "";
+            mobileContainer.style.display = "none";
+        }
+    }
+
+
+    function updateHiddenInput() {
+        hiddenInput.value = JSON.stringify(timesheetData);
+    }
+
     function capitalizeFirstLetter(string) {
         return string.charAt(0).toUpperCase() + string.slice(1);
     }
@@ -357,6 +508,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Genera la tabella iniziale
     updateRoleAndGenerateTable();
+
+    // Riadatta il layout al resize
+    window.addEventListener("resize", applyLayout);
 
 
     //***********************************************************************//

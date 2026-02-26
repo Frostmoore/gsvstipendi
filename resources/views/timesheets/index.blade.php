@@ -27,7 +27,40 @@
                 </a>
         </div>
 
-            <div class="overflow-x-auto shadow-md rounded-lg">
+            {{-- Mobile: cards (hidden on md+) --}}
+            <div class="md:hidden space-y-2">
+                @foreach($timesheets_worked as $timesheet_worked)
+                <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3 flex items-center justify-between gap-2"
+                     x-show="search === '' ||
+                             '{{ $timesheet_worked->month }}'.toLowerCase().includes(search.toLowerCase()) ||
+                             '{{ $timesheet_worked->year }}'.toLowerCase().includes(search.toLowerCase()) ||
+                             '{{ $timesheet_worked->user_fullname }}'.toLowerCase().includes(search.toLowerCase()) ||
+                             '{{ $timesheet_worked->link }}'.toLowerCase().includes(search.toLowerCase())">
+                    <div class="min-w-0">
+                        <p class="font-semibold text-sm text-gray-900 dark:text-white">{{ $timesheet_worked->month }} {{ $timesheet_worked->year }}</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 truncate">{{ $timesheet_worked->user_fullname }}</p>
+                        <p class="text-xs text-gray-400 dark:text-gray-500">{{ $timesheet_worked->role }}</p>
+                    </div>
+                    <div class="flex items-center gap-1 flex-shrink-0">
+                        <a href="{{ route('timesheets.show', $timesheet_worked->id) }}">
+                            <i class="fa-solid fa-file-invoice gsv-document px-2 py-2"></i>
+                        </a>
+                        @if(Auth::user()->role == 'admin' || Auth::user()->role == 'superadmin')
+                        <form action="{{ route('timesheets.destroy', $timesheet_worked->id) }}" method="POST" style="display: inline;">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fa-solid fa-ban px-2 py-2 gsv-destroy"></i>
+                            </button>
+                        </form>
+                        @endif
+                    </div>
+                </div>
+                @endforeach
+            </div>
+
+            {{-- Desktop: table (hidden on mobile) --}}
+            <div class="hidden md:block overflow-x-auto shadow-md rounded-lg">
                 <table class="table-auto w-full std-table">
                     <thead class="bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-200">
                         <tr>
@@ -40,20 +73,20 @@
                         </tr>
                     </thead>
                     <tbody class="text-gray-700 dark:text-gray-200">
-                        @foreach($timesheets_worked as $timesheet_worked) 
+                        @foreach($timesheets_worked as $timesheet_worked)
                             <tr class="odd:bg-white odd:dark:bg-gray-700 even:bg-gray-50 even:dark:bg-gray-800 hover:bg-gray-100 hover:dark:bg-gray-600"
-                                x-show="search === '' || 
-                                        '{{ $timesheet_worked->month }}'.toLowerCase().includes(search.toLowerCase()) || 
-                                        '{{ $timesheet_worked->year }}'.toLowerCase().includes(search.toLowerCase()) || 
-                                        '{{ $timesheet_worked->user_fullname }}'.toLowerCase().includes(search.toLowerCase()) || 
+                                x-show="search === '' ||
+                                        '{{ $timesheet_worked->month }}'.toLowerCase().includes(search.toLowerCase()) ||
+                                        '{{ $timesheet_worked->year }}'.toLowerCase().includes(search.toLowerCase()) ||
+                                        '{{ $timesheet_worked->user_fullname }}'.toLowerCase().includes(search.toLowerCase()) ||
                                         '{{ $timesheet_worked->link }}'.toLowerCase().includes(search.toLowerCase())">
-                                        {{-- @dd($timesheet_worked); --}}
                                 <td class="px-4 py-2">{{ $timesheet_worked->month }}</td>
                                 <td class="px-4 py-2">{{ $timesheet_worked->year }}</td>
                                 <td class="px-4 py-2">{{ $timesheet_worked->user_fullname }}</td>
                                 <td class="px-4 py-2">{{ $timesheet_worked->role }}</td>
                                 <td class="px-4 py-2"><a href="{{ route('timesheets.show', $timesheet_worked->id) }}"><i class="fa-solid fa-file-invoice gsv-document px-2 py-2"></i></a></td>
                                 <td class="px-4 py-2">
+                                    @if(Auth::user()->role == 'admin' || Auth::user()->role == 'superadmin')
                                     <form action="{{ route('timesheets.destroy', $timesheet_worked->id) }}" method="POST" style="display: inline;">
                                         @csrf
                                         @method('DELETE')
@@ -61,6 +94,7 @@
                                             <i class="fa-solid fa-ban px-2 py-2 gsv-destroy"></i>
                                         </button>
                                     </form>
+                                    @endif
                                 </td>
                             </tr>
                         @endforeach

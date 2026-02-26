@@ -113,6 +113,33 @@
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Pannello di Controllo') }}
             </x-responsive-nav-link>
+            @auth
+                @if(Auth::user()->role != 'admin' && Auth::user()->role != 'superadmin')
+                    <x-responsive-nav-link :href="route('user-timesheets.index')" :active="request()->routeIs('user-timesheets.index')">
+                        {{ __('Fogli Orari') }}
+                    </x-responsive-nav-link>
+                @endif
+                @if(Auth::user()->role == 'admin' || Auth::user()->role == 'superadmin')
+                    <x-responsive-nav-link :href="route('utenti.index')" :active="request()->routeIs('utenti.index')">
+                        {{ __('Utenti') }}
+                    </x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('roles.index')" :active="request()->routeIs('roles.index')">
+                        {{ __('Ruoli') }}
+                    </x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('companies.index')" :active="request()->routeIs('companies.index')">
+                        {{ __('Aziende') }}
+                    </x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('compensations.index')" :active="request()->routeIs('compensations.index')">
+                        {{ __('Compensi') }}
+                    </x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('timesheets.index')" :active="request()->routeIs('timesheets.index')">
+                        {{ __('Fogli Orari') }}
+                    </x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('backup.index')" :active="request()->routeIs('backup.*')">
+                        {{ __('Backup') }}
+                    </x-responsive-nav-link>
+                @endif
+            @endauth
         </div>
 
         <!-- Responsive Settings Options -->

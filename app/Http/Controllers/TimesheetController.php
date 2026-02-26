@@ -8,6 +8,7 @@ use App\Models\Utente;
 use App\Models\Compensation;
 use App\Models\Companies;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
@@ -132,6 +133,9 @@ class TimesheetController extends Controller
      */
     public function destroy(Timesheet $timesheet)
     {
+        if (!in_array(Auth::user()->role, ['admin', 'superadmin'])) {
+            abort(403);
+        }
         $timesheet = Timesheet::find($timesheet->id);
         $timesheet->delete();
         return redirect()->route('timesheets.index')->with('success', 'Foglio Orario Eliminato con successo!');

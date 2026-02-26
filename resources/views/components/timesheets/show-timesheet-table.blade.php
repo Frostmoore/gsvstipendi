@@ -949,7 +949,7 @@ $totale += $totale_bonus;
         @endif
 
         <x-timesheets.show-edit-timesheet-table :timesheet="$ts" :months="$months" :cols="$cols" />
-        <div class="flex items-center justify-end mt-4">
+        <div class="flex items-center justify-end mt-4 mb-8">
             <x-primary-button class="ms-3">
                 {{ __('Salva') }}
             </x-primary-button>
