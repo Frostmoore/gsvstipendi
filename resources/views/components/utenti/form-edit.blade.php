@@ -1,3 +1,5 @@
+@props(['roles', 'user', 'compensations', 'userCompensations' => [], 'userRoleRates' => []])
+
 @csrf
 
 <!-- Name -->
@@ -46,36 +48,19 @@
     <x-input-error :messages="$errors->get('email')" class="mt-2" />
 </div>
 
-<div class="mt-4" id="retriFissa" class="hidden">
-    <x-input-label for="fissa" :value="__('Retribuzione Fissa')" />
+<div class="mt-4" id="retriFissa" style="display:none">
+    <x-input-label for="fissa" :value="__('Retribuzione Fissa (default)')" />
     <x-text-input id="fissa" class="block mt-1 w-full" type="text" name="fissa" :value="old('fissa', $user->fissa ?? '')" autocomplete="fissa" />
 </div>
 
-<div class="mt-4" id="fasciaPrezzo" class="hidden">
-    <x-input-label for="fascia" :value="__('Fascia Retributiva')" />
-    <x-select-input id="fascia" class="block mt-1 w-full" type="text" name="fascia" autocomplete="fascia">
-        <option value="0">Nessuna Fascia</option>
-        <option value="50">50€</option>
-        <option value="55">55€</option>
-        <option value="60">60€</option>
-        <option value="70">70€</option>
-    </x-select-input>
-</div>
-
-<div class="mt-4" id="speciale" class="hidden">
-    <x-input-label for="special" :value="__('Tariffa Speciale')" />
-    <x-text-input id="special" class="block mt-1 w-full" type="text" name="special" :value="old('special', $user->special ?? '')" autocomplete="special" />
-</div>
-
-<div class="mt-4" id="trasfFissa" class="hidden">
-    <x-input-label for="trasferta" :value="__('Tariffa Trasferte Fissa')" />
-    <x-text-input id="trasferta" class="block mt-1 w-full" type="text" name="trasferta" :value="old('trasferta', $user->trasferta ?? '')" autocomplete="trasferta" />
-</div>
-
-<div class="mt-4">
-    <x-input-label for="incremento" :value="__('Incremento su Tariffa')" />
-    <x-text-input id="incremento" class="block mt-1 w-full" type="text" name="incremento" :value="old('incremento', $user->incremento ?? '')" autocomplete="incremento" />
-</div>
+<!-- Compensi Individuali -->
+<fieldset class="border border-gray-300 dark:border-gray-600 rounded-lg p-4 mt-6 mb-2">
+    <legend class="px-2 text-sm font-semibold text-gray-700 dark:text-gray-300">Compensi Individuali</legend>
+    <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">
+        Lascia vuoto per usare il valore di default del ruolo. Puoi impostare override per qualsiasi ruolo che questo utente potrebbe ricoprire.
+    </p>
+    <div id="comp_override_fields"></div>
+</fieldset>
 
 <div class="flex items-center justify-end mt-4">
     <x-primary-button class="ms-4">
@@ -85,70 +70,80 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-        let retriFissa = document.getElementById("retriFissa");
-        let fasciaPrezzo = document.getElementById("fasciaPrezzo");
-        let trasfFissa = document.getElementById("trasfFissa");
-        let speciale = document.getElementById("speciale");
-        let rollone = document.getElementById("role");
-        let rollo = rollone.options[rollone.selectedIndex].text;
-        retriFissa.style.display = "none";
-        fasciaPrezzo.style.display = "none";
-        trasfFissa.style.display = "none";
-        speciale.style.display = "none";
-        switch (rollo) {
-                case "Autista":
-                    retriFissa.style.display = "block";
-                    fasciaPrezzo.style.display = "none";
-                    trasfFissa.style.display = "none";
-                    speciale.style.display = "none";
-                    break;
-                case "Facchino":
-                    retriFissa.style.display = "none";
-                    fasciaPrezzo.style.display = "block";
-                    speciale.style.display = "block";
-                    trasfFissa.style.display = "none";
-                    break;
-                default:
-                    retriFissa.style.display = "none";
-                    fasciaPrezzo.style.display = "none";
-                    trasfFissa.style.display = "none";
-                    speciale.style.display = "none";
-                    break;
-            }
+        const allCompensations = @json($compensations);
+        const allRoles = @json($roles->pluck('role'));
+        const existingOverrides = @json($userCompensations);
+        const existingRoleRates = @json($userRoleRates);
 
-        document.getElementById("role").addEventListener("change", function() {
-            let selectedText = this.options[this.selectedIndex].text;
-            let retriFissa = document.getElementById("retriFissa");
-            let fasciaPrezzo = document.getElementById("fasciaPrezzo");
-            let trasfFissa = document.getElementById("trasfFissa");
-            let speciale = document.getElementById("speciale");
+        const retriFissa = document.getElementById("retriFissa");
+        const roleSelect = document.getElementById("role");
 
-            switch (selectedText) {
-                case "Autista":
-                    retriFissa.style.display = "block";
-                    fasciaPrezzo.style.display = "none";
-                    trasfFissa.style.display = "none";
-                    speciale.style.display = "none";
-                    break;
-                case "Facchino":
-                    retriFissa.style.display = "none";
-                    fasciaPrezzo.style.display = "block";
-                    speciale.style.display = "block";
-                    trasfFissa.style.display = "none";
-                    break;
-                default:
-                    retriFissa.style.display = "none";
-                    fasciaPrezzo.style.display = "none";
-                    trasfFissa.style.display = "none";
-                    speciale.style.display = "none";
-                    break;
-            }
+        function updateFissaVisibility() {
+            const selectedText = roleSelect.options[roleSelect.selectedIndex].text;
+            retriFissa.style.display = (selectedText === "Autista") ? "block" : "none";
+        }
+
+        updateFissaVisibility();
+        roleSelect.addEventListener("change", updateFissaVisibility);
+
+        document.getElementById("fissa").addEventListener("input", function() {
+            this.value = this.value.replace(/[^0-9.]/g, "");
         });
 
-        document.querySelectorAll("#fissa, #special, #trasferta, #incremento").forEach(function(input) {
-            input.addEventListener("input", function () {
-                this.value = this.value.replace(/[^0-9]/g, ""); // Rimuove tutto ciò che non è un numero
-            });
-        });
+        renderCompOverrides(allCompensations, allRoles, existingOverrides, existingRoleRates);
     });
+
+    function renderCompOverrides(allCompensations, allRoles, existingOverrides, existingRoleRates) {
+        const container = document.getElementById("comp_override_fields");
+        if (!container) return;
+
+        // Group compensations by role_name
+        const byRole = {};
+        allCompensations.forEach(function(c) {
+            const r = c.role_name || 'Altro';
+            if (!byRole[r]) byRole[r] = [];
+            byRole[r].push(c);
+        });
+
+        // Also include roles that have no compensations but exist in allRoles
+        allRoles.forEach(function(r) {
+            if (!byRole[r]) byRole[r] = [];
+        });
+
+        let html = '';
+        Object.keys(byRole).sort().forEach(function(roleName) {
+            const rateData = existingRoleRates[roleName] || {};
+
+            html += '<div class="mb-5">';
+            html += '<h4 class="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2 border-b border-gray-200 dark:border-gray-600 pb-1">' + roleName + '</h4>';
+            const inputClass = ' class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-md shadow-sm text-sm px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500"';
+            const labelClass = '<label class="block text-xs text-gray-500 dark:text-gray-400 mb-0.5">';
+
+            html += '<div class="grid grid-cols-2 gap-3 sm:grid-cols-3">';
+
+            // Giornata Lavorativa per-ruolo (sempre primo)
+            const giornataVal = rateData.giornata !== undefined && rateData.giornata !== null ? rateData.giornata : '';
+            html += '<div>' + labelClass + 'Giornata Lavorativa</label>';
+            html += '<input type="number" step="0.01" name="role_rates[' + roleName + '][giornata]"'
+                  + ' value="' + giornataVal + '" placeholder="es. 60"' + inputClass + '></div>';
+
+            const sabVal = rateData.tariffa_sabato !== undefined && rateData.tariffa_sabato !== null ? rateData.tariffa_sabato : '';
+            html += '<div>' + labelClass + 'Tariffa 3° Sabato</label>';
+            html += '<input type="number" step="0.01" name="role_rates[' + roleName + '][tariffa_sabato]"'
+                  + ' value="' + sabVal + '" placeholder="es. 80"' + inputClass + '></div>';
+
+            // Altre compensazioni (esclusa Giornata Lavorativa, già sopra)
+            byRole[roleName].forEach(function(c) {
+                if (c.name === 'Giornata Lavorativa') return;
+                const val = existingOverrides[c.id] !== undefined ? existingOverrides[c.id] : '';
+                html += '<div>' + labelClass + c.name + '</label>';
+                html += '<input type="number" step="0.01" name="compensation_overrides[' + c.id + ']"'
+                      + ' value="' + val + '" placeholder="' + c.value + '"' + inputClass + '></div>';
+            });
+
+            html += '</div></div>';
+        });
+
+        container.innerHTML = html || '<p class="text-sm text-gray-400">Nessun compenso configurato.</p>';
+    }
 </script>

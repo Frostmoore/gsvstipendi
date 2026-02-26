@@ -11,7 +11,7 @@
             </h2>
         </div>
         <form class="gsv-form" method="POST" action="{{ route('utenti.store') }}">
-            <x-utenti.form :roles="$roles"/>
+            <x-utenti.form :roles="$roles" :compensations="$compensations" :userRoleRates="$userRoleRates"/>
         </form>
     </x-std-content>
 </x-app-layout>

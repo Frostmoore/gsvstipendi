@@ -6,6 +6,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use App\Models\UserCompensation;
 
 class User extends Authenticatable
 {
@@ -27,11 +28,12 @@ class User extends Authenticatable
         'password',
         'role',
         'fissa',
-        'fascia',
-        'special',
-        'trasferta',
-        'incremento'
     ];
+
+    public function compensationOverrides()
+    {
+        return $this->hasMany(UserCompensation::class);
+    }
 
     /**
      * The attributes that should be hidden for serialization.

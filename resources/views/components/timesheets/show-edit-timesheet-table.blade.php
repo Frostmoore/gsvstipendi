@@ -34,6 +34,8 @@ $compensi = [];
         </tbody>
     </table>
 
+    <div id="mobileCardsContainer" class="space-y-2 p-2" style="display:none"></div>
+
     <!-- Campo nascosto per memorizzare i dati JSON -->
     <input type="hidden" name="link" id="link" value="{{ old('link', json_encode($timesheet)) }}">
 </div>
@@ -73,6 +75,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let ruolo_name = '';
     let ruolo_right = '<?=$ruolo?>';
     let columns = [];
+    let timesheetData = [];
 
     function updateRoleAndGenerateTable() {
 
@@ -148,7 +151,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Funzione per generare la tabella
     function generateTable() {
-        let timesheet = '<?= json_encode($timesheet) ?>';
+        timesheetData = JSON.parse('<?= json_encode($timesheet) ?>');
         let table = document.getElementById("editableTable");
         table.innerHTML = "";
 
@@ -167,15 +170,13 @@ document.addEventListener("DOMContentLoaded", function () {
         });
         tableHead.appendChild(headerRow);
 
-        generaTabellaDaDati(timesheet);
+        generaTabellaDaDati();
+        renderMobileCards();
+        applyLayout();
     }
 
-    // Popola la tabella partendo dai dati JSON esistenti
-    function generaTabellaDaDati(timesheetData) {
-        if (typeof timesheetData === 'string') {
-            timesheetData = JSON.parse(timesheetData);
-        }
-
+    // Popola la tabella desktop partendo dai dati JSON esistenti
+    function generaTabellaDaDati() {
         tableBody.innerHTML = "";
 
         timesheetData.forEach((dayData) => {
@@ -253,43 +254,144 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
 
-    function propagateValue(element, columnName) {
-        updateHiddenInput();
-    }
+    // Popola le card mobile partendo dai dati JSON esistenti
+    function renderMobileCards() {
+        let container = document.getElementById("mobileCardsContainer");
+        container.innerHTML = "";
 
-    // Funzione per aggiornare l'input nascosto con i dati della tabella
-    function updateHiddenInput() {
-        let tableData = [];
+        timesheetData.forEach((dayData) => {
+            let card = document.createElement("div");
+            card.classList.add(
+                "bg-white", "dark:bg-gray-800", "rounded-lg",
+                "border", "border-gray-200", "dark:border-gray-700", "p-3"
+            );
 
-        document.querySelectorAll("#editableTable tbody tr").forEach(row => {
-            let rowData = {};
-            row.querySelectorAll("td").forEach((cell, index) => {
-                let columnName = columns[index].name;
-                let col = columns[index];
-                let cellValue = "";
+            // Intestazione con la data
+            let header = document.createElement("div");
+            header.classList.add(
+                "font-semibold", "text-sm", "text-gray-800", "dark:text-gray-200",
+                "mb-2", "pb-1", "border-b", "border-gray-200", "dark:border-gray-700"
+            );
+            header.textContent = dayData["Data"] || "";
+            card.appendChild(header);
+
+            columns.forEach((col) => {
+                if (col.name === "Data") return;
+
+                let fieldRow = document.createElement("div");
+                fieldRow.classList.add("flex", "items-center", "justify-between", "gap-2", "py-0.5");
+
+                let label = document.createElement("span");
+                label.classList.add(
+                    "text-xs", "text-gray-500", "dark:text-gray-400", "flex-shrink-0", "w-24"
+                );
+                label.textContent = col.name;
+                fieldRow.appendChild(label);
+
+                let inputWrap = document.createElement("div");
+                inputWrap.classList.add("flex-1", "min-w-0");
 
                 if (col.type === "multiselect") {
-                    let sel = cell.querySelector("select.note-select");
-                    cellValue = sel ? sel.value : "";
-                } else if (cell.querySelector("input[type='checkbox']")) {
-                    cellValue = cell.querySelector("input[type='checkbox']").checked ? "1" : "0";
-                } else if (cell.querySelector("input[type='time']")) {
-                    cellValue = cell.querySelector("input[type='time']").value;
+                    let select = document.createElement("select");
+                    select.classList.add("note-select", "w-full");
+                    select.style.backgroundColor = "white";
+                    select.style.color = "#111827";
+                    select.style.border = "1px solid #e5e7eb";
+                    select.style.borderRadius = "4px";
+
+                    let emptyOpt = document.createElement("option");
+                    emptyOpt.value = "";
+                    emptyOpt.textContent = "—";
+                    emptyOpt.style.color = "black";
+                    emptyOpt.style.backgroundColor = "white";
+                    select.appendChild(emptyOpt);
+
+                    NOTE_OPTIONS.forEach(opt => {
+                        let option = document.createElement("option");
+                        option.value = opt;
+                        option.textContent = opt;
+                        option.style.color = "black";
+                        option.style.backgroundColor = "white";
+                        select.appendChild(option);
+                    });
+
+                    select.value = dayData[col.name] || "";
+                    select.addEventListener("change", function () {
+                        dayData[col.name] = this.value;
+                        updateHiddenInput();
+                    });
+                    inputWrap.appendChild(select);
+
+                } else if (col.type === "checkbox") {
+                    let input = document.createElement("input");
+                    input.type = "checkbox";
+                    input.checked = dayData[col.name] === "1";
+                    input.classList.add("h-4", "w-4");
+                    input.addEventListener("change", function () {
+                        dayData[col.name] = this.checked ? "1" : "0";
+                        updateHiddenInput();
+                    });
+                    inputWrap.classList.add("text-right");
+                    inputWrap.appendChild(input);
+
+                } else if (col.name === "Entrata" || col.name === "Uscita") {
+                    let input = document.createElement("input");
+                    input.type = "time";
+                    input.value = dayData[col.name] || "";
+                    input.classList.add(
+                        "time-column", "bg-white", "text-gray-900",
+                        "border", "border-gray-200", "dark:border-gray-500",
+                        "rounded", "px-2", "py-0.5", "w-full",
+                        "focus:outline-none", "focus:ring-1", "focus:ring-blue-400"
+                    );
+                    input.addEventListener("input", function () {
+                        dayData[col.name] = this.value;
+                        updateHiddenInput();
+                    });
+                    inputWrap.appendChild(input);
+
                 } else {
-                    cellValue = cell.innerText.trim();
+                    let input = document.createElement("input");
+                    input.type = "text";
+                    input.value = dayData[col.name] || "";
+                    input.classList.add(
+                        "text-sm", "bg-white", "text-gray-900",
+                        "border", "border-gray-200", "dark:border-gray-500",
+                        "rounded", "px-2", "py-0.5", "w-full",
+                        "focus:outline-none", "focus:ring-1", "focus:ring-blue-400"
+                    );
+                    input.addEventListener("input", function () {
+                        dayData[col.name] = this.value;
+                        updateHiddenInput();
+                    });
+                    inputWrap.appendChild(input);
                 }
 
-                rowData[columnName] = cellValue;
+                fieldRow.appendChild(inputWrap);
+                card.appendChild(fieldRow);
             });
 
-            tableData.push(rowData);
+            container.appendChild(card);
         });
+    }
 
-        let jsonData = JSON.stringify(tableData);
-        hiddenInput.value = jsonData;
+    // Mostra tabella su desktop, card su mobile
+    function applyLayout() {
+        let table = document.getElementById("editableTable");
+        let mobileContainer = document.getElementById("mobileCardsContainer");
+        if (window.innerWidth < 768) {
+            table.style.display = "none";
+            mobileContainer.style.display = "";
+        } else {
+            table.style.display = "";
+            mobileContainer.style.display = "none";
+        }
+    }
 
-        console.log(ruolo_name);
-        console.log("Modifica rilevata:", jsonData);
+    // Aggiorna l'input nascosto serializzando timesheetData
+    function updateHiddenInput() {
+        hiddenInput.value = JSON.stringify(timesheetData);
+        console.log("Modifica rilevata:", hiddenInput.value);
     }
 
     // Funzione per capitalizzare la prima lettera di una stringa
@@ -299,6 +401,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Genera la tabella iniziale
     updateRoleAndGenerateTable();
+
+    // Riadatta il layout al resize della finestra
+    window.addEventListener("resize", applyLayout);
 
 
     //***********************************************************************//

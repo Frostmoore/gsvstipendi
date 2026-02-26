@@ -224,21 +224,12 @@ input[type=number] {
 @media screen and (max-width: 768px) {
 
     body {
-        width: 768px;
+        width: 100%;
     }
 
     .std-content {
-        max-width: 768px;
-        padding: 0!important;
-    }
-
-    .gsv-timesheet-table {
-        display:block;
-        min-width: 1200px;
-        width: 100%;
-        position:relative!important;
-        /* padding: 20px; */
-        border: none;
+        max-width: 100%;
+        padding: 0 1rem!important;
     }
 
     .gsv-timesheet-table-container {

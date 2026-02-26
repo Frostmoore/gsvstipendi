@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Utente;
 use App\Models\Roles;
+use App\Models\Compensation;
+use App\Models\UserCompensation;
+use App\Models\UserRoleRate;
 use Illuminate\Support\Facades\Password;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
@@ -18,14 +21,12 @@ class UtenteController extends Controller
 {
     public function passwordReset(Request $request, Utente $user)
     {
-        // Assicurati che l'email esista e sia valida
         if (!$user->email) {
             return redirect()->route('utenti.index')->withErrors(['email' => 'Utente senza email registrata!']);
         }
-    
-        // Invia l'email di reset
+
         $status = Password::sendResetLink(['email' => $user->email]);
-    
+
         if ($status === Password::RESET_LINK_SENT) {
             return redirect()->route('utenti.index')->with('success', 'Email di reset password inviata con successo!');
         } else {
@@ -33,9 +34,6 @@ class UtenteController extends Controller
         }
     }
 
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
         $roles = Roles::all();
@@ -43,19 +41,22 @@ class UtenteController extends Controller
         return view('utenti.index', ['users' => $utenti, 'roles' => $roles]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         $utenti = Utente::all();
         $roles = Roles::all();
-        return view('utenti.create', ['users' => $utenti, 'roles' => $roles, 'title' => 'Gestione Utenti']);
+        $compensations = Compensation::leftJoin('roles', 'compensations.role', '=', 'roles.id')
+            ->select('compensations.id', 'compensations.name', 'compensations.value', 'compensations.type', 'roles.role as role_name')
+            ->get();
+        return view('utenti.create', [
+            'users' => $utenti,
+            'roles' => $roles,
+            'compensations' => $compensations,
+            'userRoleRates' => collect(),
+            'title' => 'Gestione Utenti',
+        ]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         $request->validate([
@@ -64,12 +65,6 @@ class UtenteController extends Controller
             'username' => ['required', 'string', 'max:255', 'unique:'.User::class],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            // 'role' => ['required', 'string', 'max:255'],
-            // 'fissa' => ['string', 'max:255'],
-            // 'fascia' => ['string', 'max:255'],
-            // 'special' => ['string', 'max:255'],
-            // 'trasferta' => ['string', 'max:255'],
-            // 'incremento' => ['string', 'max:255'],
         ]);
 
         $user = User::create([
@@ -80,46 +75,112 @@ class UtenteController extends Controller
             'password' => Hash::make($request->password),
             'role' => $request->role,
             'fissa' => $request->fissa,
-            'fascia' => $request->fascia,
-            'special' => $request->special,
-            'trasferta' => $request->trasferta,
-            'incremento' => $request->incremento
         ]);
+
+        if ($request->has('compensation_overrides')) {
+            foreach ($request->compensation_overrides as $compId => $value) {
+                if ($value !== null && $value !== '') {
+                    UserCompensation::create([
+                        'user_id' => $user->id,
+                        'compensation_id' => $compId,
+                        'value' => $value,
+                    ]);
+                }
+            }
+        }
+
+        if ($request->has('role_rates')) {
+            foreach ($request->role_rates as $roleName => $rates) {
+                $giornata = $rates['giornata'] ?? null;
+                $fissa = $rates['fissa'] ?? null;
+                $tariffa = $rates['tariffa_sabato'] ?? null;
+                if (($giornata !== null && $giornata !== '') || ($fissa !== null && $fissa !== '') || ($tariffa !== null && $tariffa !== '')) {
+                    UserRoleRate::create([
+                        'user_id' => $user->id,
+                        'role' => $roleName,
+                        'giornata' => ($giornata !== '' ? $giornata : null),
+                        'fissa' => ($fissa !== '' ? $fissa : null),
+                        'tariffa_sabato' => ($tariffa !== '' ? $tariffa : null),
+                    ]);
+                }
+            }
+        }
 
         return redirect()->route('utenti.index')->with('success', 'Utente Aggiunto con successo!');
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(Utente $utente)
     {
         $roles = Roles::all();
-        return view('utenti.show', ['utente' => $utente, 'roles'=>$roles, 'title' => 'Gestione Utenti']);
+        return view('utenti.show', ['utente' => $utente, 'roles' => $roles, 'title' => 'Gestione Utenti']);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(Utente $utente)
     {
         $roles = Roles::all();
+        $compensations = Compensation::leftJoin('roles', 'compensations.role', '=', 'roles.id')
+            ->select('compensations.id', 'compensations.name', 'compensations.value', 'compensations.type', 'roles.role as role_name')
+            ->get();
+        $userCompensations = UserCompensation::where('user_id', $utente->id)
+            ->pluck('value', 'compensation_id');
+        $userRoleRates = UserRoleRate::where('user_id', $utente->id)
+            ->get()->keyBy('role');
         $utente = Utente::find($utente->id);
-        return view('utenti.edit', ['user' => $utente, 'roles'=>$roles, 'title' => 'Gestione Utenti']);
+        return view('utenti.edit', [
+            'user' => $utente,
+            'roles' => $roles,
+            'compensations' => $compensations,
+            'userCompensations' => $userCompensations,
+            'userRoleRates' => $userRoleRates,
+            'title' => 'Gestione Utenti',
+        ]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, Utente $utente)
     {
-        $utente->update($request->all());
+        $utente->update([
+            'name' => $request->name,
+            'surname' => $request->surname,
+            'username' => $request->username,
+            'email' => $request->email,
+            'role' => $request->role,
+            'fissa' => $request->fissa,
+        ]);
+
+        UserCompensation::where('user_id', $utente->id)->delete();
+        if ($request->has('compensation_overrides')) {
+            foreach ($request->compensation_overrides as $compId => $value) {
+                if ($value !== null && $value !== '') {
+                    UserCompensation::create([
+                        'user_id' => $utente->id,
+                        'compensation_id' => $compId,
+                        'value' => $value,
+                    ]);
+                }
+            }
+        }
+
+        UserRoleRate::where('user_id', $utente->id)->delete();
+        if ($request->has('role_rates')) {
+            foreach ($request->role_rates as $roleName => $rates) {
+                $giornata = $rates['giornata'] ?? null;
+                $fissa = $rates['fissa'] ?? null;
+                $tariffa = $rates['tariffa_sabato'] ?? null;
+                if (($giornata !== null && $giornata !== '') || ($fissa !== null && $fissa !== '') || ($tariffa !== null && $tariffa !== '')) {
+                    UserRoleRate::create([
+                        'user_id' => $utente->id,
+                        'role' => $roleName,
+                        'giornata' => ($giornata !== '' ? $giornata : null),
+                        'fissa' => ($fissa !== '' ? $fissa : null),
+                        'tariffa_sabato' => ($tariffa !== '' ? $tariffa : null),
+                    ]);
+                }
+            }
+        }
+
         return redirect()->route('utenti.index')->with('success', 'Utente Aggiornato con successo!');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Utente $utente)
     {
         $utente = Utente::find($utente->id);
