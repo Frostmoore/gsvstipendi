@@ -91,7 +91,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let existingData = <?= json_encode($timesheet ? json_decode($timesheet->link, true) : null) ?>;
     let hasLoadedExisting = false;
 
-    const NOTE_OPTIONS = ["Ferie", "Permesso", "Malattia", "104"];
+    const NOTE_OPTIONS = ["Ferie", "Permesso", "Malattia", "104", "Smart Working"];
 
     const userRatesConfig = {
         showTrasferta:      <?= json_encode($_show_trasferta) ?>,

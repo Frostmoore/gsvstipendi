@@ -69,7 +69,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let userSelect = document.getElementById("user-select");
     let roleSelect = document.getElementById("role");
 
-    const NOTE_OPTIONS = ["Ferie", "Permesso", "Malattia", "104"];
+    const NOTE_OPTIONS = ["Ferie", "Permesso", "Malattia", "104", "Smart Working"];
 
     const allowedColKeys = <?= json_encode($colKeys ?? []) ?>;
 

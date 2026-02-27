@@ -75,7 +75,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let hiddenInput = document.getElementById("link");
     let userSelect = document.getElementById("user-select");
 
-    const NOTE_OPTIONS = ["Ferie", "Permesso", "Malattia", "104"];
+    const NOTE_OPTIONS = ["Ferie", "Permesso", "Malattia", "104", "Smart Working"];
 
     let utenti = JSON.parse(`<?= json_encode($users); ?>`);
     const usersRatesMap = <?= json_encode($usersRates ?? []) ?>;

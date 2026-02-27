@@ -158,7 +158,7 @@ foreach ($timesheet as $t) {
 }
 
 // Raccoglie le note da TUTTE le giornate (anche senza entrata/uscita)
-$note_summary = ['Ferie' => 0, 'Permesso' => 0, 'Malattia' => 0, '104' => 0];
+$note_summary = ['Ferie' => 0, 'Permesso' => 0, 'Malattia' => 0, '104' => 0, 'Smart Working' => 0];
 foreach ($timesheet as $dayRow) {
     $dayRow = json_decode(json_encode($dayRow), true);
     if (!empty($dayRow['Note'])) {
@@ -613,6 +613,11 @@ $totale += $totale_bonus;
             @if($note_summary['104'] > 0)
                 <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
                     104 &mdash; {{ $note_summary['104'] }} {{ $note_summary['104'] == 1 ? 'giorno' : 'giorni' }}
+                </span>
+            @endif
+            @if($note_summary['Smart Working'] > 0)
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200">
+                    Smart Working &mdash; {{ $note_summary['Smart Working'] }} {{ $note_summary['Smart Working'] == 1 ? 'giorno' : 'giorni' }}
                 </span>
             @endif
         </div>
