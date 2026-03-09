@@ -131,7 +131,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
         if (flagCols.length > 0) {
             let th = document.createElement("th");
-            th.textContent = "Opzioni";
+            th.textContent = "Opzioni"; th.colSpan = 2;
             headerRow.appendChild(th);
         }
         tableHead.appendChild(headerRow);
@@ -211,7 +211,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             if (flagCols.length > 0) {
                 let td = document.createElement("td");
-                td.style.verticalAlign = "top";
+                td.colSpan = 2; td.style.verticalAlign = "top";
                 td.style.paddingTop = "2px";
                 flagCols.forEach(col => {
                     let lbl = document.createElement("label");
@@ -351,10 +351,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 flagLabel.textContent = "Opzioni";
                 flagSection.appendChild(flagLabel);
                 let flagWrap = document.createElement("div");
-                flagWrap.style.cssText = "display:flex;flex-wrap:wrap;gap:6px 12px;";
+                flagWrap.style.cssText = "display:flex;flex-direction:column;gap:4px;";
                 flagCols.forEach(col => {
                     let lbl = document.createElement("label");
-                    lbl.style.cssText = "display:flex;align-items:center;gap:3px;font-size:0.8em;cursor:pointer;";
+                    lbl.style.cssText = "display:flex;align-items:center;gap:3px;font-size:0.8em;cursor:pointer;"; lbl.classList.add("text-gray-900", "dark:text-gray-100");
                     let input = document.createElement("input");
                     input.type = "checkbox";
                     input.checked = dayData[col.name] === "1";
