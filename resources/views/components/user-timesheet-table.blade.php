@@ -6,11 +6,16 @@
 
 @php
     $_ur = $userRates;
-    $_show_trasferta       = $_ur && (float)($_ur->trasferta       ?? 0) > 0;
-    $_show_trasferta_lunga = $_ur && (float)($_ur->trasferta_lunga ?? 0) > 0;
-    $_show_pernotto        = $_ur && (float)($_ur->pernotto        ?? 0) > 0;
-    $_show_presidio        = $_ur && (float)($_ur->presidio        ?? 0) > 0;
     $_show_estero          = $_ur && ((float)($_ur->feriale_estero ?? 0) > 0 || (float)($_ur->festivo_estero ?? 0) > 0);
+    $_show_figc_tr_aut     = $_ur && (float)($_ur->figc_trasp_autista ?? 0) > 0;
+    $_show_figc_tr_acmp    = $_ur && (float)($_ur->figc_trasp_accompagnatore ?? 0) > 0;
+    $_show_pres_aut        = $_ur && (float)($_ur->presidio_autisti ?? 0) > 0;
+    $_show_pres_acmp       = $_ur && (float)($_ur->presidio_accompagnatori ?? 0) > 0;
+    $_show_aut_nofigc      = $_ur && (float)($_ur->autista_no_figc ?? 0) > 0;
+    $_show_trasf_breve     = $_ur && (float)($_ur->trasferta ?? 0) > 0;
+    $_show_trasf_media     = $_ur && (float)($_ur->trasferta_media ?? 0) > 0;
+    $_show_trasf_lunga     = $_ur && (float)($_ur->trasferta_lunga ?? 0) > 0;
+    $_show_pernotto        = $_ur && (float)($_ur->pernotto ?? 0) > 0;
 @endphp
 <x-input-label for="editableTable" :value="__('Foglio Orario')" />
 <div class="gsv-description-container mb-4">
@@ -24,13 +29,13 @@
         {{ __('2. Cliccando accanto ai trattini, nei campi Entrata e Uscita, apparirà il Time Selector') }}
     </p>
     <p class="text-xs text-gray-800 dark:text-gray-200 leading-tight">
-        {{ __('3. Seleziona un solo campo Trasferta') }}
+        {{ __('3. Le colonne checkbox sono additive: puoi selezionarne più di una per giorno') }}
     </p>
     <p class="text-xs text-gray-800 dark:text-gray-200 leading-tight">
-        {{ __('4. Per Trasf. Breve si intende fino a 200 Km. Per Trasf. Lunga, si intende oltre i 200 Km') }}
+        {{ __('4. Tr. Breve = fino a 230 km, Tr. Media = fino a 300 km, Tr. Lunga = oltre 300 km') }}
     </p>
     <p class="text-xs text-gray-800 dark:text-gray-200 leading-tight">
-        {{ __('5. Per i Magazzinieri FIGC, è sufficiente spuntare il campo Estero, se si è stati all\'Estero') }}
+        {{ __('5. Estero: sostituisce la tariffa giornaliera con la corrispondente tariffa estero') }}
     </p>
 </div>
 <div class="shadow-md rounded-lg">
@@ -42,11 +47,16 @@
                 <th>Luogo</th>
                 <th>Entrata</th>
                 <th>Uscita</th>
-                <th>Trasf. Breve</th>
-                <th>Trasf. Lunga</th>
-                <th>Pernotto</th>
-                <th>Presidio</th>
                 <th>Estero</th>
+                <th>FIGC Tr. Aut.</th>
+                <th>FIGC Tr. Acc.</th>
+                <th>Pres. Aut.</th>
+                <th>Pres. Acc.</th>
+                <th>No FIGC</th>
+                <th>Tr. Breve</th>
+                <th>Tr. Media</th>
+                <th>Tr. Lunga</th>
+                <th>Pernotto</th>
                 <th>Note</th>
             </tr>
         </thead>
@@ -94,25 +104,35 @@ document.addEventListener("DOMContentLoaded", function () {
     const NOTE_OPTIONS = ["Ferie", "Permesso", "Malattia", "104", "Smart Working"];
 
     const userRatesConfig = {
-        showTrasferta:      <?= json_encode($_show_trasferta) ?>,
-        showTrasfertaLunga: <?= json_encode($_show_trasferta_lunga) ?>,
-        showPernotto:       <?= json_encode($_show_pernotto) ?>,
-        showPresidio:       <?= json_encode($_show_presidio) ?>,
-        showEstero:         <?= json_encode($_show_estero) ?>,
+        showEstero:        <?= json_encode($_show_estero) ?>,
+        showFigcTrAut:     <?= json_encode($_show_figc_tr_aut) ?>,
+        showFigcTrAccomp:  <?= json_encode($_show_figc_tr_acmp) ?>,
+        showPresAut:       <?= json_encode($_show_pres_aut) ?>,
+        showPresAccomp:    <?= json_encode($_show_pres_acmp) ?>,
+        showAutNoFigc:     <?= json_encode($_show_aut_nofigc) ?>,
+        showTrasfBreve:    <?= json_encode($_show_trasf_breve) ?>,
+        showTrasfMedia:    <?= json_encode($_show_trasf_media) ?>,
+        showTrasfLunga:    <?= json_encode($_show_trasf_lunga) ?>,
+        showPernotto:      <?= json_encode($_show_pernotto) ?>,
     };
 
     const allColumns = [
-        { name: "Data",       type: "text",        editable: false },
-        { name: "Cliente",    type: "text",        editable: true  },
-        { name: "Luogo",      type: "text",        editable: true  },
-        { name: "Entrata",    type: "time",        editable: true  },
-        { name: "Uscita",     type: "time",        editable: true  },
-        { name: "TrasfBreve", label: "Trasferta",  type: "checkbox", editable: false },
-        { name: "TrasfLunga", type: "checkbox",    editable: false },
-        { name: "Pernotto",   type: "checkbox",    editable: false },
-        { name: "Presidio",   type: "checkbox",    editable: false },
-        { name: "Estero",     type: "checkbox",    editable: false },
-        { name: "Note",       type: "multiselect", editable: false }
+        { name: "Data",            type: "text",        editable: false },
+        { name: "Cliente",         type: "text",        editable: true  },
+        { name: "Luogo",           type: "text",        editable: true  },
+        { name: "Entrata",         type: "time",        editable: true  },
+        { name: "Uscita",          type: "time",        editable: true  },
+        { name: "Estero",          type: "checkbox",    editable: false },
+        { name: "FigcTraspAut",    label: "FIGC Tr. Aut.",  type: "checkbox", editable: false },
+        { name: "FigcTraspAccomp", label: "FIGC Tr. Acc.",  type: "checkbox", editable: false },
+        { name: "PresidioAut",     label: "Pres. Aut.",     type: "checkbox", editable: false },
+        { name: "PresidioAccomp",  label: "Pres. Acc.",     type: "checkbox", editable: false },
+        { name: "AutistaNoFigc",   label: "No FIGC",        type: "checkbox", editable: false },
+        { name: "TrasfBreve",      label: "Tr. Breve",      type: "checkbox", editable: false },
+        { name: "TrasfMedia",      label: "Tr. Media",      type: "checkbox", editable: false },
+        { name: "TrasfLunga",      label: "Tr. Lunga",      type: "checkbox", editable: false },
+        { name: "Pernotto",        type: "checkbox",    editable: false },
+        { name: "Note",            type: "multiselect", editable: false },
     ];
 
     let columns = [];
@@ -121,12 +141,17 @@ document.addEventListener("DOMContentLoaded", function () {
     function updateRoleAndGenerateTable() {
         columns = allColumns.filter(function(col) {
             switch (col.name) {
-                case "TrasfBreve": return userRatesConfig.showTrasferta;
-                case "TrasfLunga": return userRatesConfig.showTrasfertaLunga;
-                case "Pernotto":   return userRatesConfig.showPernotto;
-                case "Presidio":   return userRatesConfig.showPresidio;
-                case "Estero":     return userRatesConfig.showEstero;
-                default:           return true;
+                case "Estero":         return userRatesConfig.showEstero;
+                case "FigcTraspAut":   return userRatesConfig.showFigcTrAut;
+                case "FigcTraspAccomp":return userRatesConfig.showFigcTrAccomp;
+                case "PresidioAut":    return userRatesConfig.showPresAut;
+                case "PresidioAccomp": return userRatesConfig.showPresAccomp;
+                case "AutistaNoFigc":  return userRatesConfig.showAutNoFigc;
+                case "TrasfBreve":     return userRatesConfig.showTrasfBreve;
+                case "TrasfMedia":     return userRatesConfig.showTrasfMedia;
+                case "TrasfLunga":     return userRatesConfig.showTrasfLunga;
+                case "Pernotto":       return userRatesConfig.showPernotto;
+                default:               return true;
             }
         });
         generateTable();

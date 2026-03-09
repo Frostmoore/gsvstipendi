@@ -20,16 +20,21 @@ foreach($users as $u) {
 // Load per-user rates
 $_userRoleRate = \App\Models\UserRoleRate::where('user_id', $userid)->where('role', 'user')->first();
 
-$rate_giornata        = $_userRoleRate ? (float)($_userRoleRate->giornata        ?? 0) : 0;
-$rate_feriale_estero  = $_userRoleRate ? (float)($_userRoleRate->feriale_estero  ?? 0) : 0;
-$rate_festivo         = $_userRoleRate ? (float)($_userRoleRate->festivo         ?? 0) : 0;
-$rate_festivo_estero  = $_userRoleRate ? (float)($_userRoleRate->festivo_estero  ?? 0) : 0;
-$rate_trasferta       = $_userRoleRate ? (float)($_userRoleRate->trasferta       ?? 0) : 0;
-$rate_trasferta_lunga = $_userRoleRate ? (float)($_userRoleRate->trasferta_lunga ?? 0) : 0;
-$rate_pernotto        = $_userRoleRate ? (float)($_userRoleRate->pernotto        ?? 0) : 0;
-$rate_presidio        = $_userRoleRate ? (float)($_userRoleRate->presidio        ?? 0) : 0;
-$rate_straordinari    = $_userRoleRate ? (float)($_userRoleRate->straordinari    ?? 0) : 0;
-$rate_tariffa_sabato  = $_userRoleRate ? (float)($_userRoleRate->tariffa_sabato  ?? 0) : 0;
+$rate_figc_feriale_italia      = $_userRoleRate ? (float)($_userRoleRate->figc_feriale_italia      ?? 0) : 0;
+$rate_feriale_estero           = $_userRoleRate ? (float)($_userRoleRate->feriale_estero           ?? 0) : 0;
+$rate_figc_festivo_italia      = $_userRoleRate ? (float)($_userRoleRate->figc_festivo_italia      ?? 0) : 0;
+$rate_festivo_estero           = $_userRoleRate ? (float)($_userRoleRate->festivo_estero           ?? 0) : 0;
+$rate_figc_trasp_aut           = $_userRoleRate ? (float)($_userRoleRate->figc_trasp_autista       ?? 0) : 0;
+$rate_figc_trasp_acmp          = $_userRoleRate ? (float)($_userRoleRate->figc_trasp_accompagnatore ?? 0) : 0;
+$rate_presidio_aut             = $_userRoleRate ? (float)($_userRoleRate->presidio_autisti         ?? 0) : 0;
+$rate_presidio_acmp            = $_userRoleRate ? (float)($_userRoleRate->presidio_accompagnatori  ?? 0) : 0;
+$rate_autista_nofigc           = $_userRoleRate ? (float)($_userRoleRate->autista_no_figc          ?? 0) : 0;
+$rate_trasf_breve              = $_userRoleRate ? (float)($_userRoleRate->trasferta                ?? 0) : 0;
+$rate_trasf_media              = $_userRoleRate ? (float)($_userRoleRate->trasferta_media          ?? 0) : 0;
+$rate_trasf_lunga              = $_userRoleRate ? (float)($_userRoleRate->trasferta_lunga          ?? 0) : 0;
+$rate_pernotto                 = $_userRoleRate ? (float)($_userRoleRate->pernotto                 ?? 0) : 0;
+$rate_straordinari             = $_userRoleRate ? (float)($_userRoleRate->straordinari             ?? 0) : 0;
+$rate_tariffa_sabato           = $_userRoleRate ? (float)($_userRoleRate->tariffa_sabato           ?? 0) : 0;
 
 $fissa_eff = 0;
 if ($_userRoleRate && (float)($_userRoleRate->fissa ?? 0) > 0) {
@@ -41,16 +46,16 @@ if ($_userRoleRate && (float)($_userRoleRate->fissa ?? 0) > 0) {
 // Dynamic column set — only include columns for rates that are configured
 $cols        = ['Data', 'Cliente', 'Luogo', 'Entrata', 'Uscita'];
 $allowedKeys = ['Data', 'Cliente', 'Luogo', 'Entrata', 'Uscita'];
-if ($rate_trasferta > 0) {
-    $cols[] = 'Trasferta';   $allowedKeys[] = 'Trasferta';
-    $cols[] = 'TrasfBreve';  $allowedKeys[] = 'TrasfBreve';
-}
-if ($rate_trasferta_lunga > 0) { $cols[] = 'Trasf. Lunga'; $allowedKeys[] = 'TrasfLunga'; }
-if ($rate_pernotto > 0)        { $cols[] = 'Pernotto';     $allowedKeys[] = 'Pernotto'; }
-if ($rate_presidio > 0)        { $cols[] = 'Presidio';     $allowedKeys[] = 'Presidio'; }
-if ($rate_feriale_estero > 0 || $rate_festivo_estero > 0) {
-    $cols[] = 'Estero'; $allowedKeys[] = 'Estero';
-}
+if ($rate_feriale_estero > 0 || $rate_festivo_estero > 0) { $cols[] = 'Estero';         $allowedKeys[] = 'Estero'; }
+if ($rate_figc_trasp_aut > 0)   { $cols[] = 'FIGC Tr. Aut.'; $allowedKeys[] = 'FigcTraspAut'; }
+if ($rate_figc_trasp_acmp > 0)  { $cols[] = 'FIGC Tr. Acc.'; $allowedKeys[] = 'FigcTraspAccomp'; }
+if ($rate_presidio_aut > 0)     { $cols[] = 'Pres. Aut.';    $allowedKeys[] = 'PresidioAut'; }
+if ($rate_presidio_acmp > 0)    { $cols[] = 'Pres. Acc.';    $allowedKeys[] = 'PresidioAccomp'; }
+if ($rate_autista_nofigc > 0)   { $cols[] = 'No FIGC';       $allowedKeys[] = 'AutistaNoFigc'; }
+if ($rate_trasf_breve > 0)      { $cols[] = 'Tr. Breve';     $allowedKeys[] = 'TrasfBreve'; }
+if ($rate_trasf_media > 0)      { $cols[] = 'Tr. Media';     $allowedKeys[] = 'TrasfMedia'; }
+if ($rate_trasf_lunga > 0)      { $cols[] = 'Tr. Lunga';     $allowedKeys[] = 'TrasfLunga'; }
+if ($rate_pernotto > 0)         { $cols[] = 'Pernotto';      $allowedKeys[] = 'Pernotto'; }
 $cols[] = 'Note'; $allowedKeys[] = 'Note';
 
 $sabati_lavorati = 0;
@@ -79,16 +84,23 @@ foreach ($timesheet as $t) {
     $is_sabato = strpos($t['Data'], 'Sabato') !== false;
     if ($is_sabato) $sabati_lavorati++;
 
-    $trasferta       = array_key_exists('Trasferta',  $t) ? $t['Trasferta']  : null;
-    $pernotto        = array_key_exists('Pernotto',   $t) ? $t['Pernotto']   : null;
-    $presidio        = array_key_exists('Presidio',   $t) ? $t['Presidio']   : null;
-    $trasferta_lunga = array_key_exists('TrasfLunga', $t) ? $t['TrasfLunga'] : null;
-    $trasferta_breve = array_key_exists('TrasfBreve', $t) ? $t['TrasfBreve'] : null;
-    $estero          = array_key_exists('Estero',     $t) ? $t['Estero']     : null;
+    $estero         = array_key_exists('Estero',         $t) ? $t['Estero']         : null;
+    $figc_tr_aut    = array_key_exists('FigcTraspAut',   $t) ? $t['FigcTraspAut']   : null;
+    $figc_tr_acmp   = array_key_exists('FigcTraspAccomp',$t) ? $t['FigcTraspAccomp']: null;
+    $pres_aut       = array_key_exists('PresidioAut',    $t) ? $t['PresidioAut']    : null;
+    $pres_aut      = $pres_aut ?? (array_key_exists('Presidio', $t) ? $t['Presidio'] : null); // legacy
+    $pres_acmp      = array_key_exists('PresidioAccomp', $t) ? $t['PresidioAccomp'] : null;
+    $aut_nofigc     = array_key_exists('AutistaNoFigc',  $t) ? $t['AutistaNoFigc']  : null;
+    $trasf_breve    = array_key_exists('TrasfBreve',     $t) ? $t['TrasfBreve']     : null;
+    $trasf_breve   = $trasf_breve ?? (array_key_exists('Trasferta', $t) ? $t['Trasferta'] : null); // legacy
+    $trasf_media    = array_key_exists('TrasfMedia',     $t) ? $t['TrasfMedia']     : null;
+    $trasf_lunga    = array_key_exists('TrasfLunga',     $t) ? $t['TrasfLunga']     : null;
+    $pernotto       = array_key_exists('Pernotto',       $t) ? $t['Pernotto']       : null;
 
     $ha_flag_speciale = (
-        $trasferta == 1 || $pernotto == 1 || $presidio == 1 ||
-        $trasferta_lunga == 1 || $trasferta_breve == 1 || $estero == 1
+        $estero == 1 || $figc_tr_aut == 1 || $figc_tr_acmp == 1 ||
+        $pres_aut == 1 || $pres_acmp == 1 || $aut_nofigc == 1 ||
+        $trasf_breve == 1 || $trasf_media == 1 || $trasf_lunga == 1 || $pernotto == 1
     );
 
     // Straordinari
@@ -112,90 +124,108 @@ foreach ($timesheet as $t) {
     if (!$festivo) {
         if ($estero == 1) {
             if ($rate_feriale_estero > 0) {
-                $rowCompensi['feriale_estero'] = $rate_feriale_estero;
+                $rowCompensi['fer_estero'] = $rate_feriale_estero;
             }
         } else {
             if ($fissa_eff > 0) {
                 if ($is_sabato && $sabati_lavorati <= 2) {
-                    $rowCompensi['giornata'] = $fissa_eff; // placeholder, recalculated in totals
+                    $rowCompensi['figc_fer_it'] = $fissa_eff; // placeholder, recalculated in totals
                 } else {
-                    $rowCompensi['giornata'] = ($is_sabato && $sabati_lavorati > 2 && $rate_tariffa_sabato > 0)
-                        ? $rate_tariffa_sabato : $rate_giornata;
+                    $rowCompensi['figc_fer_it'] = ($is_sabato && $sabati_lavorati > 2 && $rate_tariffa_sabato > 0)
+                        ? $rate_tariffa_sabato : $rate_figc_feriale_italia;
                 }
             } else {
-                $rowCompensi['giornata'] = ($is_sabato && $sabati_lavorati > 2 && $rate_tariffa_sabato > 0)
-                    ? $rate_tariffa_sabato : $rate_giornata;
+                $rowCompensi['figc_fer_it'] = ($is_sabato && $sabati_lavorati > 2 && $rate_tariffa_sabato > 0)
+                    ? $rate_tariffa_sabato : $rate_figc_feriale_italia;
             }
         }
     } else {
         if ($estero == 1) {
             if ($rate_festivo_estero > 0) {
-                $rowCompensi['festivo_estero'] = $rate_festivo_estero;
+                $rowCompensi['fest_estero'] = $rate_festivo_estero;
             }
         } else {
-            if ($rate_festivo > 0) {
-                $rowCompensi['festivo_italia'] = $rate_festivo;
+            if ($rate_figc_festivo_italia > 0) {
+                $rowCompensi['figc_fest_it'] = $rate_figc_festivo_italia;
             }
         }
     }
 
-    if ($trasferta == 1)       $rowCompensi['trasferta']       = $rate_trasferta;
-    if ($pernotto == 1)        $rowCompensi['pernotto']        = $rate_pernotto;
-    if ($presidio == 1)        $rowCompensi['presidio']        = $rate_presidio;
-    if ($trasferta_lunga == 1) $rowCompensi['trasferta_lunga'] = $rate_trasferta_lunga;
-    if ($trasferta_breve == 1) $rowCompensi['trasferta_breve'] = $rate_trasferta;
+    if ($figc_tr_aut == 1)   $rowCompensi['figc_tr_aut']  = $rate_figc_trasp_aut;
+    if ($figc_tr_acmp == 1)  $rowCompensi['figc_tr_acmp'] = $rate_figc_trasp_acmp;
+    if ($pres_aut == 1)      $rowCompensi['pres_aut']     = $rate_presidio_aut;
+    if ($pres_acmp == 1)     $rowCompensi['pres_acmp']    = $rate_presidio_acmp;
+    if ($aut_nofigc == 1)    $rowCompensi['aut_nofigc']   = $rate_autista_nofigc;
+    if ($trasf_breve == 1)   $rowCompensi['trasf_breve']  = $rate_trasf_breve;
+    if ($trasf_media == 1)   $rowCompensi['trasf_media']  = $rate_trasf_media;
+    if ($trasf_lunga == 1)   $rowCompensi['trasf_lunga']  = $rate_trasf_lunga;
+    if ($pernotto == 1)      $rowCompensi['pernotto']     = $rate_pernotto;
 
     array_push($compensi, $rowCompensi);
 }
 
 // Totals
-$trasferte = 0; $pernotti = 0; $presidi = 0;
-$trasferte_lunghe = 0; $trasferte_brevi = 0;
-$giornate = 0; $feriali_estero = 0;
-$festivi_italia = 0; $festivi_estero = 0;
-$straordinari = 0;
+$figc_fer_it      = 0; $figc_fer_it_num      = 0;
+$figc_fest_it     = 0; $figc_fest_it_num     = 0;
+$fer_estero       = 0; $fer_estero_num       = 0;
+$fest_estero      = 0; $fest_estero_num      = 0;
+$figc_tr_aut_tot  = 0; $figc_tr_aut_num      = 0;
+$figc_tr_acmp_tot = 0; $figc_tr_acmp_num     = 0;
+$pres_aut_tot     = 0; $pres_aut_num         = 0;
+$pres_acmp_tot    = 0; $pres_acmp_num        = 0;
+$aut_nofigc_tot   = 0; $aut_nofigc_num       = 0;
+$trasf_breve_tot  = 0; $trasf_breve_num      = 0;
+$trasf_media_tot  = 0; $trasf_media_num      = 0;
+$trasf_lunga_tot  = 0; $trasf_lunga_num      = 0;
+$pernotto_tot     = 0; $pernotto_num         = 0;
+$straordinari_tot = 0; $straordinari_ore     = 0;
 
-$trasferte_num = 0; $pernotti_num = 0; $presidi_num = 0;
-$trasferte_lunghe_num = 0; $trasferte_brevi_num = 0;
-$giornate_num = 0; $feriali_estero_num = 0;
-$festivi_italia_num = 0; $festivi_estero_num = 0;
-$straordinari_ore = 0;
-
-foreach($compensi as $z) {
-    $trasferte        += $z['trasferta']        ?? 0;
-    $pernotti         += $z['pernotto']         ?? 0;
-    $presidi          += $z['presidio']         ?? 0;
-    $trasferte_lunghe += $z['trasferta_lunga']  ?? 0;
-    $trasferte_brevi  += $z['trasferta_breve']  ?? 0;
-    $giornate         += $z['giornata']         ?? 0;
-    $feriali_estero   += $z['feriale_estero']   ?? 0;
-    $festivi_italia   += $z['festivo_italia']   ?? 0;
-    $festivi_estero   += $z['festivo_estero']   ?? 0;
-    $straordinari     += $z['straordinari']     ?? 0;
+foreach ($compensi as $z) {
+    $figc_fer_it      += $z['figc_fer_it']   ?? 0;
+    $figc_fest_it     += $z['figc_fest_it']  ?? 0;
+    $fer_estero       += $z['fer_estero']    ?? 0;
+    $fest_estero      += $z['fest_estero']   ?? 0;
+    $figc_tr_aut_tot  += $z['figc_tr_aut']   ?? 0;
+    $figc_tr_acmp_tot += $z['figc_tr_acmp']  ?? 0;
+    $pres_aut_tot     += $z['pres_aut']      ?? 0;
+    $pres_acmp_tot    += $z['pres_acmp']     ?? 0;
+    $aut_nofigc_tot   += $z['aut_nofigc']    ?? 0;
+    $trasf_breve_tot  += $z['trasf_breve']   ?? 0;
+    $trasf_media_tot  += $z['trasf_media']   ?? 0;
+    $trasf_lunga_tot  += $z['trasf_lunga']   ?? 0;
+    $pernotto_tot     += $z['pernotto']      ?? 0;
+    $straordinari_tot += $z['straordinari']  ?? 0;
     $straordinari_ore += $z['straordinari_ore'] ?? 0;
 
-    array_key_exists('trasferta', $z)       ? $trasferte_num++        : null;
-    array_key_exists('pernotto', $z)        ? $pernotti_num++         : null;
-    array_key_exists('presidio', $z)        ? $presidi_num++          : null;
-    array_key_exists('trasferta_lunga', $z) ? $trasferte_lunghe_num++ : null;
-    array_key_exists('trasferta_breve', $z) ? $trasferte_brevi_num++  : null;
-    array_key_exists('giornata', $z)        ? $giornate_num++         : null;
-    array_key_exists('feriale_estero', $z)  ? $feriali_estero_num++   : null;
-    array_key_exists('festivo_italia', $z)  ? $festivi_italia_num++   : null;
-    array_key_exists('festivo_estero', $z)  ? $festivi_estero_num++   : null;
+    array_key_exists('figc_fer_it',  $z) ? $figc_fer_it_num++     : null;
+    array_key_exists('figc_fest_it', $z) ? $figc_fest_it_num++    : null;
+    array_key_exists('fer_estero',   $z) ? $fer_estero_num++      : null;
+    array_key_exists('fest_estero',  $z) ? $fest_estero_num++     : null;
+    array_key_exists('figc_tr_aut',  $z) ? $figc_tr_aut_num++     : null;
+    array_key_exists('figc_tr_acmp', $z) ? $figc_tr_acmp_num++    : null;
+    array_key_exists('pres_aut',     $z) ? $pres_aut_num++        : null;
+    array_key_exists('pres_acmp',    $z) ? $pres_acmp_num++       : null;
+    array_key_exists('aut_nofigc',   $z) ? $aut_nofigc_num++      : null;
+    array_key_exists('trasf_breve',  $z) ? $trasf_breve_num++     : null;
+    array_key_exists('trasf_media',  $z) ? $trasf_media_num++     : null;
+    array_key_exists('trasf_lunga',  $z) ? $trasf_lunga_num++     : null;
+    array_key_exists('pernotto',     $z) ? $pernotto_num++        : null;
 }
 
-// Apply fissa logic to giornate total
+// Apply fissa logic to figc_fer_it total
 if ($fissa_eff > 0) {
     $sabati_extra = max(0, $sabati_lavorati - 2);
-    $tariffa_sabato = $rate_tariffa_sabato > 0
+    $tariffa_sabato_calc = $rate_tariffa_sabato > 0
         ? $rate_tariffa_sabato
-        : ($giornate_num > 0 ? $fissa_eff / $giornate_num : 0);
-    $giornate = $fissa_eff + ($tariffa_sabato * $sabati_extra);
+        : ($figc_fer_it_num > 0 ? $fissa_eff / $figc_fer_it_num : 0);
+    $figc_fer_it = $fissa_eff + ($tariffa_sabato_calc * $sabati_extra);
 }
 
-$totale = $trasferte + $pernotti + $presidi + $trasferte_lunghe + $trasferte_brevi
-        + $giornate + $feriali_estero + $festivi_italia + $festivi_estero + $straordinari;
+$totale = $figc_fer_it + $figc_fest_it + $fer_estero + $fest_estero
+        + $figc_tr_aut_tot + $figc_tr_acmp_tot
+        + $pres_aut_tot + $pres_acmp_tot + $aut_nofigc_tot
+        + $trasf_breve_tot + $trasf_media_tot + $trasf_lunga_tot
+        + $pernotto_tot + $straordinari_tot;
 
 ?>
 
@@ -224,12 +254,16 @@ $totale = $trasferte + $pernotti + $presidi + $trasferte_lunghe + $trasferte_bre
                         @php $value = is_object($row) ? ($row->$key ?? '') : ($row[$key] ?? ''); @endphp
                         <td class="px-4 py-2">
                             @switch($key)
-                                @case('Trasferta')
-                                @case('Pernotto')
-                                @case('Presidio')
-                                @case('TrasfLunga')
-                                @case('TrasfBreve')
                                 @case('Estero')
+                                @case('FigcTraspAut')
+                                @case('FigcTraspAccomp')
+                                @case('PresidioAut')
+                                @case('PresidioAccomp')
+                                @case('AutistaNoFigc')
+                                @case('TrasfBreve')
+                                @case('TrasfMedia')
+                                @case('TrasfLunga')
+                                @case('Pernotto')
                                     {{ $value == 1 ? '✔️' : '' }}
                                     @break
                                 @default

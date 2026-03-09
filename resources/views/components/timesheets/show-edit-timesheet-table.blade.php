@@ -22,11 +22,16 @@ $compensi = [];
                 <th>Luogo</th>
                 <th>Entrata</th>
                 <th>Uscita</th>
-                <th>Trasf. Lunga</th>
-                <th>Trasf. Breve</th>
-                <th>Pernotto</th>
-                <th>Presidio</th>
                 <th>Estero</th>
+                <th>FIGC Tr. Aut.</th>
+                <th>FIGC Tr. Acc.</th>
+                <th>Pres. Aut.</th>
+                <th>Pres. Acc.</th>
+                <th>No FIGC</th>
+                <th>Tr. Breve</th>
+                <th>Tr. Media</th>
+                <th>Tr. Lunga</th>
+                <th>Pernotto</th>
                 <th>Note</th>
             </tr>
         </thead>
@@ -74,17 +79,22 @@ document.addEventListener("DOMContentLoaded", function () {
     const allowedColKeys = <?= json_encode($colKeys ?? []) ?>;
 
     const allColumns = [
-        { name: "Data",       type: "text",        editable: false },
-        { name: "Cliente",    type: "text",        editable: true  },
-        { name: "Luogo",      type: "text",        editable: true  },
-        { name: "Entrata",    type: "time",        editable: true  },
-        { name: "Uscita",     type: "time",        editable: true  },
-        { name: "TrasfBreve", label: "Trasferta",  type: "checkbox", editable: false },
-        { name: "TrasfLunga", type: "checkbox",    editable: false },
-        { name: "Pernotto",   type: "checkbox",    editable: false },
-        { name: "Presidio",   type: "checkbox",    editable: false },
-        { name: "Estero",     type: "checkbox",    editable: false },
-        { name: "Note",       type: "multiselect", editable: false }
+        { name: "Data",            type: "text",        editable: false },
+        { name: "Cliente",         type: "text",        editable: true  },
+        { name: "Luogo",           type: "text",        editable: true  },
+        { name: "Entrata",         type: "time",        editable: true  },
+        { name: "Uscita",          type: "time",        editable: true  },
+        { name: "Estero",          type: "checkbox",    editable: false },
+        { name: "FigcTraspAut",    label: "FIGC Tr. Aut.",  type: "checkbox", editable: false },
+        { name: "FigcTraspAccomp", label: "FIGC Tr. Acc.",  type: "checkbox", editable: false },
+        { name: "PresidioAut",     label: "Pres. Aut.",     type: "checkbox", editable: false },
+        { name: "PresidioAccomp",  label: "Pres. Acc.",     type: "checkbox", editable: false },
+        { name: "AutistaNoFigc",   label: "No FIGC",        type: "checkbox", editable: false },
+        { name: "TrasfBreve",      label: "Tr. Breve",      type: "checkbox", editable: false },
+        { name: "TrasfMedia",      label: "Tr. Media",      type: "checkbox", editable: false },
+        { name: "TrasfLunga",      label: "Tr. Lunga",      type: "checkbox", editable: false },
+        { name: "Pernotto",        type: "checkbox",    editable: false },
+        { name: "Note",            type: "multiselect", editable: false },
     ];
 
     let columns = [];

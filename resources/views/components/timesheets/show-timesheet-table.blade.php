@@ -25,16 +25,21 @@ foreach($users as $u) {
 // Load per-user rates (role='user')
 $_userRoleRate = \App\Models\UserRoleRate::where('user_id', $userid)->where('role', 'user')->first();
 
-$rate_giornata        = $_userRoleRate ? (float)($_userRoleRate->giornata        ?? 0) : 0;
-$rate_feriale_estero  = $_userRoleRate ? (float)($_userRoleRate->feriale_estero  ?? 0) : 0;
-$rate_festivo         = $_userRoleRate ? (float)($_userRoleRate->festivo         ?? 0) : 0;
-$rate_festivo_estero  = $_userRoleRate ? (float)($_userRoleRate->festivo_estero  ?? 0) : 0;
-$rate_trasferta       = $_userRoleRate ? (float)($_userRoleRate->trasferta       ?? 0) : 0;
-$rate_trasferta_lunga = $_userRoleRate ? (float)($_userRoleRate->trasferta_lunga ?? 0) : 0;
-$rate_pernotto        = $_userRoleRate ? (float)($_userRoleRate->pernotto        ?? 0) : 0;
-$rate_presidio        = $_userRoleRate ? (float)($_userRoleRate->presidio        ?? 0) : 0;
-$rate_straordinari    = $_userRoleRate ? (float)($_userRoleRate->straordinari    ?? 0) : 0;
-$rate_tariffa_sabato  = $_userRoleRate ? (float)($_userRoleRate->tariffa_sabato  ?? 0) : 0;
+$rate_figc_feriale_italia      = $_userRoleRate ? (float)($_userRoleRate->figc_feriale_italia      ?? 0) : 0;
+$rate_feriale_estero           = $_userRoleRate ? (float)($_userRoleRate->feriale_estero           ?? 0) : 0;
+$rate_figc_festivo_italia      = $_userRoleRate ? (float)($_userRoleRate->figc_festivo_italia      ?? 0) : 0;
+$rate_festivo_estero           = $_userRoleRate ? (float)($_userRoleRate->festivo_estero           ?? 0) : 0;
+$rate_figc_trasp_aut           = $_userRoleRate ? (float)($_userRoleRate->figc_trasp_autista       ?? 0) : 0;
+$rate_figc_trasp_acmp          = $_userRoleRate ? (float)($_userRoleRate->figc_trasp_accompagnatore ?? 0) : 0;
+$rate_presidio_aut             = $_userRoleRate ? (float)($_userRoleRate->presidio_autisti         ?? 0) : 0;
+$rate_presidio_acmp            = $_userRoleRate ? (float)($_userRoleRate->presidio_accompagnatori  ?? 0) : 0;
+$rate_autista_nofigc           = $_userRoleRate ? (float)($_userRoleRate->autista_no_figc          ?? 0) : 0;
+$rate_trasf_breve              = $_userRoleRate ? (float)($_userRoleRate->trasferta                ?? 0) : 0;
+$rate_trasf_media              = $_userRoleRate ? (float)($_userRoleRate->trasferta_media          ?? 0) : 0;
+$rate_trasf_lunga              = $_userRoleRate ? (float)($_userRoleRate->trasferta_lunga          ?? 0) : 0;
+$rate_pernotto                 = $_userRoleRate ? (float)($_userRoleRate->pernotto                 ?? 0) : 0;
+$rate_straordinari             = $_userRoleRate ? (float)($_userRoleRate->straordinari             ?? 0) : 0;
+$rate_tariffa_sabato           = $_userRoleRate ? (float)($_userRoleRate->tariffa_sabato           ?? 0) : 0;
 
 // Fissa effettiva (user_role_rates.fissa overrides users.fissa)
 $fissa_eff = 0;
@@ -47,15 +52,16 @@ if ($_userRoleRate && (float)($_userRoleRate->fissa ?? 0) > 0) {
 // Dynamic column set — only include columns for rates that are configured
 $cols    = ['Data', 'Cliente', 'Luogo', 'Entrata', 'Uscita'];
 $colKeys = ['Data', 'Cliente', 'Luogo', 'Entrata', 'Uscita'];
-if ($rate_trasferta > 0) {
-    $cols[] = 'Trasferta'; $colKeys[] = 'TrasfBreve';
-}
-if ($rate_trasferta_lunga > 0) { $cols[] = 'Trasf. Lunga'; $colKeys[] = 'TrasfLunga'; }
-if ($rate_pernotto > 0)        { $cols[] = 'Pernotto';     $colKeys[] = 'Pernotto'; }
-if ($rate_presidio > 0)        { $cols[] = 'Presidio';     $colKeys[] = 'Presidio'; }
-if ($rate_feriale_estero > 0 || $rate_festivo_estero > 0) {
-    $cols[] = 'Estero'; $colKeys[] = 'Estero';
-}
+if ($rate_feriale_estero > 0 || $rate_festivo_estero > 0) { $cols[] = 'Estero';         $colKeys[] = 'Estero'; }
+if ($rate_figc_trasp_aut > 0)   { $cols[] = 'FIGC Tr. Aut.'; $colKeys[] = 'FigcTraspAut'; }
+if ($rate_figc_trasp_acmp > 0)  { $cols[] = 'FIGC Tr. Acc.'; $colKeys[] = 'FigcTraspAccomp'; }
+if ($rate_presidio_aut > 0)     { $cols[] = 'Pres. Aut.';    $colKeys[] = 'PresidioAut'; }
+if ($rate_presidio_acmp > 0)    { $cols[] = 'Pres. Acc.';    $colKeys[] = 'PresidioAccomp'; }
+if ($rate_autista_nofigc > 0)   { $cols[] = 'No FIGC';       $colKeys[] = 'AutistaNoFigc'; }
+if ($rate_trasf_breve > 0)      { $cols[] = 'Tr. Breve';     $colKeys[] = 'TrasfBreve'; }
+if ($rate_trasf_media > 0)      { $cols[] = 'Tr. Media';     $colKeys[] = 'TrasfMedia'; }
+if ($rate_trasf_lunga > 0)      { $cols[] = 'Tr. Lunga';     $colKeys[] = 'TrasfLunga'; }
+if ($rate_pernotto > 0)         { $cols[] = 'Pernotto';      $colKeys[] = 'Pernotto'; }
 $cols[] = 'Note'; $colKeys[] = 'Note';
 
 $sabati_lavorati = 0;
@@ -84,16 +90,23 @@ foreach ($timesheet as $t) {
     $is_sabato = strpos($t['Data'], 'Sabato') !== false;
     if ($is_sabato) $sabati_lavorati++;
 
-    $trasferta       = array_key_exists('Trasferta',  $t) ? $t['Trasferta']  : null;
-    $pernotto        = array_key_exists('Pernotto',   $t) ? $t['Pernotto']   : null;
-    $presidio        = array_key_exists('Presidio',   $t) ? $t['Presidio']   : null;
-    $trasferta_lunga = array_key_exists('TrasfLunga', $t) ? $t['TrasfLunga'] : null;
-    $trasferta_breve = array_key_exists('TrasfBreve', $t) ? $t['TrasfBreve'] : null;
-    $estero          = array_key_exists('Estero',     $t) ? $t['Estero']     : null;
+    $estero         = array_key_exists('Estero',         $t) ? $t['Estero']         : null;
+    $figc_tr_aut    = array_key_exists('FigcTraspAut',   $t) ? $t['FigcTraspAut']   : null;
+    $figc_tr_acmp   = array_key_exists('FigcTraspAccomp',$t) ? $t['FigcTraspAccomp']: null;
+    $pres_aut       = array_key_exists('PresidioAut',    $t) ? $t['PresidioAut']    : null;
+    $pres_aut      = $pres_aut ?? (array_key_exists('Presidio', $t) ? $t['Presidio'] : null); // legacy
+    $pres_acmp      = array_key_exists('PresidioAccomp', $t) ? $t['PresidioAccomp'] : null;
+    $aut_nofigc     = array_key_exists('AutistaNoFigc',  $t) ? $t['AutistaNoFigc']  : null;
+    $trasf_breve    = array_key_exists('TrasfBreve',     $t) ? $t['TrasfBreve']     : null;
+    $trasf_breve   = $trasf_breve ?? (array_key_exists('Trasferta', $t) ? $t['Trasferta'] : null); // legacy
+    $trasf_media    = array_key_exists('TrasfMedia',     $t) ? $t['TrasfMedia']     : null;
+    $trasf_lunga    = array_key_exists('TrasfLunga',     $t) ? $t['TrasfLunga']     : null;
+    $pernotto       = array_key_exists('Pernotto',       $t) ? $t['Pernotto']       : null;
 
     $ha_flag_speciale = (
-        $trasferta == 1 || $pernotto == 1 || $presidio == 1 ||
-        $trasferta_lunga == 1 || $trasferta_breve == 1 || $estero == 1
+        $estero == 1 || $figc_tr_aut == 1 || $figc_tr_acmp == 1 ||
+        $pres_aut == 1 || $pres_acmp == 1 || $aut_nofigc == 1 ||
+        $trasf_breve == 1 || $trasf_media == 1 || $trasf_lunga == 1 || $pernotto == 1
     );
 
     // Straordinari
@@ -118,41 +131,45 @@ foreach ($timesheet as $t) {
         if ($estero == 1) {
             // Feriale Estero — sovrascrive completamente la giornata Italia
             if ($rate_feriale_estero > 0) {
-                $rowCompensi['feriale_estero'] = $rate_feriale_estero;
+                $rowCompensi['fer_estero'] = $rate_feriale_estero;
             }
         } else {
             // Feriale Italia (con logica fissa + sabato)
             if ($fissa_eff > 0) {
                 if ($is_sabato && $sabati_lavorati <= 2) {
-                    $rowCompensi['giornata'] = $fissa_eff; // placeholder, overridden in totals
+                    $rowCompensi['figc_fer_it'] = $fissa_eff; // placeholder, overridden in totals
                 } else {
-                    $rowCompensi['giornata'] = ($is_sabato && $sabati_lavorati > 2 && $rate_tariffa_sabato > 0)
-                        ? $rate_tariffa_sabato : $rate_giornata;
+                    $rowCompensi['figc_fer_it'] = ($is_sabato && $sabati_lavorati > 2 && $rate_tariffa_sabato > 0)
+                        ? $rate_tariffa_sabato : $rate_figc_feriale_italia;
                 }
             } else {
-                $rowCompensi['giornata'] = ($is_sabato && $sabati_lavorati > 2 && $rate_tariffa_sabato > 0)
-                    ? $rate_tariffa_sabato : $rate_giornata;
+                $rowCompensi['figc_fer_it'] = ($is_sabato && $sabati_lavorati > 2 && $rate_tariffa_sabato > 0)
+                    ? $rate_tariffa_sabato : $rate_figc_feriale_italia;
             }
         }
     } else {
         if ($estero == 1) {
             // Festivo Estero
             if ($rate_festivo_estero > 0) {
-                $rowCompensi['festivo_estero'] = $rate_festivo_estero;
+                $rowCompensi['fest_estero'] = $rate_festivo_estero;
             }
         } else {
             // Festivo Italia
-            if ($rate_festivo > 0) {
-                $rowCompensi['festivo_italia'] = $rate_festivo;
+            if ($rate_figc_festivo_italia > 0) {
+                $rowCompensi['figc_fest_it'] = $rate_figc_festivo_italia;
             }
         }
     }
 
-    if ($trasferta == 1)       $rowCompensi['trasferta']       = $rate_trasferta;
-    if ($pernotto == 1)        $rowCompensi['pernotto']        = $rate_pernotto;
-    if ($presidio == 1)        $rowCompensi['presidio']        = $rate_presidio;
-    if ($trasferta_lunga == 1) $rowCompensi['trasferta_lunga'] = $rate_trasferta_lunga;
-    if ($trasferta_breve == 1) $rowCompensi['trasferta_breve'] = $rate_trasferta;
+    if ($figc_tr_aut == 1)   $rowCompensi['figc_tr_aut']  = $rate_figc_trasp_aut;
+    if ($figc_tr_acmp == 1)  $rowCompensi['figc_tr_acmp'] = $rate_figc_trasp_acmp;
+    if ($pres_aut == 1)      $rowCompensi['pres_aut']     = $rate_presidio_aut;
+    if ($pres_acmp == 1)     $rowCompensi['pres_acmp']    = $rate_presidio_acmp;
+    if ($aut_nofigc == 1)    $rowCompensi['aut_nofigc']   = $rate_autista_nofigc;
+    if ($trasf_breve == 1)   $rowCompensi['trasf_breve']  = $rate_trasf_breve;
+    if ($trasf_media == 1)   $rowCompensi['trasf_media']  = $rate_trasf_media;
+    if ($trasf_lunga == 1)   $rowCompensi['trasf_lunga']  = $rate_trasf_lunga;
+    if ($pernotto == 1)      $rowCompensi['pernotto']     = $rate_pernotto;
 
     array_push($compensi, $rowCompensi);
 }
@@ -172,58 +189,72 @@ foreach ($timesheet as $dayRow) {
 }
 
 // Totals
-$trasferte        = 0; $pernotti              = 0; $presidi              = 0;
-$trasferte_lunghe = 0; $trasferte_brevi       = 0;
-$giornate         = 0; $feriali_estero        = 0;
-$festivi_italia   = 0; $festivi_estero        = 0;
-$straordinari     = 0;
+$figc_fer_it      = 0; $figc_fer_it_num      = 0;
+$figc_fest_it     = 0; $figc_fest_it_num     = 0;
+$fer_estero       = 0; $fer_estero_num       = 0;
+$fest_estero      = 0; $fest_estero_num      = 0;
+$figc_tr_aut_tot  = 0; $figc_tr_aut_num      = 0;
+$figc_tr_acmp_tot = 0; $figc_tr_acmp_num     = 0;
+$pres_aut_tot     = 0; $pres_aut_num         = 0;
+$pres_acmp_tot    = 0; $pres_acmp_num        = 0;
+$aut_nofigc_tot   = 0; $aut_nofigc_num       = 0;
+$trasf_breve_tot  = 0; $trasf_breve_num      = 0;
+$trasf_media_tot  = 0; $trasf_media_num      = 0;
+$trasf_lunga_tot  = 0; $trasf_lunga_num      = 0;
+$pernotto_tot     = 0; $pernotto_num         = 0;
+$straordinari_tot = 0; $straordinari_ore     = 0;
 
-$trasferte_num        = 0; $pernotti_num             = 0; $presidi_num              = 0;
-$trasferte_lunghe_num = 0; $trasferte_brevi_num      = 0;
-$giornate_num         = 0; $feriali_estero_num        = 0;
-$festivi_italia_num   = 0; $festivi_estero_num        = 0;
-$straordinari_ore     = 0;
-
-foreach($compensi as $z) {
-    $trasferte        += $z['trasferta']        ?? 0;
-    $pernotti         += $z['pernotto']         ?? 0;
-    $presidi          += $z['presidio']         ?? 0;
-    $trasferte_lunghe += $z['trasferta_lunga']  ?? 0;
-    $trasferte_brevi  += $z['trasferta_breve']  ?? 0;
-    $giornate         += $z['giornata']         ?? 0;
-    $feriali_estero   += $z['feriale_estero']   ?? 0;
-    $festivi_italia   += $z['festivo_italia']   ?? 0;
-    $festivi_estero   += $z['festivo_estero']   ?? 0;
-    $straordinari     += $z['straordinari']     ?? 0;
+foreach ($compensi as $z) {
+    $figc_fer_it      += $z['figc_fer_it']   ?? 0;
+    $figc_fest_it     += $z['figc_fest_it']  ?? 0;
+    $fer_estero       += $z['fer_estero']    ?? 0;
+    $fest_estero      += $z['fest_estero']   ?? 0;
+    $figc_tr_aut_tot  += $z['figc_tr_aut']   ?? 0;
+    $figc_tr_acmp_tot += $z['figc_tr_acmp']  ?? 0;
+    $pres_aut_tot     += $z['pres_aut']      ?? 0;
+    $pres_acmp_tot    += $z['pres_acmp']     ?? 0;
+    $aut_nofigc_tot   += $z['aut_nofigc']    ?? 0;
+    $trasf_breve_tot  += $z['trasf_breve']   ?? 0;
+    $trasf_media_tot  += $z['trasf_media']   ?? 0;
+    $trasf_lunga_tot  += $z['trasf_lunga']   ?? 0;
+    $pernotto_tot     += $z['pernotto']      ?? 0;
+    $straordinari_tot += $z['straordinari']  ?? 0;
     $straordinari_ore += $z['straordinari_ore'] ?? 0;
 
-    array_key_exists('trasferta', $z)       ? $trasferte_num++         : null;
-    array_key_exists('pernotto', $z)        ? $pernotti_num++          : null;
-    array_key_exists('presidio', $z)        ? $presidi_num++           : null;
-    array_key_exists('trasferta_lunga', $z) ? $trasferte_lunghe_num++  : null;
-    array_key_exists('trasferta_breve', $z) ? $trasferte_brevi_num++   : null;
-    array_key_exists('giornata', $z)        ? $giornate_num++          : null;
-    array_key_exists('feriale_estero', $z)  ? $feriali_estero_num++    : null;
-    array_key_exists('festivo_italia', $z)  ? $festivi_italia_num++    : null;
-    array_key_exists('festivo_estero', $z)  ? $festivi_estero_num++    : null;
+    array_key_exists('figc_fer_it',  $z) ? $figc_fer_it_num++     : null;
+    array_key_exists('figc_fest_it', $z) ? $figc_fest_it_num++    : null;
+    array_key_exists('fer_estero',   $z) ? $fer_estero_num++      : null;
+    array_key_exists('fest_estero',  $z) ? $fest_estero_num++     : null;
+    array_key_exists('figc_tr_aut',  $z) ? $figc_tr_aut_num++     : null;
+    array_key_exists('figc_tr_acmp', $z) ? $figc_tr_acmp_num++    : null;
+    array_key_exists('pres_aut',     $z) ? $pres_aut_num++        : null;
+    array_key_exists('pres_acmp',    $z) ? $pres_acmp_num++       : null;
+    array_key_exists('aut_nofigc',   $z) ? $aut_nofigc_num++      : null;
+    array_key_exists('trasf_breve',  $z) ? $trasf_breve_num++     : null;
+    array_key_exists('trasf_media',  $z) ? $trasf_media_num++     : null;
+    array_key_exists('trasf_lunga',  $z) ? $trasf_lunga_num++     : null;
+    array_key_exists('pernotto',     $z) ? $pernotto_num++        : null;
 }
 
-// Apply fissa logic to giornate total
+// Apply fissa logic to figc_fer_it total
 if ($fissa_eff > 0) {
     $sabati_extra = max(0, $sabati_lavorati - 2);
     $tariffa_sabato_calc = $rate_tariffa_sabato > 0
         ? $rate_tariffa_sabato
-        : ($giornate_num > 0 ? $fissa_eff / $giornate_num : 0);
-    $giornate = $fissa_eff + ($tariffa_sabato_calc * $sabati_extra);
+        : ($figc_fer_it_num > 0 ? $fissa_eff / $figc_fer_it_num : 0);
+    $figc_fer_it = $fissa_eff + ($tariffa_sabato_calc * $sabati_extra);
 }
 
 // Per-timesheet giornata override
 if ($o_fascia > 0) {
-    $giornate = (float)$o_fascia * $giornate_num;
+    $figc_fer_it = (float)$o_fascia * $figc_fer_it_num;
 }
 
-$totale = $trasferte + $pernotti + $presidi + $trasferte_lunghe + $trasferte_brevi
-        + $giornate + $feriali_estero + $festivi_italia + $festivi_estero + $straordinari;
+$totale = $figc_fer_it + $figc_fest_it + $fer_estero + $fest_estero
+        + $figc_tr_aut_tot + $figc_tr_acmp_tot
+        + $pres_aut_tot + $pres_acmp_tot + $aut_nofigc_tot
+        + $trasf_breve_tot + $trasf_media_tot + $trasf_lunga_tot
+        + $pernotto_tot + $straordinari_tot;
 
 if ($o_compensation > 0) {
     $totale = (float)$o_compensation;
@@ -250,39 +281,39 @@ $totale += $totale_bonus;
         </p><br />
         {{-- Mobile: stat cards --}}
         <div class="md:hidden grid grid-cols-2 gap-2 mb-4">
-            @if($giornate_num > 0)
+            @if($figc_fer_it_num > 0)
             <div class="bg-white dark:bg-gray-800 rounded-lg px-3 py-2 border border-gray-200 dark:border-gray-700">
-                <div class="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">Feriale Italia</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">FIGC Fer. It.</div>
                 <div class="flex justify-between items-baseline mt-0.5">
-                    <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $giornate_num }}</span>
-                    <span class="text-sm font-bold text-gray-900 dark:text-white">{{ $giornate }}€</span>
+                    <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $figc_fer_it_num }}</span>
+                    <span class="text-sm font-bold text-gray-900 dark:text-white">{{ $figc_fer_it }}€</span>
                 </div>
             </div>
             @endif
-            @if($feriali_estero_num > 0)
+            @if($figc_fest_it_num > 0)
             <div class="bg-white dark:bg-gray-800 rounded-lg px-3 py-2 border border-gray-200 dark:border-gray-700">
-                <div class="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">Feriale Estero</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">FIGC Fest. It.</div>
                 <div class="flex justify-between items-baseline mt-0.5">
-                    <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $feriali_estero_num }}</span>
-                    <span class="text-sm font-bold text-gray-900 dark:text-white">{{ $feriali_estero }}€</span>
+                    <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $figc_fest_it_num }}</span>
+                    <span class="text-sm font-bold text-gray-900 dark:text-white">{{ $figc_fest_it }}€</span>
                 </div>
             </div>
             @endif
-            @if($festivi_italia_num > 0)
+            @if($fer_estero_num > 0)
             <div class="bg-white dark:bg-gray-800 rounded-lg px-3 py-2 border border-gray-200 dark:border-gray-700">
-                <div class="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">Festivo Italia</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">Fer. Estero</div>
                 <div class="flex justify-between items-baseline mt-0.5">
-                    <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $festivi_italia_num }}</span>
-                    <span class="text-sm font-bold text-gray-900 dark:text-white">{{ $festivi_italia }}€</span>
+                    <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $fer_estero_num }}</span>
+                    <span class="text-sm font-bold text-gray-900 dark:text-white">{{ $fer_estero }}€</span>
                 </div>
             </div>
             @endif
-            @if($festivi_estero_num > 0)
+            @if($fest_estero_num > 0)
             <div class="bg-white dark:bg-gray-800 rounded-lg px-3 py-2 border border-gray-200 dark:border-gray-700">
-                <div class="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">Festivo Estero</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">Fest. Estero</div>
                 <div class="flex justify-between items-baseline mt-0.5">
-                    <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $festivi_estero_num }}</span>
-                    <span class="text-sm font-bold text-gray-900 dark:text-white">{{ $festivi_estero }}€</span>
+                    <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $fest_estero_num }}</span>
+                    <span class="text-sm font-bold text-gray-900 dark:text-white">{{ $fest_estero }}€</span>
                 </div>
             </div>
             @endif
@@ -291,43 +322,88 @@ $totale += $totale_bonus;
                 <div class="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">Straordinari</div>
                 <div class="flex justify-between items-baseline mt-0.5">
                     <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $straordinari_ore }}h</span>
-                    <span class="text-sm font-bold text-gray-900 dark:text-white">{{ $straordinari }}€</span>
+                    <span class="text-sm font-bold text-gray-900 dark:text-white">{{ $straordinari_tot }}€</span>
                 </div>
             </div>
             @endif
-            @if(($trasferte_num + $trasferte_brevi_num) > 0)
+            @if($figc_tr_aut_num > 0)
             <div class="bg-white dark:bg-gray-800 rounded-lg px-3 py-2 border border-gray-200 dark:border-gray-700">
-                <div class="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">Trasferta</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">FIGC Tr. Aut.</div>
                 <div class="flex justify-between items-baseline mt-0.5">
-                    <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $trasferte_num + $trasferte_brevi_num }}</span>
-                    <span class="text-sm font-bold text-gray-900 dark:text-white">{{ $trasferte + $trasferte_brevi }}€</span>
+                    <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $figc_tr_aut_num }}</span>
+                    <span class="text-sm font-bold text-gray-900 dark:text-white">{{ $figc_tr_aut_tot }}€</span>
                 </div>
             </div>
             @endif
-            @if($pernotti_num > 0)
+            @if($figc_tr_acmp_num > 0)
+            <div class="bg-white dark:bg-gray-800 rounded-lg px-3 py-2 border border-gray-200 dark:border-gray-700">
+                <div class="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">FIGC Tr. Acc.</div>
+                <div class="flex justify-between items-baseline mt-0.5">
+                    <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $figc_tr_acmp_num }}</span>
+                    <span class="text-sm font-bold text-gray-900 dark:text-white">{{ $figc_tr_acmp_tot }}€</span>
+                </div>
+            </div>
+            @endif
+            @if($pres_aut_num > 0)
+            <div class="bg-white dark:bg-gray-800 rounded-lg px-3 py-2 border border-gray-200 dark:border-gray-700">
+                <div class="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">Pres. Aut.</div>
+                <div class="flex justify-between items-baseline mt-0.5">
+                    <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $pres_aut_num }}</span>
+                    <span class="text-sm font-bold text-gray-900 dark:text-white">{{ $pres_aut_tot }}€</span>
+                </div>
+            </div>
+            @endif
+            @if($pres_acmp_num > 0)
+            <div class="bg-white dark:bg-gray-800 rounded-lg px-3 py-2 border border-gray-200 dark:border-gray-700">
+                <div class="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">Pres. Acc.</div>
+                <div class="flex justify-between items-baseline mt-0.5">
+                    <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $pres_acmp_num }}</span>
+                    <span class="text-sm font-bold text-gray-900 dark:text-white">{{ $pres_acmp_tot }}€</span>
+                </div>
+            </div>
+            @endif
+            @if($aut_nofigc_num > 0)
+            <div class="bg-white dark:bg-gray-800 rounded-lg px-3 py-2 border border-gray-200 dark:border-gray-700">
+                <div class="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">No FIGC</div>
+                <div class="flex justify-between items-baseline mt-0.5">
+                    <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $aut_nofigc_num }}</span>
+                    <span class="text-sm font-bold text-gray-900 dark:text-white">{{ $aut_nofigc_tot }}€</span>
+                </div>
+            </div>
+            @endif
+            @if($trasf_breve_num > 0)
+            <div class="bg-white dark:bg-gray-800 rounded-lg px-3 py-2 border border-gray-200 dark:border-gray-700">
+                <div class="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">Tr. Breve</div>
+                <div class="flex justify-between items-baseline mt-0.5">
+                    <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $trasf_breve_num }}</span>
+                    <span class="text-sm font-bold text-gray-900 dark:text-white">{{ $trasf_breve_tot }}€</span>
+                </div>
+            </div>
+            @endif
+            @if($trasf_media_num > 0)
+            <div class="bg-white dark:bg-gray-800 rounded-lg px-3 py-2 border border-gray-200 dark:border-gray-700">
+                <div class="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">Tr. Media</div>
+                <div class="flex justify-between items-baseline mt-0.5">
+                    <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $trasf_media_num }}</span>
+                    <span class="text-sm font-bold text-gray-900 dark:text-white">{{ $trasf_media_tot }}€</span>
+                </div>
+            </div>
+            @endif
+            @if($trasf_lunga_num > 0)
+            <div class="bg-white dark:bg-gray-800 rounded-lg px-3 py-2 border border-gray-200 dark:border-gray-700">
+                <div class="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">Tr. Lunga</div>
+                <div class="flex justify-between items-baseline mt-0.5">
+                    <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $trasf_lunga_num }}</span>
+                    <span class="text-sm font-bold text-gray-900 dark:text-white">{{ $trasf_lunga_tot }}€</span>
+                </div>
+            </div>
+            @endif
+            @if($pernotto_num > 0)
             <div class="bg-white dark:bg-gray-800 rounded-lg px-3 py-2 border border-gray-200 dark:border-gray-700">
                 <div class="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">Pernotti</div>
                 <div class="flex justify-between items-baseline mt-0.5">
-                    <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $pernotti_num }}</span>
-                    <span class="text-sm font-bold text-gray-900 dark:text-white">{{ $pernotti }}€</span>
-                </div>
-            </div>
-            @endif
-            @if($presidi_num > 0)
-            <div class="bg-white dark:bg-gray-800 rounded-lg px-3 py-2 border border-gray-200 dark:border-gray-700">
-                <div class="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">Presidi</div>
-                <div class="flex justify-between items-baseline mt-0.5">
-                    <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $presidi_num }}</span>
-                    <span class="text-sm font-bold text-gray-900 dark:text-white">{{ $presidi }}€</span>
-                </div>
-            </div>
-            @endif
-            @if($trasferte_lunghe_num > 0)
-            <div class="bg-white dark:bg-gray-800 rounded-lg px-3 py-2 border border-gray-200 dark:border-gray-700">
-                <div class="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">Trasf. Lunghe</div>
-                <div class="flex justify-between items-baseline mt-0.5">
-                    <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $trasferte_lunghe_num }}</span>
-                    <span class="text-sm font-bold text-gray-900 dark:text-white">{{ $trasferte_lunghe }}€</span>
+                    <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $pernotto_num }}</span>
+                    <span class="text-sm font-bold text-gray-900 dark:text-white">{{ $pernotto_tot }}€</span>
                 </div>
             </div>
             @endif
@@ -339,94 +415,139 @@ $totale += $totale_bonus;
             <thead class="bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-200">
                 <tr>
                     <th class="px-4 py-2"></th>
-                    @if($rate_giornata > 0 || $fissa_eff > 0)
-                    <th class="px-4 py-2">Feriale Italia</th>
+                    @if($rate_figc_feriale_italia > 0 || $fissa_eff > 0)
+                    <th class="px-4 py-2">FIGC Fer. It.</th>
+                    @endif
+                    @if($rate_figc_festivo_italia > 0)
+                    <th class="px-4 py-2">FIGC Fest. It.</th>
                     @endif
                     @if($rate_feriale_estero > 0)
-                    <th class="px-4 py-2">Feriale Estero</th>
-                    @endif
-                    @if($rate_festivo > 0)
-                    <th class="px-4 py-2">Festivo Italia</th>
+                    <th class="px-4 py-2">Fer. Estero</th>
                     @endif
                     @if($rate_festivo_estero > 0)
-                    <th class="px-4 py-2">Festivo Estero</th>
+                    <th class="px-4 py-2">Fest. Estero</th>
                     @endif
                     @if($rate_straordinari > 0)
-                    <th class="px-4 py-2">Straordinari</th>
+                    <th class="px-4 py-2">Straord.</th>
                     @endif
-                    @if($rate_trasferta > 0)
-                    <th class="px-4 py-2">Trasferta</th>
+                    @if($rate_figc_trasp_aut > 0)
+                    <th class="px-4 py-2">FIGC Tr. Aut.</th>
+                    @endif
+                    @if($rate_figc_trasp_acmp > 0)
+                    <th class="px-4 py-2">FIGC Tr. Acc.</th>
+                    @endif
+                    @if($rate_presidio_aut > 0)
+                    <th class="px-4 py-2">Pres. Aut.</th>
+                    @endif
+                    @if($rate_presidio_acmp > 0)
+                    <th class="px-4 py-2">Pres. Acc.</th>
+                    @endif
+                    @if($rate_autista_nofigc > 0)
+                    <th class="px-4 py-2">No FIGC</th>
+                    @endif
+                    @if($rate_trasf_breve > 0)
+                    <th class="px-4 py-2">Tr. Breve</th>
+                    @endif
+                    @if($rate_trasf_media > 0)
+                    <th class="px-4 py-2">Tr. Media</th>
+                    @endif
+                    @if($rate_trasf_lunga > 0)
+                    <th class="px-4 py-2">Tr. Lunga</th>
                     @endif
                     @if($rate_pernotto > 0)
-                    <th class="px-4 py-2">Pernotti</th>
-                    @endif
-                    @if($rate_presidio > 0)
-                    <th class="px-4 py-2">Presidi</th>
-                    @endif
-                    @if($rate_trasferta_lunga > 0)
-                    <th class="px-4 py-2">Trasf. Lunghe</th>
+                    <th class="px-4 py-2">Pernotto</th>
                     @endif
                 </tr>
             </thead>
             <tbody>
                 <tr class="odd:bg-white odd:dark:bg-gray-700 even:bg-gray-50 even:dark:bg-gray-800 dark:text-gray-200">
                     <td class="px-4 py-2">NUMERO</td>
-                    @if($rate_giornata > 0 || $fissa_eff > 0)
-                    <td class="px-4 py-2">{{ $giornate_num ?: '—' }}</td>
+                    @if($rate_figc_feriale_italia > 0 || $fissa_eff > 0)
+                    <td class="px-4 py-2">{{ $figc_fer_it_num ?: '—' }}</td>
+                    @endif
+                    @if($rate_figc_festivo_italia > 0)
+                    <td class="px-4 py-2">{{ $figc_fest_it_num ?: '—' }}</td>
                     @endif
                     @if($rate_feriale_estero > 0)
-                    <td class="px-4 py-2">{{ $feriali_estero_num ?: '—' }}</td>
-                    @endif
-                    @if($rate_festivo > 0)
-                    <td class="px-4 py-2">{{ $festivi_italia_num ?: '—' }}</td>
+                    <td class="px-4 py-2">{{ $fer_estero_num ?: '—' }}</td>
                     @endif
                     @if($rate_festivo_estero > 0)
-                    <td class="px-4 py-2">{{ $festivi_estero_num ?: '—' }}</td>
+                    <td class="px-4 py-2">{{ $fest_estero_num ?: '—' }}</td>
                     @endif
                     @if($rate_straordinari > 0)
                     <td class="px-4 py-2">{{ $straordinari_ore > 0 ? $straordinari_ore . 'h' : '—' }}</td>
                     @endif
-                    @if($rate_trasferta > 0)
-                    <td class="px-4 py-2">{{ ($trasferte_num + $trasferte_brevi_num) ?: '—' }}</td>
+                    @if($rate_figc_trasp_aut > 0)
+                    <td class="px-4 py-2">{{ $figc_tr_aut_num ?: '—' }}</td>
+                    @endif
+                    @if($rate_figc_trasp_acmp > 0)
+                    <td class="px-4 py-2">{{ $figc_tr_acmp_num ?: '—' }}</td>
+                    @endif
+                    @if($rate_presidio_aut > 0)
+                    <td class="px-4 py-2">{{ $pres_aut_num ?: '—' }}</td>
+                    @endif
+                    @if($rate_presidio_acmp > 0)
+                    <td class="px-4 py-2">{{ $pres_acmp_num ?: '—' }}</td>
+                    @endif
+                    @if($rate_autista_nofigc > 0)
+                    <td class="px-4 py-2">{{ $aut_nofigc_num ?: '—' }}</td>
+                    @endif
+                    @if($rate_trasf_breve > 0)
+                    <td class="px-4 py-2">{{ $trasf_breve_num ?: '—' }}</td>
+                    @endif
+                    @if($rate_trasf_media > 0)
+                    <td class="px-4 py-2">{{ $trasf_media_num ?: '—' }}</td>
+                    @endif
+                    @if($rate_trasf_lunga > 0)
+                    <td class="px-4 py-2">{{ $trasf_lunga_num ?: '—' }}</td>
                     @endif
                     @if($rate_pernotto > 0)
-                    <td class="px-4 py-2">{{ $pernotti_num ?: '—' }}</td>
-                    @endif
-                    @if($rate_presidio > 0)
-                    <td class="px-4 py-2">{{ $presidi_num ?: '—' }}</td>
-                    @endif
-                    @if($rate_trasferta_lunga > 0)
-                    <td class="px-4 py-2">{{ $trasferte_lunghe_num ?: '—' }}</td>
+                    <td class="px-4 py-2">{{ $pernotto_num ?: '—' }}</td>
                     @endif
                 </tr>
                 <tr class="odd:bg-white odd:dark:bg-gray-700 even:bg-gray-50 even:dark:bg-gray-800 dark:text-gray-200">
                     <td class="px-4 py-2">COMPENSO</td>
-                    @if($rate_giornata > 0 || $fissa_eff > 0)
-                    <td class="px-4 py-2">{{ $giornate > 0 ? $giornate . ' €' : '—' }}</td>
+                    @if($rate_figc_feriale_italia > 0 || $fissa_eff > 0)
+                    <td class="px-4 py-2">{{ $figc_fer_it > 0 ? $figc_fer_it . ' €' : '—' }}</td>
+                    @endif
+                    @if($rate_figc_festivo_italia > 0)
+                    <td class="px-4 py-2">{{ $figc_fest_it > 0 ? $figc_fest_it . ' €' : '—' }}</td>
                     @endif
                     @if($rate_feriale_estero > 0)
-                    <td class="px-4 py-2">{{ $feriali_estero > 0 ? $feriali_estero . ' €' : '—' }}</td>
-                    @endif
-                    @if($rate_festivo > 0)
-                    <td class="px-4 py-2">{{ $festivi_italia > 0 ? $festivi_italia . ' €' : '—' }}</td>
+                    <td class="px-4 py-2">{{ $fer_estero > 0 ? $fer_estero . ' €' : '—' }}</td>
                     @endif
                     @if($rate_festivo_estero > 0)
-                    <td class="px-4 py-2">{{ $festivi_estero > 0 ? $festivi_estero . ' €' : '—' }}</td>
+                    <td class="px-4 py-2">{{ $fest_estero > 0 ? $fest_estero . ' €' : '—' }}</td>
                     @endif
                     @if($rate_straordinari > 0)
-                    <td class="px-4 py-2">{{ $straordinari > 0 ? $straordinari . ' €' : '—' }}</td>
+                    <td class="px-4 py-2">{{ $straordinari_tot > 0 ? $straordinari_tot . ' €' : '—' }}</td>
                     @endif
-                    @if($rate_trasferta > 0)
-                    <td class="px-4 py-2">{{ ($trasferte + $trasferte_brevi) > 0 ? ($trasferte + $trasferte_brevi) . ' €' : '—' }}</td>
+                    @if($rate_figc_trasp_aut > 0)
+                    <td class="px-4 py-2">{{ $figc_tr_aut_tot > 0 ? $figc_tr_aut_tot . ' €' : '—' }}</td>
+                    @endif
+                    @if($rate_figc_trasp_acmp > 0)
+                    <td class="px-4 py-2">{{ $figc_tr_acmp_tot > 0 ? $figc_tr_acmp_tot . ' €' : '—' }}</td>
+                    @endif
+                    @if($rate_presidio_aut > 0)
+                    <td class="px-4 py-2">{{ $pres_aut_tot > 0 ? $pres_aut_tot . ' €' : '—' }}</td>
+                    @endif
+                    @if($rate_presidio_acmp > 0)
+                    <td class="px-4 py-2">{{ $pres_acmp_tot > 0 ? $pres_acmp_tot . ' €' : '—' }}</td>
+                    @endif
+                    @if($rate_autista_nofigc > 0)
+                    <td class="px-4 py-2">{{ $aut_nofigc_tot > 0 ? $aut_nofigc_tot . ' €' : '—' }}</td>
+                    @endif
+                    @if($rate_trasf_breve > 0)
+                    <td class="px-4 py-2">{{ $trasf_breve_tot > 0 ? $trasf_breve_tot . ' €' : '—' }}</td>
+                    @endif
+                    @if($rate_trasf_media > 0)
+                    <td class="px-4 py-2">{{ $trasf_media_tot > 0 ? $trasf_media_tot . ' €' : '—' }}</td>
+                    @endif
+                    @if($rate_trasf_lunga > 0)
+                    <td class="px-4 py-2">{{ $trasf_lunga_tot > 0 ? $trasf_lunga_tot . ' €' : '—' }}</td>
                     @endif
                     @if($rate_pernotto > 0)
-                    <td class="px-4 py-2">{{ $pernotti > 0 ? $pernotti . ' €' : '—' }}</td>
-                    @endif
-                    @if($rate_presidio > 0)
-                    <td class="px-4 py-2">{{ $presidi > 0 ? $presidi . ' €' : '—' }}</td>
-                    @endif
-                    @if($rate_trasferta_lunga > 0)
-                    <td class="px-4 py-2">{{ $trasferte_lunghe > 0 ? $trasferte_lunghe . ' €' : '—' }}</td>
+                    <td class="px-4 py-2">{{ $pernotto_tot > 0 ? $pernotto_tot . ' €' : '—' }}</td>
                     @endif
                 </tr>
             </tbody>
@@ -449,13 +570,13 @@ $totale += $totale_bonus;
             <div class="text-sm text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg p-4 max-w-lg">
                 <dl class="space-y-1">
 
-                    {{-- Giornate --}}
+                    {{-- FIGC Feriale Italia --}}
                     @if($fissa_eff > 0)
                         @php
                             $sabati_extra_n = max(0, $sabati_lavorati - 2);
                             $_sab_tar = $rate_tariffa_sabato > 0
                                 ? $rate_tariffa_sabato
-                                : ($giornate_num > 0 ? round($fissa_eff / $giornate_num, 2) : 0);
+                                : ($figc_fer_it_num > 0 ? round($fissa_eff / $figc_fer_it_num, 2) : 0);
                         @endphp
                         <div class="flex justify-between gap-4">
                             <dt class="text-gray-600 dark:text-gray-400">Paga mensile fissa ★:</dt>
@@ -473,21 +594,21 @@ $totale += $totale_bonus;
                         @endif
                     @else
                         @php
-                            $_tar_gg      = $rate_giornata;
-                            $_star_gg     = ($_userRoleRate && $rate_giornata > 0) ? ' ★' : '';
+                            $_tar_gg      = $rate_figc_feriale_italia;
+                            $_star_gg     = ($_userRoleRate && $rate_figc_feriale_italia > 0) ? ' ★' : '';
                             $_has_sab_tar = $rate_tariffa_sabato > 0;
                             $sabati_extra_f  = max(0, $sabati_lavorati - 2);
-                            $_gg_normali_f   = $giornate_num - $sabati_extra_f;
+                            $_gg_normali_f   = $figc_fer_it_num - $sabati_extra_f;
                         @endphp
                         @if($o_fascia > 0)
                         <div class="flex justify-between gap-4">
-                            <dt class="text-gray-600 dark:text-gray-400">Giornate (fascia override, {{ $giornate_num }} × {{ $o_fascia }}€):</dt>
-                            <dd class="font-semibold text-right">{{ round($o_fascia * $giornate_num, 2) }}€</dd>
+                            <dt class="text-gray-600 dark:text-gray-400">FIGC Fer. Italia (fascia override, {{ $figc_fer_it_num }} × {{ $o_fascia }}€):</dt>
+                            <dd class="font-semibold text-right">{{ round($o_fascia * $figc_fer_it_num, 2) }}€</dd>
                         </div>
                         @elseif($_has_sab_tar && $sabati_extra_f > 0)
                             @if($_gg_normali_f > 0)
                             <div class="flex justify-between gap-4">
-                                <dt class="text-gray-600 dark:text-gray-400">Giornate{{ $_star_gg }} ({{ $_gg_normali_f }} × {{ $_tar_gg }}€):</dt>
+                                <dt class="text-gray-600 dark:text-gray-400">FIGC Fer. Italia{{ $_star_gg }} ({{ $_gg_normali_f }} × {{ $_tar_gg }}€):</dt>
                                 <dd class="font-semibold text-right">{{ round($_gg_normali_f * $_tar_gg, 2) }}€</dd>
                             </div>
                             @endif
@@ -498,35 +619,35 @@ $totale += $totale_bonus;
                                 <dt class="text-gray-600 dark:text-gray-400">Dal 3° sabato ★ ({{ $sabati_extra_f }} × {{ $rate_tariffa_sabato }}€):</dt>
                                 <dd class="font-semibold text-right">+ {{ round($sabati_extra_f * $rate_tariffa_sabato, 2) }}€</dd>
                             </div>
-                        @elseif($giornate_num > 0)
+                        @elseif($figc_fer_it_num > 0 && !$fissa_eff)
                         <div class="flex justify-between gap-4">
-                            <dt class="text-gray-600 dark:text-gray-400">Giornate{{ $_star_gg }} ({{ $giornate_num }} × {{ $_tar_gg }}€):</dt>
-                            <dd class="font-semibold text-right">{{ round($giornate_num * $_tar_gg, 2) }}€</dd>
+                            <dt class="text-gray-600 dark:text-gray-400">FIGC Fer. Italia{{ $_star_gg }} ({{ $figc_fer_it_num }} × {{ $_tar_gg }}€):</dt>
+                            <dd class="font-semibold text-right">{{ round($figc_fer_it_num * $_tar_gg, 2) }}€</dd>
                         </div>
                         @endif
                     @endif
 
-                    {{-- Feriale Estero --}}
-                    @if($feriali_estero_num > 0)
+                    {{-- FIGC Festivo Italia --}}
+                    @if($figc_fest_it_num > 0)
                     <div class="flex justify-between gap-4">
-                        <dt class="text-gray-600 dark:text-gray-400">Feriale Estero ({{ $feriali_estero_num }} × {{ $rate_feriale_estero }}€):</dt>
-                        <dd class="font-semibold text-right">{{ round($feriali_estero, 2) }}€</dd>
+                        <dt class="text-gray-600 dark:text-gray-400">FIGC Fest. Italia ({{ $figc_fest_it_num }} × {{ $rate_figc_festivo_italia }}€):</dt>
+                        <dd class="font-semibold text-right">{{ round($figc_fest_it, 2) }}€</dd>
                     </div>
                     @endif
 
-                    {{-- Festivo Italia --}}
-                    @if($festivi_italia_num > 0)
+                    {{-- Feriale Estero --}}
+                    @if($fer_estero_num > 0)
                     <div class="flex justify-between gap-4">
-                        <dt class="text-gray-600 dark:text-gray-400">Festivo Italia ({{ $festivi_italia_num }} × {{ $rate_festivo }}€):</dt>
-                        <dd class="font-semibold text-right">{{ round($festivi_italia, 2) }}€</dd>
+                        <dt class="text-gray-600 dark:text-gray-400">Fer. Estero ({{ $fer_estero_num }} × {{ $rate_feriale_estero }}€):</dt>
+                        <dd class="font-semibold text-right">{{ round($fer_estero, 2) }}€</dd>
                     </div>
                     @endif
 
                     {{-- Festivo Estero --}}
-                    @if($festivi_estero_num > 0)
+                    @if($fest_estero_num > 0)
                     <div class="flex justify-between gap-4">
-                        <dt class="text-gray-600 dark:text-gray-400">Festivo Estero ({{ $festivi_estero_num }} × {{ $rate_festivo_estero }}€):</dt>
-                        <dd class="font-semibold text-right">{{ round($festivi_estero, 2) }}€</dd>
+                        <dt class="text-gray-600 dark:text-gray-400">Fest. Estero ({{ $fest_estero_num }} × {{ $rate_festivo_estero }}€):</dt>
+                        <dd class="font-semibold text-right">{{ round($fest_estero, 2) }}€</dd>
                     </div>
                     @endif
 
@@ -534,33 +655,79 @@ $totale += $totale_bonus;
                     @if($straordinari_ore > 0)
                     <div class="flex justify-between gap-4">
                         <dt class="text-gray-600 dark:text-gray-400">Straordinari ({{ $straordinari_ore }}h × {{ $rate_straordinari }}€/h):</dt>
-                        <dd class="font-semibold text-right">{{ round($straordinari, 2) }}€</dd>
+                        <dd class="font-semibold text-right">{{ round($straordinari_tot, 2) }}€</dd>
                     </div>
                     @endif
 
-                    {{-- Trasferta (brevi + legacy Trasferta) --}}
-                    @if(($trasferte_num + $trasferte_brevi_num) > 0)
+                    {{-- FIGC Trasp. Autista --}}
+                    @if($figc_tr_aut_num > 0)
                     <div class="flex justify-between gap-4">
-                        <dt class="text-gray-600 dark:text-gray-400">Trasferta ({{ $trasferte_num + $trasferte_brevi_num }} × {{ $rate_trasferta }}€):</dt>
-                        <dd class="font-semibold text-right">{{ round($trasferte + $trasferte_brevi, 2) }}€</dd>
+                        <dt class="text-gray-600 dark:text-gray-400">FIGC Tr. Aut. ({{ $figc_tr_aut_num }} × {{ $rate_figc_trasp_aut }}€):</dt>
+                        <dd class="font-semibold text-right">{{ round($figc_tr_aut_tot, 2) }}€</dd>
                     </div>
                     @endif
-                    @if($pernotti_num > 0)
+
+                    {{-- FIGC Trasp. Accompagnatore --}}
+                    @if($figc_tr_acmp_num > 0)
                     <div class="flex justify-between gap-4">
-                        <dt class="text-gray-600 dark:text-gray-400">Pernotti ({{ $pernotti_num }} × {{ $rate_pernotto }}€):</dt>
-                        <dd class="font-semibold text-right">{{ round($pernotti, 2) }}€</dd>
+                        <dt class="text-gray-600 dark:text-gray-400">FIGC Tr. Acc. ({{ $figc_tr_acmp_num }} × {{ $rate_figc_trasp_acmp }}€):</dt>
+                        <dd class="font-semibold text-right">{{ round($figc_tr_acmp_tot, 2) }}€</dd>
                     </div>
                     @endif
-                    @if($presidi_num > 0)
+
+                    {{-- Presidio Autisti --}}
+                    @if($pres_aut_num > 0)
                     <div class="flex justify-between gap-4">
-                        <dt class="text-gray-600 dark:text-gray-400">Presidi ({{ $presidi_num }} × {{ $rate_presidio }}€):</dt>
-                        <dd class="font-semibold text-right">{{ round($presidi, 2) }}€</dd>
+                        <dt class="text-gray-600 dark:text-gray-400">Pres. Aut. ({{ $pres_aut_num }} × {{ $rate_presidio_aut }}€):</dt>
+                        <dd class="font-semibold text-right">{{ round($pres_aut_tot, 2) }}€</dd>
                     </div>
                     @endif
-                    @if($trasferte_lunghe_num > 0)
+
+                    {{-- Presidio Accompagnatori --}}
+                    @if($pres_acmp_num > 0)
                     <div class="flex justify-between gap-4">
-                        <dt class="text-gray-600 dark:text-gray-400">Trasferte Lunghe ({{ $trasferte_lunghe_num }} × {{ $rate_trasferta_lunga }}€):</dt>
-                        <dd class="font-semibold text-right">{{ round($trasferte_lunghe, 2) }}€</dd>
+                        <dt class="text-gray-600 dark:text-gray-400">Pres. Acc. ({{ $pres_acmp_num }} × {{ $rate_presidio_acmp }}€):</dt>
+                        <dd class="font-semibold text-right">{{ round($pres_acmp_tot, 2) }}€</dd>
+                    </div>
+                    @endif
+
+                    {{-- Autista no FIGC --}}
+                    @if($aut_nofigc_num > 0)
+                    <div class="flex justify-between gap-4">
+                        <dt class="text-gray-600 dark:text-gray-400">No FIGC ({{ $aut_nofigc_num }} × {{ $rate_autista_nofigc }}€):</dt>
+                        <dd class="font-semibold text-right">{{ round($aut_nofigc_tot, 2) }}€</dd>
+                    </div>
+                    @endif
+
+                    {{-- Trasferta Breve --}}
+                    @if($trasf_breve_num > 0)
+                    <div class="flex justify-between gap-4">
+                        <dt class="text-gray-600 dark:text-gray-400">Tr. Breve ({{ $trasf_breve_num }} × {{ $rate_trasf_breve }}€):</dt>
+                        <dd class="font-semibold text-right">{{ round($trasf_breve_tot, 2) }}€</dd>
+                    </div>
+                    @endif
+
+                    {{-- Trasferta Media --}}
+                    @if($trasf_media_num > 0)
+                    <div class="flex justify-between gap-4">
+                        <dt class="text-gray-600 dark:text-gray-400">Tr. Media ({{ $trasf_media_num }} × {{ $rate_trasf_media }}€):</dt>
+                        <dd class="font-semibold text-right">{{ round($trasf_media_tot, 2) }}€</dd>
+                    </div>
+                    @endif
+
+                    {{-- Trasferta Lunga --}}
+                    @if($trasf_lunga_num > 0)
+                    <div class="flex justify-between gap-4">
+                        <dt class="text-gray-600 dark:text-gray-400">Tr. Lunga ({{ $trasf_lunga_num }} × {{ $rate_trasf_lunga }}€):</dt>
+                        <dd class="font-semibold text-right">{{ round($trasf_lunga_tot, 2) }}€</dd>
+                    </div>
+                    @endif
+
+                    {{-- Pernotto --}}
+                    @if($pernotto_num > 0)
+                    <div class="flex justify-between gap-4">
+                        <dt class="text-gray-600 dark:text-gray-400">Pernotti ({{ $pernotto_num }} × {{ $rate_pernotto }}€):</dt>
+                        <dd class="font-semibold text-right">{{ round($pernotto_tot, 2) }}€</dd>
                     </div>
                     @endif
 

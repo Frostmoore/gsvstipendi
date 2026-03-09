@@ -10,13 +10,13 @@
         {{ __('2. Cliccando accanto ai trattini, nei campi Entrata e Uscita, apparirà il Time Selector') }}
     </p>
     <p class="text-xs text-gray-800 dark:text-gray-200 leading-tight">
-        {{ __('3. Seleziona un solo campo Trasferta') }}
+        {{ __('3. Le colonne checkbox sono additive: puoi selezionarne più di una per giorno') }}
     </p>
     <p class="text-xs text-gray-800 dark:text-gray-200 leading-tight">
-        {{ __('4. Per Trasf. Breve si intende fino a 200 Km. Per Trasf. Lunga, si intende oltre i 200 Km') }}
+        {{ __('4. Tr. Breve = fino a 230 km, Tr. Media = fino a 300 km, Tr. Lunga = oltre 300 km') }}
     </p>
     <p class="text-xs text-gray-800 dark:text-gray-200 leading-tight">
-        {{ __('5. Per i Magazzinieri FIGC, è sufficiente spuntare il campo Estero, se si è stati all\'Estero') }}
+        {{ __('5. Estero: sostituisce la tariffa giornaliera con la corrispondente tariffa estero') }}
     </p>
 </div>
 <div class="shadow-md rounded-lg">
@@ -28,11 +28,16 @@
                 <th>Luogo</th>
                 <th>Entrata</th>
                 <th>Uscita</th>
-                <th>Trasf. Breve</th>
-                <th>Trasf. Lunga</th>
-                <th>Pernotto</th>
-                <th>Presidio</th>
                 <th>Estero</th>
+                <th>FIGC Tr. Aut.</th>
+                <th>FIGC Tr. Acc.</th>
+                <th>Pres. Aut.</th>
+                <th>Pres. Acc.</th>
+                <th>No FIGC</th>
+                <th>Tr. Breve</th>
+                <th>Tr. Media</th>
+                <th>Tr. Lunga</th>
+                <th>Pernotto</th>
                 <th>Note</th>
             </tr>
         </thead>
@@ -81,28 +86,38 @@ document.addEventListener("DOMContentLoaded", function () {
     const usersRatesMap = <?= json_encode($usersRates ?? []) ?>;
 
     const allColumns = [
-        { name: "Data",       type: "text",        editable: false },
-        { name: "Cliente",    type: "text",        editable: true  },
-        { name: "Luogo",      type: "text",        editable: true  },
-        { name: "Entrata",    type: "time",        editable: true  },
-        { name: "Uscita",     type: "time",        editable: true  },
-        { name: "TrasfBreve", label: "Trasferta",  type: "checkbox", editable: false },
-        { name: "TrasfLunga", type: "checkbox",    editable: false },
-        { name: "Pernotto",   type: "checkbox",    editable: false },
-        { name: "Presidio",   type: "checkbox",    editable: false },
-        { name: "Estero",     type: "checkbox",    editable: false },
-        { name: "Note",       type: "multiselect", editable: false }
+        { name: "Data",            type: "text",        editable: false },
+        { name: "Cliente",         type: "text",        editable: true  },
+        { name: "Luogo",           type: "text",        editable: true  },
+        { name: "Entrata",         type: "time",        editable: true  },
+        { name: "Uscita",          type: "time",        editable: true  },
+        { name: "Estero",          type: "checkbox",    editable: false },
+        { name: "FigcTraspAut",    label: "FIGC Tr. Aut.",  type: "checkbox", editable: false },
+        { name: "FigcTraspAccomp", label: "FIGC Tr. Acc.",  type: "checkbox", editable: false },
+        { name: "PresidioAut",     label: "Pres. Aut.",     type: "checkbox", editable: false },
+        { name: "PresidioAccomp",  label: "Pres. Acc.",     type: "checkbox", editable: false },
+        { name: "AutistaNoFigc",   label: "No FIGC",        type: "checkbox", editable: false },
+        { name: "TrasfBreve",      label: "Tr. Breve",      type: "checkbox", editable: false },
+        { name: "TrasfMedia",      label: "Tr. Media",      type: "checkbox", editable: false },
+        { name: "TrasfLunga",      label: "Tr. Lunga",      type: "checkbox", editable: false },
+        { name: "Pernotto",        type: "checkbox",    editable: false },
+        { name: "Note",            type: "multiselect", editable: false },
     ];
 
     function getColumnsForRates(rates) {
         return allColumns.filter(function(col) {
             switch (col.name) {
-                case "TrasfBreve": return rates && parseFloat(rates.trasferta || 0) > 0;
-                case "TrasfLunga": return rates && parseFloat(rates.trasferta_lunga || 0) > 0;
-                case "Pernotto":   return rates && parseFloat(rates.pernotto || 0) > 0;
-                case "Presidio":   return rates && parseFloat(rates.presidio || 0) > 0;
-                case "Estero":     return rates && (parseFloat(rates.feriale_estero || 0) > 0 || parseFloat(rates.festivo_estero || 0) > 0);
-                default:           return true;
+                case "Estero":         return rates && (parseFloat(rates.feriale_estero || 0) > 0 || parseFloat(rates.festivo_estero || 0) > 0);
+                case "FigcTraspAut":   return rates && parseFloat(rates.figc_trasp_autista || 0) > 0;
+                case "FigcTraspAccomp":return rates && parseFloat(rates.figc_trasp_accompagnatore || 0) > 0;
+                case "PresidioAut":    return rates && parseFloat(rates.presidio_autisti || 0) > 0;
+                case "PresidioAccomp": return rates && parseFloat(rates.presidio_accompagnatori || 0) > 0;
+                case "AutistaNoFigc":  return rates && parseFloat(rates.autista_no_figc || 0) > 0;
+                case "TrasfBreve":     return rates && parseFloat(rates.trasferta || 0) > 0;
+                case "TrasfMedia":     return rates && parseFloat(rates.trasferta_media || 0) > 0;
+                case "TrasfLunga":     return rates && parseFloat(rates.trasferta_lunga || 0) > 0;
+                case "Pernotto":       return rates && parseFloat(rates.pernotto || 0) > 0;
+                default:               return true;
             }
         });
     }

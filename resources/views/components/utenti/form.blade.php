@@ -72,16 +72,21 @@
 
     @php
         $rateFields = [
-            'giornata'        => 'Feriale Italia (€)',
-            'feriale_estero'  => 'Feriale Estero (€)',
-            'festivo'         => 'Festivo Italia (€)',
-            'festivo_estero'  => 'Festivo Estero (€)',
-            'straordinari'    => 'Straordinari (€/ora)',
-            'trasferta'       => 'Trasferta Breve (€)',
-            'trasferta_lunga' => 'Trasferta Lunga (€)',
-            'pernotto'        => 'Pernotto (€)',
-            'presidio'        => 'Presidio (€)',
-            'tariffa_sabato'  => 'Tariffa 3° Sabato (€)',
+            'figc_feriale_italia'       => 'FIGC Feriale Italia (€)',
+            'feriale_estero'            => 'FIGC Feriale Estero (€)',
+            'figc_festivo_italia'       => 'FIGC Festivo Italia (€)',
+            'festivo_estero'            => 'FIGC Festivo Estero (€)',
+            'figc_trasp_autista'        => 'FIGC Trasp. Autista (€)',
+            'figc_trasp_accompagnatore' => 'FIGC Trasp. Accomp. (€)',
+            'presidio_autisti'          => 'Presidio Autisti (€)',
+            'presidio_accompagnatori'   => 'Presidio Accomp. (€)',
+            'autista_no_figc'           => 'Autista no FIGC (€)',
+            'trasferta'                 => 'Trasf. Breve <230km (€)',
+            'trasferta_media'           => 'Trasf. Media <300km (€)',
+            'trasferta_lunga'           => 'Trasf. Lunga >300km (€)',
+            'pernotto'                  => 'Pernotto (€)',
+            'straordinari'              => 'Straordinari (€/ora)',
+            'tariffa_sabato'            => 'Tariffa 3° Sabato (€)',
         ];
         $ic = 'w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-md shadow-sm text-sm px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500';
     @endphp
