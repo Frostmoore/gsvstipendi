@@ -53,14 +53,14 @@ if ($_userRoleRate && (float)($_userRoleRate->fissa ?? 0) > 0) {
 $cols    = ['Data', 'Cliente', 'Luogo', 'Entrata', 'Uscita'];
 $colKeys = ['Data', 'Cliente', 'Luogo', 'Entrata', 'Uscita'];
 if ($rate_feriale_estero > 0 || $rate_festivo_estero > 0) { $cols[] = 'Estero';         $colKeys[] = 'Estero'; }
-if ($rate_figc_trasp_aut > 0)   { $cols[] = 'FIGC Tr. Aut.'; $colKeys[] = 'FigcTraspAut'; }
-if ($rate_figc_trasp_acmp > 0)  { $cols[] = 'FIGC Tr. Acc.'; $colKeys[] = 'FigcTraspAccomp'; }
-if ($rate_presidio_aut > 0)     { $cols[] = 'Pres. Aut.';    $colKeys[] = 'PresidioAut'; }
-if ($rate_presidio_acmp > 0)    { $cols[] = 'Pres. Acc.';    $colKeys[] = 'PresidioAccomp'; }
+if ($rate_figc_trasp_aut > 0)   { $cols[] = 'FIGC Trasp. Autista'; $colKeys[] = 'FigcTraspAut'; }
+if ($rate_figc_trasp_acmp > 0)  { $cols[] = 'FIGC Trasp. Accompagnatore'; $colKeys[] = 'FigcTraspAccomp'; }
+if ($rate_presidio_aut > 0)     { $cols[] = 'Presidio Autisti';    $colKeys[] = 'PresidioAut'; }
+if ($rate_presidio_acmp > 0)    { $cols[] = 'Presidio Accompagnatori';    $colKeys[] = 'PresidioAccomp'; }
 if ($rate_autista_nofigc > 0)   { $cols[] = 'No FIGC';       $colKeys[] = 'AutistaNoFigc'; }
-if ($rate_trasf_breve > 0)      { $cols[] = 'Tr. Breve';     $colKeys[] = 'TrasfBreve'; }
-if ($rate_trasf_media > 0)      { $cols[] = 'Tr. Media';     $colKeys[] = 'TrasfMedia'; }
-if ($rate_trasf_lunga > 0)      { $cols[] = 'Tr. Lunga';     $colKeys[] = 'TrasfLunga'; }
+if ($rate_trasf_breve > 0)      { $cols[] = 'Trasferta Breve';     $colKeys[] = 'TrasfBreve'; }
+if ($rate_trasf_media > 0)      { $cols[] = 'Trasferta Media';     $colKeys[] = 'TrasfMedia'; }
+if ($rate_trasf_lunga > 0)      { $cols[] = 'Trasferta Lunga';     $colKeys[] = 'TrasfLunga'; }
 if ($rate_pernotto > 0)         { $cols[] = 'Pernotto';      $colKeys[] = 'Pernotto'; }
 $cols[] = 'Note'; $colKeys[] = 'Note';
 
@@ -276,283 +276,6 @@ $totale += $totale_bonus;
         <p class="text-lg text-gray-800 dark:text-gray-200 leading-tight">
             <strong>Totale Compenso:</strong> <span style="padding: 5px;background-color:orange;color:black; font-size: 1.5rem;font-weight:bolder;">{{ $totale }}€</span>
         </p><br />
-        <p class="text-lg text-gray-800 dark:text-gray-200 leading-tight">
-            <strong>Distinta:</strong>
-        </p><br />
-        {{-- Mobile: stat cards --}}
-        <div class="md:hidden grid grid-cols-2 gap-2 mb-4">
-            @if($figc_fer_it_num > 0)
-            <div class="bg-white dark:bg-gray-800 rounded-lg px-3 py-2 border border-gray-200 dark:border-gray-700">
-                <div class="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">Mag.Fer.It.</div>
-                <div class="flex justify-between items-baseline mt-0.5">
-                    <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $figc_fer_it_num }}</span>
-                    <span class="text-sm font-bold text-gray-900 dark:text-white">{{ $figc_fer_it }}€</span>
-                </div>
-            </div>
-            @endif
-            @if($figc_fest_it_num > 0)
-            <div class="bg-white dark:bg-gray-800 rounded-lg px-3 py-2 border border-gray-200 dark:border-gray-700">
-                <div class="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">Mag.Fest.It.</div>
-                <div class="flex justify-between items-baseline mt-0.5">
-                    <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $figc_fest_it_num }}</span>
-                    <span class="text-sm font-bold text-gray-900 dark:text-white">{{ $figc_fest_it }}€</span>
-                </div>
-            </div>
-            @endif
-            @if($fer_estero_num > 0)
-            <div class="bg-white dark:bg-gray-800 rounded-lg px-3 py-2 border border-gray-200 dark:border-gray-700">
-                <div class="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">Mag.Fer.Est.</div>
-                <div class="flex justify-between items-baseline mt-0.5">
-                    <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $fer_estero_num }}</span>
-                    <span class="text-sm font-bold text-gray-900 dark:text-white">{{ $fer_estero }}€</span>
-                </div>
-            </div>
-            @endif
-            @if($fest_estero_num > 0)
-            <div class="bg-white dark:bg-gray-800 rounded-lg px-3 py-2 border border-gray-200 dark:border-gray-700">
-                <div class="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">Mag.Fest.Est.</div>
-                <div class="flex justify-between items-baseline mt-0.5">
-                    <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $fest_estero_num }}</span>
-                    <span class="text-sm font-bold text-gray-900 dark:text-white">{{ $fest_estero }}€</span>
-                </div>
-            </div>
-            @endif
-            @if($straordinari_ore > 0)
-            <div class="bg-white dark:bg-gray-800 rounded-lg px-3 py-2 border border-gray-200 dark:border-gray-700">
-                <div class="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">Straordinari</div>
-                <div class="flex justify-between items-baseline mt-0.5">
-                    <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $straordinari_ore }}h</span>
-                    <span class="text-sm font-bold text-gray-900 dark:text-white">{{ $straordinari_tot }}€</span>
-                </div>
-            </div>
-            @endif
-            @if($figc_tr_aut_num > 0)
-            <div class="bg-white dark:bg-gray-800 rounded-lg px-3 py-2 border border-gray-200 dark:border-gray-700">
-                <div class="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">FIGC Tr. Aut.</div>
-                <div class="flex justify-between items-baseline mt-0.5">
-                    <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $figc_tr_aut_num }}</span>
-                    <span class="text-sm font-bold text-gray-900 dark:text-white">{{ $figc_tr_aut_tot }}€</span>
-                </div>
-            </div>
-            @endif
-            @if($figc_tr_acmp_num > 0)
-            <div class="bg-white dark:bg-gray-800 rounded-lg px-3 py-2 border border-gray-200 dark:border-gray-700">
-                <div class="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">FIGC Tr. Acc.</div>
-                <div class="flex justify-between items-baseline mt-0.5">
-                    <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $figc_tr_acmp_num }}</span>
-                    <span class="text-sm font-bold text-gray-900 dark:text-white">{{ $figc_tr_acmp_tot }}€</span>
-                </div>
-            </div>
-            @endif
-            @if($pres_aut_num > 0)
-            <div class="bg-white dark:bg-gray-800 rounded-lg px-3 py-2 border border-gray-200 dark:border-gray-700">
-                <div class="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">Pres. Aut.</div>
-                <div class="flex justify-between items-baseline mt-0.5">
-                    <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $pres_aut_num }}</span>
-                    <span class="text-sm font-bold text-gray-900 dark:text-white">{{ $pres_aut_tot }}€</span>
-                </div>
-            </div>
-            @endif
-            @if($pres_acmp_num > 0)
-            <div class="bg-white dark:bg-gray-800 rounded-lg px-3 py-2 border border-gray-200 dark:border-gray-700">
-                <div class="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">Pres. Acc.</div>
-                <div class="flex justify-between items-baseline mt-0.5">
-                    <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $pres_acmp_num }}</span>
-                    <span class="text-sm font-bold text-gray-900 dark:text-white">{{ $pres_acmp_tot }}€</span>
-                </div>
-            </div>
-            @endif
-            @if($aut_nofigc_num > 0)
-            <div class="bg-white dark:bg-gray-800 rounded-lg px-3 py-2 border border-gray-200 dark:border-gray-700">
-                <div class="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">No FIGC</div>
-                <div class="flex justify-between items-baseline mt-0.5">
-                    <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $aut_nofigc_num }}</span>
-                    <span class="text-sm font-bold text-gray-900 dark:text-white">{{ $aut_nofigc_tot }}€</span>
-                </div>
-            </div>
-            @endif
-            @if($trasf_breve_num > 0)
-            <div class="bg-white dark:bg-gray-800 rounded-lg px-3 py-2 border border-gray-200 dark:border-gray-700">
-                <div class="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">Tr. Breve</div>
-                <div class="flex justify-between items-baseline mt-0.5">
-                    <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $trasf_breve_num }}</span>
-                    <span class="text-sm font-bold text-gray-900 dark:text-white">{{ $trasf_breve_tot }}€</span>
-                </div>
-            </div>
-            @endif
-            @if($trasf_media_num > 0)
-            <div class="bg-white dark:bg-gray-800 rounded-lg px-3 py-2 border border-gray-200 dark:border-gray-700">
-                <div class="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">Tr. Media</div>
-                <div class="flex justify-between items-baseline mt-0.5">
-                    <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $trasf_media_num }}</span>
-                    <span class="text-sm font-bold text-gray-900 dark:text-white">{{ $trasf_media_tot }}€</span>
-                </div>
-            </div>
-            @endif
-            @if($trasf_lunga_num > 0)
-            <div class="bg-white dark:bg-gray-800 rounded-lg px-3 py-2 border border-gray-200 dark:border-gray-700">
-                <div class="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">Tr. Lunga</div>
-                <div class="flex justify-between items-baseline mt-0.5">
-                    <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $trasf_lunga_num }}</span>
-                    <span class="text-sm font-bold text-gray-900 dark:text-white">{{ $trasf_lunga_tot }}€</span>
-                </div>
-            </div>
-            @endif
-            @if($pernotto_num > 0)
-            <div class="bg-white dark:bg-gray-800 rounded-lg px-3 py-2 border border-gray-200 dark:border-gray-700">
-                <div class="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">Pernotti</div>
-                <div class="flex justify-between items-baseline mt-0.5">
-                    <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $pernotto_num }}</span>
-                    <span class="text-sm font-bold text-gray-900 dark:text-white">{{ $pernotto_tot }}€</span>
-                </div>
-            </div>
-            @endif
-        </div>
-
-        {{-- Desktop: table --}}
-        <div class="hidden md:block overflow-x-auto">
-        <table class="table-fixed w-full gsv-timesheet-table">
-            <thead class="bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-200">
-                <tr>
-                    <th class="px-4 py-2"></th>
-                    @if($rate_figc_feriale_italia > 0 || $fissa_eff > 0)
-                    <th class="px-4 py-2">Mag.Fer.It.</th>
-                    @endif
-                    @if($rate_figc_festivo_italia > 0)
-                    <th class="px-4 py-2">Mag.Fest.It.</th>
-                    @endif
-                    @if($rate_feriale_estero > 0)
-                    <th class="px-4 py-2">Mag.Fer.Est.</th>
-                    @endif
-                    @if($rate_festivo_estero > 0)
-                    <th class="px-4 py-2">Mag.Fest.Est.</th>
-                    @endif
-                    @if($rate_straordinari > 0)
-                    <th class="px-4 py-2">Straord.</th>
-                    @endif
-                    @if($rate_figc_trasp_aut > 0)
-                    <th class="px-4 py-2">FIGC Tr. Aut.</th>
-                    @endif
-                    @if($rate_figc_trasp_acmp > 0)
-                    <th class="px-4 py-2">FIGC Tr. Acc.</th>
-                    @endif
-                    @if($rate_presidio_aut > 0)
-                    <th class="px-4 py-2">Pres. Aut.</th>
-                    @endif
-                    @if($rate_presidio_acmp > 0)
-                    <th class="px-4 py-2">Pres. Acc.</th>
-                    @endif
-                    @if($rate_autista_nofigc > 0)
-                    <th class="px-4 py-2">No FIGC</th>
-                    @endif
-                    @if($rate_trasf_breve > 0)
-                    <th class="px-4 py-2">Tr. Breve</th>
-                    @endif
-                    @if($rate_trasf_media > 0)
-                    <th class="px-4 py-2">Tr. Media</th>
-                    @endif
-                    @if($rate_trasf_lunga > 0)
-                    <th class="px-4 py-2">Tr. Lunga</th>
-                    @endif
-                    @if($rate_pernotto > 0)
-                    <th class="px-4 py-2">Pernotto</th>
-                    @endif
-                </tr>
-            </thead>
-            <tbody>
-                <tr class="odd:bg-white odd:dark:bg-gray-700 even:bg-gray-50 even:dark:bg-gray-800 dark:text-gray-200">
-                    <td class="px-4 py-2">NUMERO</td>
-                    @if($rate_figc_feriale_italia > 0 || $fissa_eff > 0)
-                    <td class="px-4 py-2">{{ $figc_fer_it_num ?: '—' }}</td>
-                    @endif
-                    @if($rate_figc_festivo_italia > 0)
-                    <td class="px-4 py-2">{{ $figc_fest_it_num ?: '—' }}</td>
-                    @endif
-                    @if($rate_feriale_estero > 0)
-                    <td class="px-4 py-2">{{ $fer_estero_num ?: '—' }}</td>
-                    @endif
-                    @if($rate_festivo_estero > 0)
-                    <td class="px-4 py-2">{{ $fest_estero_num ?: '—' }}</td>
-                    @endif
-                    @if($rate_straordinari > 0)
-                    <td class="px-4 py-2">{{ $straordinari_ore > 0 ? $straordinari_ore . 'h' : '—' }}</td>
-                    @endif
-                    @if($rate_figc_trasp_aut > 0)
-                    <td class="px-4 py-2">{{ $figc_tr_aut_num ?: '—' }}</td>
-                    @endif
-                    @if($rate_figc_trasp_acmp > 0)
-                    <td class="px-4 py-2">{{ $figc_tr_acmp_num ?: '—' }}</td>
-                    @endif
-                    @if($rate_presidio_aut > 0)
-                    <td class="px-4 py-2">{{ $pres_aut_num ?: '—' }}</td>
-                    @endif
-                    @if($rate_presidio_acmp > 0)
-                    <td class="px-4 py-2">{{ $pres_acmp_num ?: '—' }}</td>
-                    @endif
-                    @if($rate_autista_nofigc > 0)
-                    <td class="px-4 py-2">{{ $aut_nofigc_num ?: '—' }}</td>
-                    @endif
-                    @if($rate_trasf_breve > 0)
-                    <td class="px-4 py-2">{{ $trasf_breve_num ?: '—' }}</td>
-                    @endif
-                    @if($rate_trasf_media > 0)
-                    <td class="px-4 py-2">{{ $trasf_media_num ?: '—' }}</td>
-                    @endif
-                    @if($rate_trasf_lunga > 0)
-                    <td class="px-4 py-2">{{ $trasf_lunga_num ?: '—' }}</td>
-                    @endif
-                    @if($rate_pernotto > 0)
-                    <td class="px-4 py-2">{{ $pernotto_num ?: '—' }}</td>
-                    @endif
-                </tr>
-                <tr class="odd:bg-white odd:dark:bg-gray-700 even:bg-gray-50 even:dark:bg-gray-800 dark:text-gray-200">
-                    <td class="px-4 py-2">COMPENSO</td>
-                    @if($rate_figc_feriale_italia > 0 || $fissa_eff > 0)
-                    <td class="px-4 py-2">{{ $figc_fer_it > 0 ? $figc_fer_it . ' €' : '—' }}</td>
-                    @endif
-                    @if($rate_figc_festivo_italia > 0)
-                    <td class="px-4 py-2">{{ $figc_fest_it > 0 ? $figc_fest_it . ' €' : '—' }}</td>
-                    @endif
-                    @if($rate_feriale_estero > 0)
-                    <td class="px-4 py-2">{{ $fer_estero > 0 ? $fer_estero . ' €' : '—' }}</td>
-                    @endif
-                    @if($rate_festivo_estero > 0)
-                    <td class="px-4 py-2">{{ $fest_estero > 0 ? $fest_estero . ' €' : '—' }}</td>
-                    @endif
-                    @if($rate_straordinari > 0)
-                    <td class="px-4 py-2">{{ $straordinari_tot > 0 ? $straordinari_tot . ' €' : '—' }}</td>
-                    @endif
-                    @if($rate_figc_trasp_aut > 0)
-                    <td class="px-4 py-2">{{ $figc_tr_aut_tot > 0 ? $figc_tr_aut_tot . ' €' : '—' }}</td>
-                    @endif
-                    @if($rate_figc_trasp_acmp > 0)
-                    <td class="px-4 py-2">{{ $figc_tr_acmp_tot > 0 ? $figc_tr_acmp_tot . ' €' : '—' }}</td>
-                    @endif
-                    @if($rate_presidio_aut > 0)
-                    <td class="px-4 py-2">{{ $pres_aut_tot > 0 ? $pres_aut_tot . ' €' : '—' }}</td>
-                    @endif
-                    @if($rate_presidio_acmp > 0)
-                    <td class="px-4 py-2">{{ $pres_acmp_tot > 0 ? $pres_acmp_tot . ' €' : '—' }}</td>
-                    @endif
-                    @if($rate_autista_nofigc > 0)
-                    <td class="px-4 py-2">{{ $aut_nofigc_tot > 0 ? $aut_nofigc_tot . ' €' : '—' }}</td>
-                    @endif
-                    @if($rate_trasf_breve > 0)
-                    <td class="px-4 py-2">{{ $trasf_breve_tot > 0 ? $trasf_breve_tot . ' €' : '—' }}</td>
-                    @endif
-                    @if($rate_trasf_media > 0)
-                    <td class="px-4 py-2">{{ $trasf_media_tot > 0 ? $trasf_media_tot . ' €' : '—' }}</td>
-                    @endif
-                    @if($rate_trasf_lunga > 0)
-                    <td class="px-4 py-2">{{ $trasf_lunga_tot > 0 ? $trasf_lunga_tot . ' €' : '—' }}</td>
-                    @endif
-                    @if($rate_pernotto > 0)
-                    <td class="px-4 py-2">{{ $pernotto_tot > 0 ? $pernotto_tot . ' €' : '—' }}</td>
-                    @endif
-                </tr>
-            </tbody>
-        </table>
-        </div>
     </div>
 
     @if(Auth::user()->role == 'admin' || Auth::user()->role == 'superadmin')
@@ -602,13 +325,13 @@ $totale += $totale_bonus;
                         @endphp
                         @if($o_fascia > 0)
                         <div class="flex justify-between gap-4">
-                            <dt class="text-gray-600 dark:text-gray-400">Mag.Fer.It. (fascia override, {{ $figc_fer_it_num }} × {{ $o_fascia }}€):</dt>
+                            <dt class="text-gray-600 dark:text-gray-400">FIGC Mag. Feriale Italia (fascia override, {{ $figc_fer_it_num }} × {{ $o_fascia }}€):</dt>
                             <dd class="font-semibold text-right">{{ round($o_fascia * $figc_fer_it_num, 2) }}€</dd>
                         </div>
                         @elseif($_has_sab_tar && $sabati_extra_f > 0)
                             @if($_gg_normali_f > 0)
                             <div class="flex justify-between gap-4">
-                                <dt class="text-gray-600 dark:text-gray-400">Mag.Fer.It.{{ $_star_gg }} ({{ $_gg_normali_f }} × {{ $_tar_gg }}€):</dt>
+                                <dt class="text-gray-600 dark:text-gray-400">FIGC Mag. Feriale Italia{{ $_star_gg }} ({{ $_gg_normali_f }} × {{ $_tar_gg }}€):</dt>
                                 <dd class="font-semibold text-right">{{ round($_gg_normali_f * $_tar_gg, 2) }}€</dd>
                             </div>
                             @endif
@@ -621,7 +344,7 @@ $totale += $totale_bonus;
                             </div>
                         @elseif($figc_fer_it_num > 0 && !$fissa_eff)
                         <div class="flex justify-between gap-4">
-                            <dt class="text-gray-600 dark:text-gray-400">Mag.Fer.It.{{ $_star_gg }} ({{ $figc_fer_it_num }} × {{ $_tar_gg }}€):</dt>
+                            <dt class="text-gray-600 dark:text-gray-400">FIGC Mag. Feriale Italia{{ $_star_gg }} ({{ $figc_fer_it_num }} × {{ $_tar_gg }}€):</dt>
                             <dd class="font-semibold text-right">{{ round($figc_fer_it_num * $_tar_gg, 2) }}€</dd>
                         </div>
                         @endif
@@ -630,7 +353,7 @@ $totale += $totale_bonus;
                     {{-- FIGC Festivo Italia --}}
                     @if($figc_fest_it_num > 0)
                     <div class="flex justify-between gap-4">
-                        <dt class="text-gray-600 dark:text-gray-400">Mag.Fest.It. ({{ $figc_fest_it_num }} × {{ $rate_figc_festivo_italia }}€):</dt>
+                        <dt class="text-gray-600 dark:text-gray-400">FIGC Mag. Festivo Italia ({{ $figc_fest_it_num }} × {{ $rate_figc_festivo_italia }}€):</dt>
                         <dd class="font-semibold text-right">{{ round($figc_fest_it, 2) }}€</dd>
                     </div>
                     @endif
@@ -638,7 +361,7 @@ $totale += $totale_bonus;
                     {{-- Feriale Estero --}}
                     @if($fer_estero_num > 0)
                     <div class="flex justify-between gap-4">
-                        <dt class="text-gray-600 dark:text-gray-400">Mag.Fer.Est. ({{ $fer_estero_num }} × {{ $rate_feriale_estero }}€):</dt>
+                        <dt class="text-gray-600 dark:text-gray-400">FIGC Mag. Feriale Estero ({{ $fer_estero_num }} × {{ $rate_feriale_estero }}€):</dt>
                         <dd class="font-semibold text-right">{{ round($fer_estero, 2) }}€</dd>
                     </div>
                     @endif
@@ -646,7 +369,7 @@ $totale += $totale_bonus;
                     {{-- Festivo Estero --}}
                     @if($fest_estero_num > 0)
                     <div class="flex justify-between gap-4">
-                        <dt class="text-gray-600 dark:text-gray-400">Mag.Fest.Est. ({{ $fest_estero_num }} × {{ $rate_festivo_estero }}€):</dt>
+                        <dt class="text-gray-600 dark:text-gray-400">FIGC Mag. Festivo Estero ({{ $fest_estero_num }} × {{ $rate_festivo_estero }}€):</dt>
                         <dd class="font-semibold text-right">{{ round($fest_estero, 2) }}€</dd>
                     </div>
                     @endif
@@ -662,7 +385,7 @@ $totale += $totale_bonus;
                     {{-- FIGC Trasp. Autista --}}
                     @if($figc_tr_aut_num > 0)
                     <div class="flex justify-between gap-4">
-                        <dt class="text-gray-600 dark:text-gray-400">FIGC Tr. Aut. ({{ $figc_tr_aut_num }} × {{ $rate_figc_trasp_aut }}€):</dt>
+                        <dt class="text-gray-600 dark:text-gray-400">FIGC Trasp. Autista ({{ $figc_tr_aut_num }} × {{ $rate_figc_trasp_aut }}€):</dt>
                         <dd class="font-semibold text-right">{{ round($figc_tr_aut_tot, 2) }}€</dd>
                     </div>
                     @endif
@@ -670,7 +393,7 @@ $totale += $totale_bonus;
                     {{-- FIGC Trasp. Accompagnatore --}}
                     @if($figc_tr_acmp_num > 0)
                     <div class="flex justify-between gap-4">
-                        <dt class="text-gray-600 dark:text-gray-400">FIGC Tr. Acc. ({{ $figc_tr_acmp_num }} × {{ $rate_figc_trasp_acmp }}€):</dt>
+                        <dt class="text-gray-600 dark:text-gray-400">FIGC Trasp. Accompagnatore ({{ $figc_tr_acmp_num }} × {{ $rate_figc_trasp_acmp }}€):</dt>
                         <dd class="font-semibold text-right">{{ round($figc_tr_acmp_tot, 2) }}€</dd>
                     </div>
                     @endif
@@ -678,7 +401,7 @@ $totale += $totale_bonus;
                     {{-- Presidio Autisti --}}
                     @if($pres_aut_num > 0)
                     <div class="flex justify-between gap-4">
-                        <dt class="text-gray-600 dark:text-gray-400">Pres. Aut. ({{ $pres_aut_num }} × {{ $rate_presidio_aut }}€):</dt>
+                        <dt class="text-gray-600 dark:text-gray-400">Presidio Autisti ({{ $pres_aut_num }} × {{ $rate_presidio_aut }}€):</dt>
                         <dd class="font-semibold text-right">{{ round($pres_aut_tot, 2) }}€</dd>
                     </div>
                     @endif
@@ -686,7 +409,7 @@ $totale += $totale_bonus;
                     {{-- Presidio Accompagnatori --}}
                     @if($pres_acmp_num > 0)
                     <div class="flex justify-between gap-4">
-                        <dt class="text-gray-600 dark:text-gray-400">Pres. Acc. ({{ $pres_acmp_num }} × {{ $rate_presidio_acmp }}€):</dt>
+                        <dt class="text-gray-600 dark:text-gray-400">Presidio Accompagnatori ({{ $pres_acmp_num }} × {{ $rate_presidio_acmp }}€):</dt>
                         <dd class="font-semibold text-right">{{ round($pres_acmp_tot, 2) }}€</dd>
                     </div>
                     @endif
@@ -702,7 +425,7 @@ $totale += $totale_bonus;
                     {{-- Trasferta Breve --}}
                     @if($trasf_breve_num > 0)
                     <div class="flex justify-between gap-4">
-                        <dt class="text-gray-600 dark:text-gray-400">Tr. Breve ({{ $trasf_breve_num }} × {{ $rate_trasf_breve }}€):</dt>
+                        <dt class="text-gray-600 dark:text-gray-400">Trasferta Breve ({{ $trasf_breve_num }} × {{ $rate_trasf_breve }}€):</dt>
                         <dd class="font-semibold text-right">{{ round($trasf_breve_tot, 2) }}€</dd>
                     </div>
                     @endif
@@ -710,7 +433,7 @@ $totale += $totale_bonus;
                     {{-- Trasferta Media --}}
                     @if($trasf_media_num > 0)
                     <div class="flex justify-between gap-4">
-                        <dt class="text-gray-600 dark:text-gray-400">Tr. Media ({{ $trasf_media_num }} × {{ $rate_trasf_media }}€):</dt>
+                        <dt class="text-gray-600 dark:text-gray-400">Trasferta Media ({{ $trasf_media_num }} × {{ $rate_trasf_media }}€):</dt>
                         <dd class="font-semibold text-right">{{ round($trasf_media_tot, 2) }}€</dd>
                     </div>
                     @endif
@@ -718,7 +441,7 @@ $totale += $totale_bonus;
                     {{-- Trasferta Lunga --}}
                     @if($trasf_lunga_num > 0)
                     <div class="flex justify-between gap-4">
-                        <dt class="text-gray-600 dark:text-gray-400">Tr. Lunga ({{ $trasf_lunga_num }} × {{ $rate_trasf_lunga }}€):</dt>
+                        <dt class="text-gray-600 dark:text-gray-400">Trasferta Lunga ({{ $trasf_lunga_num }} × {{ $rate_trasf_lunga }}€):</dt>
                         <dd class="font-semibold text-right">{{ round($trasf_lunga_tot, 2) }}€</dd>
                     </div>
                     @endif

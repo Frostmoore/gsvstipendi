@@ -32,7 +32,7 @@
         {{ __('3. Le colonne checkbox sono additive: puoi selezionarne più di una per giorno') }}
     </p>
     <p class="text-xs text-gray-800 dark:text-gray-200 leading-tight">
-        {{ __('4. Tr. Breve = fino a 230 km, Tr. Media = fino a 300 km, Tr. Lunga = oltre 300 km') }}
+        {{ __('4. Trasferta Breve = fino a 230 km, Trasferta Media = fino a 300 km, Trasferta Lunga = oltre 300 km') }}
     </p>
     <p class="text-xs text-gray-800 dark:text-gray-200 leading-tight">
         {{ __('5. Estero: sostituisce la tariffa giornaliera con la corrispondente tariffa estero') }}
@@ -48,14 +48,14 @@
                 <th>Entrata</th>
                 <th>Uscita</th>
                 <th>Estero</th>
-                <th>FIGC Tr. Aut.</th>
-                <th>FIGC Tr. Acc.</th>
-                <th>Pres. Aut.</th>
-                <th>Pres. Acc.</th>
+                <th>FIGC Trasp. Autista</th>
+                <th>FIGC Trasp. Accompagnatore</th>
+                <th>Presidio Autisti</th>
+                <th>Presidio Accompagnatori</th>
                 <th>No FIGC</th>
-                <th>Tr. Breve</th>
-                <th>Tr. Media</th>
-                <th>Tr. Lunga</th>
+                <th>Trasferta Breve</th>
+                <th>Trasferta Media</th>
+                <th>Trasferta Lunga</th>
                 <th>Pernotto</th>
                 <th>Note</th>
             </tr>
@@ -123,14 +123,14 @@ document.addEventListener("DOMContentLoaded", function () {
         { name: "Entrata",         type: "time",        editable: true  },
         { name: "Uscita",          type: "time",        editable: true  },
         { name: "Estero",          type: "checkbox",    editable: false },
-        { name: "FigcTraspAut",    label: "FIGC Tr. Aut.",  type: "checkbox", editable: false },
-        { name: "FigcTraspAccomp", label: "FIGC Tr. Acc.",  type: "checkbox", editable: false },
-        { name: "PresidioAut",     label: "Pres. Aut.",     type: "checkbox", editable: false },
-        { name: "PresidioAccomp",  label: "Pres. Acc.",     type: "checkbox", editable: false },
+        { name: "FigcTraspAut",    label: "FIGC Trasp. Autista",  type: "checkbox", editable: false },
+        { name: "FigcTraspAccomp", label: "FIGC Trasp. Accompagnatore",  type: "checkbox", editable: false },
+        { name: "PresidioAut",     label: "Presidio Autisti",     type: "checkbox", editable: false },
+        { name: "PresidioAccomp",  label: "Presidio Accompagnatori",     type: "checkbox", editable: false },
         { name: "AutistaNoFigc",   label: "No FIGC",        type: "checkbox", editable: false },
-        { name: "TrasfBreve",      label: "Tr. Breve",      type: "checkbox", editable: false },
-        { name: "TrasfMedia",      label: "Tr. Media",      type: "checkbox", editable: false },
-        { name: "TrasfLunga",      label: "Tr. Lunga",      type: "checkbox", editable: false },
+        { name: "TrasfBreve",      label: "Trasferta Breve",      type: "checkbox", editable: false },
+        { name: "TrasfMedia",      label: "Trasferta Media",      type: "checkbox", editable: false },
+        { name: "TrasfLunga",      label: "Trasferta Lunga",      type: "checkbox", editable: false },
         { name: "Pernotto",        type: "checkbox",    editable: false },
         { name: "Note",            type: "multiselect", editable: false },
     ];
@@ -170,11 +170,18 @@ document.addEventListener("DOMContentLoaded", function () {
         table.appendChild(tableBody);
 
         let headerRow = document.createElement("tr");
-        columns.forEach(col => {
+        const textCols = columns.filter(c => c.type !== "checkbox");
+        const flagCols  = columns.filter(c => c.type === "checkbox");
+        textCols.forEach(col => {
             let th = document.createElement("th");
             th.textContent = col.label || col.name;
             headerRow.appendChild(th);
         });
+        if (flagCols.length > 0) {
+            let th = document.createElement("th");
+            th.textContent = "Opzioni";
+            headerRow.appendChild(th);
+        }
         tableHead.appendChild(headerRow);
 
         generateTableRows();
@@ -207,7 +214,10 @@ document.addEventListener("DOMContentLoaded", function () {
             let row = document.createElement("tr");
             row.classList.add("odd:bg-white", "odd:dark:bg-gray-700", "even:bg-gray-50", "even:dark:bg-gray-800", "even:color-gray-700", "dark:text-gray-200");
 
-            columns.forEach(col => {
+            const textCols = columns.filter(c => c.type !== "checkbox");
+            const flagCols  = columns.filter(c => c.type === "checkbox");
+
+            textCols.forEach(col => {
                 let td = document.createElement("td");
 
                 if (col.name === "Data") {
@@ -237,14 +247,6 @@ document.addEventListener("DOMContentLoaded", function () {
                         return function() { d[c.name] = this.value; updateHiddenInput(); };
                     })(dayData, col));
                     td.appendChild(select);
-                } else if (col.type === "checkbox") {
-                    let input = document.createElement("input");
-                    input.type = "checkbox";
-                    input.addEventListener("change", (function(d, c) {
-                        return function() { d[c.name] = this.checked ? "1" : "0"; updateHiddenInput(); };
-                    })(dayData, col));
-                    td.style.textAlign = "center";
-                    td.appendChild(input);
                 } else if (col.type === "time") {
                     let input = document.createElement("input");
                     input.type = "time";
@@ -273,6 +275,26 @@ document.addEventListener("DOMContentLoaded", function () {
                 row.appendChild(td);
             });
 
+            if (flagCols.length > 0) {
+                let td = document.createElement("td");
+                td.style.verticalAlign = "top";
+                td.style.paddingTop = "2px";
+                flagCols.forEach(col => {
+                    let lbl = document.createElement("label");
+                    lbl.style.cssText = "display:flex;align-items:center;gap:4px;font-size:0.8em;cursor:pointer;white-space:nowrap;padding:1px 0;";
+                    let input = document.createElement("input");
+                    input.type = "checkbox";
+                    input.setAttribute("data-col", col.name);
+                    input.addEventListener("change", (function(d, c) {
+                        return function() { d[c.name] = this.checked ? "1" : "0"; updateHiddenInput(); };
+                    })(dayData, col));
+                    lbl.appendChild(input);
+                    lbl.appendChild(document.createTextNode("\u00a0" + (col.label || col.name)));
+                    td.appendChild(lbl);
+                });
+                row.appendChild(td);
+            }
+
             tableBody.appendChild(row);
         }
 
@@ -293,23 +315,29 @@ document.addEventListener("DOMContentLoaded", function () {
             document.querySelectorAll("#editableTable tbody tr").forEach((row, rowIndex) => {
                 let rowData = timesheetData[rowIndex];
                 if (!rowData) return;
+                const textColsLoad = columns.filter(c => c.type !== "checkbox");
+                const flagColsLoad  = columns.filter(c => c.type === "checkbox");
                 row.querySelectorAll("td").forEach((td, colIndex) => {
-                    let col = columns[colIndex];
+                    let col = textColsLoad[colIndex];
                     if (!col || col.name === "Data") return;
                     let val = rowData[col.name];
                     if (val === undefined || val === null) return;
                     if (col.type === "multiselect") {
                         let sel = td.querySelector("select.note-select");
                         if (sel) sel.value = val || "";
-                    } else if (col.type === "checkbox") {
-                        let cb = td.querySelector("input[type='checkbox']");
-                        if (cb) cb.checked = (val === "1" || val === 1 || val === true);
                     } else if (col.type === "time") {
                         let inp = td.querySelector("input[type='time']");
                         if (inp) inp.value = val;
                     } else {
                         td.innerText = val;
                     }
+                });
+                // Restore checkbox values using data-col attributes
+                flagColsLoad.forEach(col => {
+                    let val = rowData[col.name];
+                    if (val === undefined || val === null) return;
+                    let cb = row.querySelector("input[type='checkbox'][data-col='" + col.name + "']");
+                    if (cb) cb.checked = (val === "1" || val === 1 || val === true);
                 });
             });
         }
@@ -340,7 +368,10 @@ document.addEventListener("DOMContentLoaded", function () {
             header.textContent = dayData["Data"] || "";
             card.appendChild(header);
 
-            columns.forEach((col) => {
+            const textCols = columns.filter(c => c.type !== "checkbox");
+            const flagCols  = columns.filter(c => c.type === "checkbox");
+
+            textCols.forEach((col) => {
                 if (col.name === "Data") return;
 
                 let fieldRow = document.createElement("div");
@@ -396,26 +427,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     })(dayData, col));
                     inputWrap.appendChild(select);
 
-                } else if (col.type === "checkbox") {
-                    let input = document.createElement("input");
-                    input.type = "checkbox";
-                    input.checked = dayData[col.name] === "1";
-                    input.classList.add("h-4", "w-4");
-                    input.addEventListener("change", (function(d, c) {
-                        return function() {
-                            d[c.name] = this.checked ? "1" : "0";
-                            let tableRow = document.querySelectorAll("#editableTable tbody tr")[dayIndex];
-                            if (tableRow) {
-                                let colIdx = columns.findIndex(x => x.name === c.name);
-                                let cb = tableRow.cells[colIdx] && tableRow.cells[colIdx].querySelector("input[type='checkbox']");
-                                if (cb) cb.checked = this.checked;
-                            }
-                            updateHiddenInput();
-                        };
-                    })(dayData, col));
-                    inputWrap.classList.add("text-right");
-                    inputWrap.appendChild(input);
-
                 } else if (col.type === "time") {
                     let input = document.createElement("input");
                     input.type = "time";
@@ -468,6 +479,42 @@ document.addEventListener("DOMContentLoaded", function () {
                 fieldRow.appendChild(inputWrap);
                 card.appendChild(fieldRow);
             });
+
+            if (flagCols.length > 0) {
+                let flagSection = document.createElement("div");
+                flagSection.classList.add("py-0.5");
+                let flagLabel = document.createElement("div");
+                flagLabel.classList.add("text-xs", "text-gray-500", "dark:text-gray-400", "mb-1");
+                flagLabel.textContent = "Opzioni";
+                flagSection.appendChild(flagLabel);
+                let flagWrap = document.createElement("div");
+                flagWrap.style.cssText = "display:flex;flex-wrap:wrap;gap:6px 12px;";
+                flagCols.forEach(col => {
+                    let lbl = document.createElement("label");
+                    lbl.style.cssText = "display:flex;align-items:center;gap:3px;font-size:0.8em;cursor:pointer;";
+                    let input = document.createElement("input");
+                    input.type = "checkbox";
+                    input.checked = dayData[col.name] === "1";
+                    input.classList.add("h-4", "w-4");
+                    input.addEventListener("change", (function(d, c) {
+                        return function() {
+                            d[c.name] = this.checked ? "1" : "0";
+                            // Sync to desktop table row
+                            let tableRow = document.querySelectorAll("#editableTable tbody tr")[dayIndex];
+                            if (tableRow) {
+                                let cb = tableRow.querySelector("input[type='checkbox'][data-col='" + c.name + "']");
+                                if (cb) cb.checked = this.checked;
+                            }
+                            updateHiddenInput();
+                        };
+                    })(dayData, col));
+                    lbl.appendChild(input);
+                    lbl.appendChild(document.createTextNode("\u00a0" + (col.label || col.name)));
+                    flagWrap.appendChild(lbl);
+                });
+                flagSection.appendChild(flagWrap);
+                card.appendChild(flagSection);
+            }
 
             container.appendChild(card);
         });

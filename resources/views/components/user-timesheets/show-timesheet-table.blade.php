@@ -46,16 +46,18 @@ if ($_userRoleRate && (float)($_userRoleRate->fissa ?? 0) > 0) {
 // Dynamic column set — only include columns for rates that are configured
 $cols        = ['Data', 'Cliente', 'Luogo', 'Entrata', 'Uscita'];
 $allowedKeys = ['Data', 'Cliente', 'Luogo', 'Entrata', 'Uscita'];
-if ($rate_feriale_estero > 0 || $rate_festivo_estero > 0) { $cols[] = 'Estero';         $allowedKeys[] = 'Estero'; }
-if ($rate_figc_trasp_aut > 0)   { $cols[] = 'FIGC Tr. Aut.'; $allowedKeys[] = 'FigcTraspAut'; }
-if ($rate_figc_trasp_acmp > 0)  { $cols[] = 'FIGC Tr. Acc.'; $allowedKeys[] = 'FigcTraspAccomp'; }
-if ($rate_presidio_aut > 0)     { $cols[] = 'Pres. Aut.';    $allowedKeys[] = 'PresidioAut'; }
-if ($rate_presidio_acmp > 0)    { $cols[] = 'Pres. Acc.';    $allowedKeys[] = 'PresidioAccomp'; }
-if ($rate_autista_nofigc > 0)   { $cols[] = 'No FIGC';       $allowedKeys[] = 'AutistaNoFigc'; }
-if ($rate_trasf_breve > 0)      { $cols[] = 'Tr. Breve';     $allowedKeys[] = 'TrasfBreve'; }
-if ($rate_trasf_media > 0)      { $cols[] = 'Tr. Media';     $allowedKeys[] = 'TrasfMedia'; }
-if ($rate_trasf_lunga > 0)      { $cols[] = 'Tr. Lunga';     $allowedKeys[] = 'TrasfLunga'; }
-if ($rate_pernotto > 0)         { $cols[] = 'Pernotto';      $allowedKeys[] = 'Pernotto'; }
+$flagColKeys = [];
+if ($rate_feriale_estero > 0 || $rate_festivo_estero > 0) $flagColKeys['Estero'] = 'Estero';
+if ($rate_figc_trasp_aut > 0)   $flagColKeys['FIGC Trasp. Autista'] = 'FigcTraspAut';
+if ($rate_figc_trasp_acmp > 0)  $flagColKeys['FIGC Trasp. Accompagnatore'] = 'FigcTraspAccomp';
+if ($rate_presidio_aut > 0)     $flagColKeys['Presidio Autisti'] = 'PresidioAut';
+if ($rate_presidio_acmp > 0)    $flagColKeys['Presidio Accompagnatori'] = 'PresidioAccomp';
+if ($rate_autista_nofigc > 0)   $flagColKeys['Autista no FIGC'] = 'AutistaNoFigc';
+if ($rate_trasf_breve > 0)      $flagColKeys['Trasferta Breve'] = 'TrasfBreve';
+if ($rate_trasf_media > 0)      $flagColKeys['Trasferta Media'] = 'TrasfMedia';
+if ($rate_trasf_lunga > 0)      $flagColKeys['Trasferta Lunga'] = 'TrasfLunga';
+if ($rate_pernotto > 0)         $flagColKeys['Pernotto'] = 'Pernotto';
+if (!empty($flagColKeys)) { $cols[] = 'Opzioni'; $allowedKeys[] = '__flags__'; }
 $cols[] = 'Note'; $allowedKeys[] = 'Note';
 
 $sabati_lavorati = 0;
@@ -251,26 +253,31 @@ $totale = $figc_fer_it + $figc_fest_it + $fer_estero + $fest_estero
             @foreach($timesheet as $row)
                 <tr class="odd:bg-white odd:dark:bg-gray-700 even:bg-gray-50 even:dark:bg-gray-800 dark:text-gray-200">
                     @foreach($allowedKeys as $key)
+                        @if($key === '__flags__')
+                        <td class="px-4 py-2">
+                            @php
+                                $activeFlags = [];
+                                foreach ($flagColKeys as $lbl => $fk) {
+                                    $val = is_object($row) ? ($row->$fk ?? '') : ($row[$fk] ?? '');
+                                    if ($val == '1' || $val === true) $activeFlags[] = $lbl;
+                                }
+                            @endphp
+                            @if(count($activeFlags) > 0)
+                                <div class="flex flex-col gap-0.5">
+                                @foreach($activeFlags as $af)
+                                    <span class="inline-block text-xs bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200 rounded px-1.5 py-0.5">{{ $af }}</span>
+                                @endforeach
+                                </div>
+                            @else
+                                <span class="text-gray-300 dark:text-gray-600">—</span>
+                            @endif
+                        </td>
+                        @else
                         @php $value = is_object($row) ? ($row->$key ?? '') : ($row[$key] ?? ''); @endphp
                         <td class="px-4 py-2">
-                            @switch($key)
-                                @case('Estero')
-                                @case('FigcTraspAut')
-                                @case('FigcTraspAccomp')
-                                @case('PresidioAut')
-                                @case('PresidioAccomp')
-                                @case('AutistaNoFigc')
-                                @case('TrasfBreve')
-                                @case('TrasfMedia')
-                                @case('TrasfLunga')
-                                @case('Pernotto')
-                                    {{ $value == 1 ? '✔️' : '' }}
-                                    @break
-                                @default
-                                    {{ $value }}
-                                    @break
-                            @endswitch
+                            {{ $value }}
                         </td>
+                        @endif
                     @endforeach
                 </tr>
             @endforeach

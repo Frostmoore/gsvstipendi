@@ -7,7 +7,26 @@
       "Bash(sed -i \"s|FIGC Fer\\\\. Italia|Mag.Fer.It.|g;    s|FIGC Fest\\\\. Italia|Mag.Fest.It.|g;    s|Fer\\\\. Estero \\({{ $fer_estero_num|Mag.Fer.Est. \\({{ $fer_estero_num|g;    s|Fest\\\\. Estero \\({{ $fest_estero_num|Mag.Fest.Est. \\({{ $fest_estero_num|g\" /e/coding/XAMPP/htdocs/gsvstipendi/resources/views/components/timesheets/show-timesheet-table.blade.php)",
       "Bash(__NEW_LINE_c515ee0d2e29ee78__ echo \"done\")",
       "Bash(grep -v \"{{--\\\\|$rate_\\\\|+= \\\\|?>\")",
-      "Bash(grep -v \"^\\\\s*$\\\\|rate_\\\\|+= \\\\|_num++\\\\|_num > \\\\|_num ?\")"
+      "Bash(grep -v \"^\\\\s*$\\\\|rate_\\\\|+= \\\\|_num++\\\\|_num > \\\\|_num ?\")",
+      "Bash(for FILE in \"e:/coding/XAMPP/htdocs/gsvstipendi/resources/views/components/timesheet-table.blade.php\" \"e:/coding/XAMPP/htdocs/gsvstipendi/resources/views/components/user-timesheet-table.blade.php\" \"e:/coding/XAMPP/htdocs/gsvstipendi/resources/views/components/timesheets/show-edit-timesheet-table.blade.php\")",
+      "Bash(do)",
+      "Bash(sed -i 's/FIGC Tr\\\\. Aut\\\\./FIGC Trasp. Autista/g' \"$FILE\")",
+      "Bash(sed -i 's/FIGC Tr\\\\. Acc\\\\./FIGC Trasp. Accompagnatore/g' \"$FILE\")",
+      "Bash(sed -i 's/Pres\\\\. Aut\\\\./Presidio Autisti/g' \"$FILE\")",
+      "Bash(sed -i 's/Pres\\\\. Acc\\\\./Presidio Accompagnatori/g' \"$FILE\")",
+      "Bash(sed -i 's/Tr\\\\. Breve/Trasferta Breve/g' \"$FILE\")",
+      "Bash(sed -i 's/Tr\\\\. Media/Trasferta Media/g' \"$FILE\")",
+      "Bash(sed -i 's/Tr\\\\. Lunga/Trasferta Lunga/g' \"$FILE\")",
+      "Bash(done)",
+      "Bash(__NEW_LINE_2fb5a95adb5c9160__ echo \"Done. Verifying:\")",
+      "Bash(FILE=\"e:/coding/XAMPP/htdocs/gsvstipendi/resources/views/components/user-timesheets/show-timesheet-table.blade.php\")",
+      "Bash(sed -i \"s/\\\\$flagColKeys\\\\[''FIGC Tr\\\\. Aut\\\\.''\\\\]/$flagColKeys[''FIGC Trasp. Autista'']/g\" \"$FILE\")",
+      "Bash(sed -i \"s/\\\\$flagColKeys\\\\[''FIGC Tr\\\\. Acc\\\\.''\\\\]/$flagColKeys[''FIGC Trasp. Accompagnatore'']/g\" \"$FILE\")",
+      "Bash(sed -i \"s/\\\\$flagColKeys\\\\[''Pres\\\\. Aut\\\\.''\\\\]/$flagColKeys[''Presidio Autisti'']/g\" \"$FILE\")",
+      "Bash(sed -i \"s/\\\\$flagColKeys\\\\[''Tr\\\\. Breve''\\\\]/$flagColKeys[''Trasferta Breve'']/g\" \"$FILE\")",
+      "Bash(sed -i \"s/\\\\$flagColKeys\\\\[''Tr\\\\. Media''\\\\]/$flagColKeys[''Trasferta Media'']/g\" \"$FILE\")",
+      "Bash(sed -i \"s/\\\\$flagColKeys\\\\[''Tr\\\\. Lunga''\\\\]/$flagColKeys[''Trasferta Lunga'']/g\" \"$FILE\")",
+      "Read(//e/coding/XAMPP/htdocs/gsvstipendi/**)"
     ]
   }
 }
