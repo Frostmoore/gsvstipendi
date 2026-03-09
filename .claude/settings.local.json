@@ -3,7 +3,11 @@
     "allow": [
       "Bash(php artisan view:clear)",
       "Bash(php artisan migrate)",
-      "Bash(php artisan migrate:status)"
+      "Bash(php artisan migrate:status)",
+      "Bash(sed -i \"s|FIGC Fer\\\\. Italia|Mag.Fer.It.|g;    s|FIGC Fest\\\\. Italia|Mag.Fest.It.|g;    s|Fer\\\\. Estero \\({{ $fer_estero_num|Mag.Fer.Est. \\({{ $fer_estero_num|g;    s|Fest\\\\. Estero \\({{ $fest_estero_num|Mag.Fest.Est. \\({{ $fest_estero_num|g\" /e/coding/XAMPP/htdocs/gsvstipendi/resources/views/components/timesheets/show-timesheet-table.blade.php)",
+      "Bash(__NEW_LINE_c515ee0d2e29ee78__ echo \"done\")",
+      "Bash(grep -v \"{{--\\\\|$rate_\\\\|+= \\\\|?>\")",
+      "Bash(grep -v \"^\\\\s*$\\\\|rate_\\\\|+= \\\\|_num++\\\\|_num > \\\\|_num ?\")"
     ]
   }
 }

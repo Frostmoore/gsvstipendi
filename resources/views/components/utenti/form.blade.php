@@ -72,10 +72,10 @@
 
     @php
         $rateFields = [
-            'figc_feriale_italia'       => 'FIGC Feriale Italia (€)',
-            'feriale_estero'            => 'FIGC Feriale Estero (€)',
-            'figc_festivo_italia'       => 'FIGC Festivo Italia (€)',
-            'festivo_estero'            => 'FIGC Festivo Estero (€)',
+            'figc_feriale_italia'       => 'FIGC Mag. Feriale Italia (€)',
+            'feriale_estero'            => 'FIGC Mag. Feriale Estero (€)',
+            'figc_festivo_italia'       => 'FIGC Mag. Festivo Italia (€)',
+            'festivo_estero'            => 'FIGC Mag. Festivo Estero (€)',
             'figc_trasp_autista'        => 'FIGC Trasp. Autista (€)',
             'figc_trasp_accompagnatore' => 'FIGC Trasp. Accomp. (€)',
             'presidio_autisti'          => 'Presidio Autisti (€)',

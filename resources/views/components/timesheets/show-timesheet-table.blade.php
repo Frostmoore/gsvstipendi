@@ -283,7 +283,7 @@ $totale += $totale_bonus;
         <div class="md:hidden grid grid-cols-2 gap-2 mb-4">
             @if($figc_fer_it_num > 0)
             <div class="bg-white dark:bg-gray-800 rounded-lg px-3 py-2 border border-gray-200 dark:border-gray-700">
-                <div class="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">FIGC Fer. It.</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">Mag.Fer.It.</div>
                 <div class="flex justify-between items-baseline mt-0.5">
                     <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $figc_fer_it_num }}</span>
                     <span class="text-sm font-bold text-gray-900 dark:text-white">{{ $figc_fer_it }}€</span>
@@ -292,7 +292,7 @@ $totale += $totale_bonus;
             @endif
             @if($figc_fest_it_num > 0)
             <div class="bg-white dark:bg-gray-800 rounded-lg px-3 py-2 border border-gray-200 dark:border-gray-700">
-                <div class="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">FIGC Fest. It.</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">Mag.Fest.It.</div>
                 <div class="flex justify-between items-baseline mt-0.5">
                     <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $figc_fest_it_num }}</span>
                     <span class="text-sm font-bold text-gray-900 dark:text-white">{{ $figc_fest_it }}€</span>
@@ -301,7 +301,7 @@ $totale += $totale_bonus;
             @endif
             @if($fer_estero_num > 0)
             <div class="bg-white dark:bg-gray-800 rounded-lg px-3 py-2 border border-gray-200 dark:border-gray-700">
-                <div class="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">Fer. Estero</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">Mag.Fer.Est.</div>
                 <div class="flex justify-between items-baseline mt-0.5">
                     <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $fer_estero_num }}</span>
                     <span class="text-sm font-bold text-gray-900 dark:text-white">{{ $fer_estero }}€</span>
@@ -310,7 +310,7 @@ $totale += $totale_bonus;
             @endif
             @if($fest_estero_num > 0)
             <div class="bg-white dark:bg-gray-800 rounded-lg px-3 py-2 border border-gray-200 dark:border-gray-700">
-                <div class="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">Fest. Estero</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">Mag.Fest.Est.</div>
                 <div class="flex justify-between items-baseline mt-0.5">
                     <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $fest_estero_num }}</span>
                     <span class="text-sm font-bold text-gray-900 dark:text-white">{{ $fest_estero }}€</span>
@@ -416,16 +416,16 @@ $totale += $totale_bonus;
                 <tr>
                     <th class="px-4 py-2"></th>
                     @if($rate_figc_feriale_italia > 0 || $fissa_eff > 0)
-                    <th class="px-4 py-2">FIGC Fer. It.</th>
+                    <th class="px-4 py-2">Mag.Fer.It.</th>
                     @endif
                     @if($rate_figc_festivo_italia > 0)
-                    <th class="px-4 py-2">FIGC Fest. It.</th>
+                    <th class="px-4 py-2">Mag.Fest.It.</th>
                     @endif
                     @if($rate_feriale_estero > 0)
-                    <th class="px-4 py-2">Fer. Estero</th>
+                    <th class="px-4 py-2">Mag.Fer.Est.</th>
                     @endif
                     @if($rate_festivo_estero > 0)
-                    <th class="px-4 py-2">Fest. Estero</th>
+                    <th class="px-4 py-2">Mag.Fest.Est.</th>
                     @endif
                     @if($rate_straordinari > 0)
                     <th class="px-4 py-2">Straord.</th>
@@ -602,13 +602,13 @@ $totale += $totale_bonus;
                         @endphp
                         @if($o_fascia > 0)
                         <div class="flex justify-between gap-4">
-                            <dt class="text-gray-600 dark:text-gray-400">FIGC Fer. Italia (fascia override, {{ $figc_fer_it_num }} × {{ $o_fascia }}€):</dt>
+                            <dt class="text-gray-600 dark:text-gray-400">Mag.Fer.It. (fascia override, {{ $figc_fer_it_num }} × {{ $o_fascia }}€):</dt>
                             <dd class="font-semibold text-right">{{ round($o_fascia * $figc_fer_it_num, 2) }}€</dd>
                         </div>
                         @elseif($_has_sab_tar && $sabati_extra_f > 0)
                             @if($_gg_normali_f > 0)
                             <div class="flex justify-between gap-4">
-                                <dt class="text-gray-600 dark:text-gray-400">FIGC Fer. Italia{{ $_star_gg }} ({{ $_gg_normali_f }} × {{ $_tar_gg }}€):</dt>
+                                <dt class="text-gray-600 dark:text-gray-400">Mag.Fer.It.{{ $_star_gg }} ({{ $_gg_normali_f }} × {{ $_tar_gg }}€):</dt>
                                 <dd class="font-semibold text-right">{{ round($_gg_normali_f * $_tar_gg, 2) }}€</dd>
                             </div>
                             @endif
@@ -621,7 +621,7 @@ $totale += $totale_bonus;
                             </div>
                         @elseif($figc_fer_it_num > 0 && !$fissa_eff)
                         <div class="flex justify-between gap-4">
-                            <dt class="text-gray-600 dark:text-gray-400">FIGC Fer. Italia{{ $_star_gg }} ({{ $figc_fer_it_num }} × {{ $_tar_gg }}€):</dt>
+                            <dt class="text-gray-600 dark:text-gray-400">Mag.Fer.It.{{ $_star_gg }} ({{ $figc_fer_it_num }} × {{ $_tar_gg }}€):</dt>
                             <dd class="font-semibold text-right">{{ round($figc_fer_it_num * $_tar_gg, 2) }}€</dd>
                         </div>
                         @endif
@@ -630,7 +630,7 @@ $totale += $totale_bonus;
                     {{-- FIGC Festivo Italia --}}
                     @if($figc_fest_it_num > 0)
                     <div class="flex justify-between gap-4">
-                        <dt class="text-gray-600 dark:text-gray-400">FIGC Fest. Italia ({{ $figc_fest_it_num }} × {{ $rate_figc_festivo_italia }}€):</dt>
+                        <dt class="text-gray-600 dark:text-gray-400">Mag.Fest.It. ({{ $figc_fest_it_num }} × {{ $rate_figc_festivo_italia }}€):</dt>
                         <dd class="font-semibold text-right">{{ round($figc_fest_it, 2) }}€</dd>
                     </div>
                     @endif
@@ -638,7 +638,7 @@ $totale += $totale_bonus;
                     {{-- Feriale Estero --}}
                     @if($fer_estero_num > 0)
                     <div class="flex justify-between gap-4">
-                        <dt class="text-gray-600 dark:text-gray-400">Fer. Estero ({{ $fer_estero_num }} × {{ $rate_feriale_estero }}€):</dt>
+                        <dt class="text-gray-600 dark:text-gray-400">Mag.Fer.Est. ({{ $fer_estero_num }} × {{ $rate_feriale_estero }}€):</dt>
                         <dd class="font-semibold text-right">{{ round($fer_estero, 2) }}€</dd>
                     </div>
                     @endif
@@ -646,7 +646,7 @@ $totale += $totale_bonus;
                     {{-- Festivo Estero --}}
                     @if($fest_estero_num > 0)
                     <div class="flex justify-between gap-4">
-                        <dt class="text-gray-600 dark:text-gray-400">Fest. Estero ({{ $fest_estero_num }} × {{ $rate_festivo_estero }}€):</dt>
+                        <dt class="text-gray-600 dark:text-gray-400">Mag.Fest.Est. ({{ $fest_estero_num }} × {{ $rate_festivo_estero }}€):</dt>
                         <dd class="font-semibold text-right">{{ round($fest_estero, 2) }}€</dd>
                     </div>
                     @endif
