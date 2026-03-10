@@ -16,6 +16,8 @@
     $_show_trasf_media     = $_ur && (float)($_ur->trasferta_media ?? 0) > 0;
     $_show_trasf_lunga     = $_ur && (float)($_ur->trasferta_lunga ?? 0) > 0;
     $_show_pernotto        = $_ur && (float)($_ur->pernotto ?? 0) > 0;
+    $_show_sielte          = $_ur && (float)($_ur->sielte ?? 0) > 0;
+    $_show_pern_sielte     = $_ur && (float)($_ur->pernotto_sielte ?? 0) > 0;
 @endphp
 <x-input-label for="editableTable" :value="__('Foglio Orario')" />
 <div class="gsv-description-container mb-4">
@@ -49,14 +51,16 @@
                 <th>Uscita</th>
                 <th>Estero</th>
                 <th>FIGC Trasp. Autista</th>
-                <th>FIGC Trasp. Accompagnatore</th>
+                <th>FIGC Trasp. Accomp.</th>
                 <th>Presidio Autisti</th>
-                <th>Presidio Accompagnatori</th>
-                <th>No FIGC</th>
-                <th>Trasferta Breve</th>
-                <th>Trasferta Media</th>
-                <th>Trasferta Lunga</th>
+                <th>Presidio Accomp.</th>
+                <th>Autista no FIGC</th>
+                <th>Trasf. Breve &lt;230km</th>
+                <th>Trasf. Media &lt;300km</th>
+                <th>Trasf. Lunga &gt;300km</th>
                 <th>Pernotto</th>
+                <th>SIELTE</th>
+                <th>Pernotto SIELTE</th>
                 <th>Note</th>
             </tr>
         </thead>
@@ -114,6 +118,8 @@ document.addEventListener("DOMContentLoaded", function () {
         showTrasfMedia:    <?= json_encode($_show_trasf_media) ?>,
         showTrasfLunga:    <?= json_encode($_show_trasf_lunga) ?>,
         showPernotto:      <?= json_encode($_show_pernotto) ?>,
+        showSielte:        <?= json_encode($_show_sielte) ?>,
+        showPernSielte:    <?= json_encode($_show_pern_sielte) ?>,
     };
 
     const allColumns = [
@@ -124,14 +130,16 @@ document.addEventListener("DOMContentLoaded", function () {
         { name: "Uscita",          type: "time",        editable: true  },
         { name: "Estero",          type: "checkbox",    editable: false },
         { name: "FigcTraspAut",    label: "FIGC Trasp. Autista",  type: "checkbox", editable: false },
-        { name: "FigcTraspAccomp", label: "FIGC Trasp. Accompagnatore",  type: "checkbox", editable: false },
-        { name: "PresidioAut",     label: "Presidio Autisti",     type: "checkbox", editable: false },
-        { name: "PresidioAccomp",  label: "Presidio Accompagnatori",     type: "checkbox", editable: false },
-        { name: "AutistaNoFigc",   label: "No FIGC",        type: "checkbox", editable: false },
-        { name: "TrasfBreve",      label: "Trasferta Breve",      type: "checkbox", editable: false },
-        { name: "TrasfMedia",      label: "Trasferta Media",      type: "checkbox", editable: false },
-        { name: "TrasfLunga",      label: "Trasferta Lunga",      type: "checkbox", editable: false },
+        { name: "FigcTraspAccomp", label: "FIGC Trasp. Accomp.",    type: "checkbox", editable: false },
+        { name: "PresidioAut",     label: "Presidio Autisti",      type: "checkbox", editable: false },
+        { name: "PresidioAccomp",  label: "Presidio Accomp.",      type: "checkbox", editable: false },
+        { name: "AutistaNoFigc",   label: "Autista no FIGC",       type: "checkbox", editable: false },
+        { name: "TrasfBreve",      label: "Trasf. Breve <230km",   type: "checkbox", editable: false },
+        { name: "TrasfMedia",      label: "Trasf. Media <300km",   type: "checkbox", editable: false },
+        { name: "TrasfLunga",      label: "Trasf. Lunga >300km",   type: "checkbox", editable: false },
         { name: "Pernotto",        type: "checkbox",    editable: false },
+        { name: "Sielte",          label: "SIELTE",     type: "checkbox", editable: false },
+        { name: "PernSielte",      label: "Pernotto SIELTE", type: "checkbox", editable: false },
         { name: "Note",            type: "multiselect", editable: false },
     ];
 
@@ -151,6 +159,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 case "TrasfMedia":     return userRatesConfig.showTrasfMedia;
                 case "TrasfLunga":     return userRatesConfig.showTrasfLunga;
                 case "Pernotto":       return userRatesConfig.showPernotto;
+                case "Sielte":         return userRatesConfig.showSielte;
+                case "PernSielte":     return userRatesConfig.showPernSielte;
                 default:               return true;
             }
         });

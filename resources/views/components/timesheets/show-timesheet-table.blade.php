@@ -38,6 +38,8 @@ $rate_trasf_breve              = $_userRoleRate ? (float)($_userRoleRate->trasfe
 $rate_trasf_media              = $_userRoleRate ? (float)($_userRoleRate->trasferta_media          ?? 0) : 0;
 $rate_trasf_lunga              = $_userRoleRate ? (float)($_userRoleRate->trasferta_lunga          ?? 0) : 0;
 $rate_pernotto                 = $_userRoleRate ? (float)($_userRoleRate->pernotto                 ?? 0) : 0;
+$rate_sielte                   = $_userRoleRate ? (float)($_userRoleRate->sielte                   ?? 0) : 0;
+$rate_pernotto_sielte          = $_userRoleRate ? (float)($_userRoleRate->pernotto_sielte          ?? 0) : 0;
 $rate_straordinari             = $_userRoleRate ? (float)($_userRoleRate->straordinari             ?? 0) : 0;
 $rate_tariffa_sabato           = $_userRoleRate ? (float)($_userRoleRate->tariffa_sabato           ?? 0) : 0;
 
@@ -54,14 +56,16 @@ $cols    = ['Data', 'Cliente', 'Luogo', 'Entrata', 'Uscita'];
 $colKeys = ['Data', 'Cliente', 'Luogo', 'Entrata', 'Uscita'];
 if ($rate_feriale_estero > 0 || $rate_festivo_estero > 0) { $cols[] = 'Estero';         $colKeys[] = 'Estero'; }
 if ($rate_figc_trasp_aut > 0)   { $cols[] = 'FIGC Trasp. Autista'; $colKeys[] = 'FigcTraspAut'; }
-if ($rate_figc_trasp_acmp > 0)  { $cols[] = 'FIGC Trasp. Accompagnatore'; $colKeys[] = 'FigcTraspAccomp'; }
-if ($rate_presidio_aut > 0)     { $cols[] = 'Presidio Autisti';    $colKeys[] = 'PresidioAut'; }
-if ($rate_presidio_acmp > 0)    { $cols[] = 'Presidio Accompagnatori';    $colKeys[] = 'PresidioAccomp'; }
-if ($rate_autista_nofigc > 0)   { $cols[] = 'No FIGC';       $colKeys[] = 'AutistaNoFigc'; }
-if ($rate_trasf_breve > 0)      { $cols[] = 'Trasferta Breve';     $colKeys[] = 'TrasfBreve'; }
-if ($rate_trasf_media > 0)      { $cols[] = 'Trasferta Media';     $colKeys[] = 'TrasfMedia'; }
-if ($rate_trasf_lunga > 0)      { $cols[] = 'Trasferta Lunga';     $colKeys[] = 'TrasfLunga'; }
-if ($rate_pernotto > 0)         { $cols[] = 'Pernotto';      $colKeys[] = 'Pernotto'; }
+if ($rate_figc_trasp_acmp > 0)  { $cols[] = 'FIGC Trasp. Accomp.';  $colKeys[] = 'FigcTraspAccomp'; }
+if ($rate_presidio_aut > 0)     { $cols[] = 'Presidio Autisti';     $colKeys[] = 'PresidioAut'; }
+if ($rate_presidio_acmp > 0)    { $cols[] = 'Presidio Accomp.';     $colKeys[] = 'PresidioAccomp'; }
+if ($rate_autista_nofigc > 0)   { $cols[] = 'Autista no FIGC';      $colKeys[] = 'AutistaNoFigc'; }
+if ($rate_trasf_breve > 0)      { $cols[] = 'Trasf. Breve <230km';  $colKeys[] = 'TrasfBreve'; }
+if ($rate_trasf_media > 0)      { $cols[] = 'Trasf. Media <300km';  $colKeys[] = 'TrasfMedia'; }
+if ($rate_trasf_lunga > 0)      { $cols[] = 'Trasf. Lunga >300km';  $colKeys[] = 'TrasfLunga'; }
+if ($rate_pernotto > 0)         { $cols[] = 'Pernotto';        $colKeys[] = 'Pernotto'; }
+if ($rate_sielte > 0)           { $cols[] = 'SIELTE';          $colKeys[] = 'Sielte'; }
+if ($rate_pernotto_sielte > 0)  { $cols[] = 'Pernotto SIELTE';     $colKeys[] = 'PernSielte'; }
 $cols[] = 'Note'; $colKeys[] = 'Note';
 
 $sabati_lavorati = 0;
@@ -78,7 +82,8 @@ foreach ($timesheet as $t) {
     if(DateHelper::isHoliday($true_date_str)) {
         $festivo = true;
     }
-    $rowCompensi['data'] = $true_date_str;
+    $rowCompensi['data']    = $true_date_str;
+    $rowCompensi['cliente'] = $t['Cliente'] ?? '';
 
     $entrata = array_key_exists('Entrata', $t) ? $t['Entrata'] : null;
     $uscita  = array_key_exists('Uscita', $t)  ? $t['Uscita']  : null;
@@ -102,11 +107,14 @@ foreach ($timesheet as $t) {
     $trasf_media    = array_key_exists('TrasfMedia',     $t) ? $t['TrasfMedia']     : null;
     $trasf_lunga    = array_key_exists('TrasfLunga',     $t) ? $t['TrasfLunga']     : null;
     $pernotto       = array_key_exists('Pernotto',       $t) ? $t['Pernotto']       : null;
+    $sielte         = array_key_exists('Sielte',         $t) ? $t['Sielte']         : null;
+    $pern_sielte    = array_key_exists('PernSielte',     $t) ? $t['PernSielte']     : null;
 
     $ha_flag_speciale = (
         $estero == 1 || $figc_tr_aut == 1 || $figc_tr_acmp == 1 ||
         $pres_aut == 1 || $pres_acmp == 1 || $aut_nofigc == 1 ||
-        $trasf_breve == 1 || $trasf_media == 1 || $trasf_lunga == 1 || $pernotto == 1
+        $trasf_breve == 1 || $trasf_media == 1 || $trasf_lunga == 1 || $pernotto == 1 ||
+        $sielte == 1 || $pern_sielte == 1
     );
 
     // Straordinari
@@ -170,6 +178,8 @@ foreach ($timesheet as $t) {
     if ($trasf_media == 1)   $rowCompensi['trasf_media']  = $rate_trasf_media;
     if ($trasf_lunga == 1)   $rowCompensi['trasf_lunga']  = $rate_trasf_lunga;
     if ($pernotto == 1)      $rowCompensi['pernotto']     = $rate_pernotto;
+    if ($sielte == 1)        $rowCompensi['sielte']       = $rate_sielte;
+    if ($pern_sielte == 1)   $rowCompensi['pern_sielte']      = $rate_pernotto_sielte;
 
     array_push($compensi, $rowCompensi);
 }
@@ -201,8 +211,10 @@ $aut_nofigc_tot   = 0; $aut_nofigc_num       = 0;
 $trasf_breve_tot  = 0; $trasf_breve_num      = 0;
 $trasf_media_tot  = 0; $trasf_media_num      = 0;
 $trasf_lunga_tot  = 0; $trasf_lunga_num      = 0;
-$pernotto_tot     = 0; $pernotto_num         = 0;
-$straordinari_tot = 0; $straordinari_ore     = 0;
+$pernotto_tot       = 0; $pernotto_num       = 0;
+$sielte_tot         = 0; $sielte_num         = 0;
+$pern_sielte_tot    = 0; $pern_sielte_num    = 0;
+$straordinari_tot   = 0; $straordinari_ore   = 0;
 
 foreach ($compensi as $z) {
     $figc_fer_it      += $z['figc_fer_it']   ?? 0;
@@ -217,9 +229,11 @@ foreach ($compensi as $z) {
     $trasf_breve_tot  += $z['trasf_breve']   ?? 0;
     $trasf_media_tot  += $z['trasf_media']   ?? 0;
     $trasf_lunga_tot  += $z['trasf_lunga']   ?? 0;
-    $pernotto_tot     += $z['pernotto']      ?? 0;
-    $straordinari_tot += $z['straordinari']  ?? 0;
-    $straordinari_ore += $z['straordinari_ore'] ?? 0;
+    $pernotto_tot       += $z['pernotto']   ?? 0;
+    $sielte_tot         += $z['sielte']     ?? 0;
+    $pern_sielte_tot    += $z['pern_sielte']    ?? 0;
+    $straordinari_tot   += $z['straordinari']   ?? 0;
+    $straordinari_ore   += $z['straordinari_ore'] ?? 0;
 
     array_key_exists('figc_fer_it',  $z) ? $figc_fer_it_num++     : null;
     array_key_exists('figc_fest_it', $z) ? $figc_fest_it_num++    : null;
@@ -233,7 +247,9 @@ foreach ($compensi as $z) {
     array_key_exists('trasf_breve',  $z) ? $trasf_breve_num++     : null;
     array_key_exists('trasf_media',  $z) ? $trasf_media_num++     : null;
     array_key_exists('trasf_lunga',  $z) ? $trasf_lunga_num++     : null;
-    array_key_exists('pernotto',     $z) ? $pernotto_num++        : null;
+    array_key_exists('pernotto', $z) ? $pernotto_num++ : null;
+    array_key_exists('sielte',   $z) ? $sielte_num++  : null;
+    array_key_exists('pern_sielte',   $z) ? $pern_sielte_num++    : null;
 }
 
 // Apply fissa logic to figc_fer_it total
@@ -254,7 +270,8 @@ $totale = $figc_fer_it + $figc_fest_it + $fer_estero + $fest_estero
         + $figc_tr_aut_tot + $figc_tr_acmp_tot
         + $pres_aut_tot + $pres_acmp_tot + $aut_nofigc_tot
         + $trasf_breve_tot + $trasf_media_tot + $trasf_lunga_tot
-        + $pernotto_tot + $straordinari_tot;
+        + $pernotto_tot + $sielte_tot + $pern_sielte_tot
+        + $straordinari_tot;
 
 if ($o_compensation > 0) {
     $totale = (float)$o_compensation;
@@ -265,32 +282,44 @@ $totale += $totale_bonus;
 
 ?>
 
-<div class="title-container mb-4">
-    <h2 class="text-lg text-gray-800 dark:text-gray-200 leading-tight">
-        {{ $user_fullname }} - {{ $month }} {{ $year }}
-    </h2>
-</div>
+{{-- ====== HEADER CENTRATO ====== --}}
+<div class="flex flex-col items-center text-center mb-8">
 
-<div class="w-full overflow-x-auto">
-    <div class="mb-8">
-        <p class="text-lg text-gray-800 dark:text-gray-200 leading-tight">
-            <strong>Totale Compenso:</strong> <span style="padding: 5px;background-color:orange;color:black; font-size: 1.5rem;font-weight:bolder;">{{ $totale }}€</span>
-        </p><br />
+    {{-- Titolo --}}
+    <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-6 tracking-tight">
+        {{ $user_fullname }} &mdash; {{ $month }} {{ $year }}
+    </h2>
+
+    {{-- Card totale compenso --}}
+    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-md px-10 py-6 mb-6 min-w-[260px]">
+        <p class="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2">Totale Compenso</p>
+        <p class="text-5xl font-extrabold text-orange-500 dark:text-orange-400 leading-none">{{ $totale }}€</p>
+        @if($ts->compenso_atteso)
+        @php $diff = round($totale - (float)$ts->compenso_atteso, 2); @endphp
+        <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600">
+            <p class="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-1">Compenso Atteso dall'utente</p>
+            <p class="text-2xl font-bold text-gray-700 dark:text-gray-200">{{ number_format((float)$ts->compenso_atteso, 2, '.', '') }}€</p>
+            <p class="text-sm mt-1 font-medium {{ $diff >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-500 dark:text-red-400' }}">
+                {{ $diff >= 0 ? '+' : '' }}{{ $diff }}€ rispetto all'atteso
+            </p>
+        </div>
+        @endif
     </div>
 
+    {{-- Formula di calcolo --}}
     @if(Auth::user()->role == 'admin' || Auth::user()->role == 'superadmin')
-    <div class="mb-6">
-        <p class="text-base font-semibold text-gray-700 dark:text-gray-300 mb-2"><strong>Formula di Calcolo:</strong></p>
+    <div class="w-full max-w-lg text-left">
+        <p class="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-3 text-center">Formula di Calcolo</p>
         @if($o_compensation > 0)
-            <p class="text-sm italic text-orange-600 dark:text-orange-400">
+            <div class="bg-orange-50 dark:bg-orange-950 border border-orange-200 dark:border-orange-700 rounded-xl px-4 py-3 text-sm text-orange-700 dark:text-orange-300">
                 ⚠ Compenso impostato manualmente: {{ $o_compensation }}€ — formula automatica ignorata.
                 @if($totale_bonus != 0)(Bonus/detrazioni {{ ($totale_bonus >= 0 ? '+' : '') }}{{ $totale_bonus }}€ applicati sopra l'override.)@endif
-            </p>
+            </div>
         @else
             @if($_userRoleRate !== null)
             <p class="text-xs italic text-indigo-500 dark:text-indigo-400 mb-2">★ = tariffa individuale per questo utente</p>
             @endif
-            <div class="text-sm text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg p-4 max-w-lg">
+            <div class="text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-5">
                 <dl class="space-y-1">
 
                     {{-- FIGC Feriale Italia --}}
@@ -390,10 +419,10 @@ $totale += $totale_bonus;
                     </div>
                     @endif
 
-                    {{-- FIGC Trasp. Accompagnatore --}}
+                    {{-- FIGC Trasp. Accomp. --}}
                     @if($figc_tr_acmp_num > 0)
                     <div class="flex justify-between gap-4">
-                        <dt class="text-gray-600 dark:text-gray-400">FIGC Trasp. Accompagnatore ({{ $figc_tr_acmp_num }} × {{ $rate_figc_trasp_acmp }}€):</dt>
+                        <dt class="text-gray-600 dark:text-gray-400">FIGC Trasp. Accomp. ({{ $figc_tr_acmp_num }} × {{ $rate_figc_trasp_acmp }}€):</dt>
                         <dd class="font-semibold text-right">{{ round($figc_tr_acmp_tot, 2) }}€</dd>
                     </div>
                     @endif
@@ -406,10 +435,10 @@ $totale += $totale_bonus;
                     </div>
                     @endif
 
-                    {{-- Presidio Accompagnatori --}}
+                    {{-- Presidio Accomp. --}}
                     @if($pres_acmp_num > 0)
                     <div class="flex justify-between gap-4">
-                        <dt class="text-gray-600 dark:text-gray-400">Presidio Accompagnatori ({{ $pres_acmp_num }} × {{ $rate_presidio_acmp }}€):</dt>
+                        <dt class="text-gray-600 dark:text-gray-400">Presidio Accomp. ({{ $pres_acmp_num }} × {{ $rate_presidio_acmp }}€):</dt>
                         <dd class="font-semibold text-right">{{ round($pres_acmp_tot, 2) }}€</dd>
                     </div>
                     @endif
@@ -417,31 +446,31 @@ $totale += $totale_bonus;
                     {{-- Autista no FIGC --}}
                     @if($aut_nofigc_num > 0)
                     <div class="flex justify-between gap-4">
-                        <dt class="text-gray-600 dark:text-gray-400">No FIGC ({{ $aut_nofigc_num }} × {{ $rate_autista_nofigc }}€):</dt>
+                        <dt class="text-gray-600 dark:text-gray-400">Autista no FIGC ({{ $aut_nofigc_num }} × {{ $rate_autista_nofigc }}€):</dt>
                         <dd class="font-semibold text-right">{{ round($aut_nofigc_tot, 2) }}€</dd>
                     </div>
                     @endif
 
-                    {{-- Trasferta Breve --}}
+                    {{-- Trasf. Breve --}}
                     @if($trasf_breve_num > 0)
                     <div class="flex justify-between gap-4">
-                        <dt class="text-gray-600 dark:text-gray-400">Trasferta Breve ({{ $trasf_breve_num }} × {{ $rate_trasf_breve }}€):</dt>
+                        <dt class="text-gray-600 dark:text-gray-400">Trasf. Breve &lt;230km ({{ $trasf_breve_num }} × {{ $rate_trasf_breve }}€):</dt>
                         <dd class="font-semibold text-right">{{ round($trasf_breve_tot, 2) }}€</dd>
                     </div>
                     @endif
 
-                    {{-- Trasferta Media --}}
+                    {{-- Trasf. Media --}}
                     @if($trasf_media_num > 0)
                     <div class="flex justify-between gap-4">
-                        <dt class="text-gray-600 dark:text-gray-400">Trasferta Media ({{ $trasf_media_num }} × {{ $rate_trasf_media }}€):</dt>
+                        <dt class="text-gray-600 dark:text-gray-400">Trasf. Media &lt;300km ({{ $trasf_media_num }} × {{ $rate_trasf_media }}€):</dt>
                         <dd class="font-semibold text-right">{{ round($trasf_media_tot, 2) }}€</dd>
                     </div>
                     @endif
 
-                    {{-- Trasferta Lunga --}}
+                    {{-- Trasf. Lunga --}}
                     @if($trasf_lunga_num > 0)
                     <div class="flex justify-between gap-4">
-                        <dt class="text-gray-600 dark:text-gray-400">Trasferta Lunga ({{ $trasf_lunga_num }} × {{ $rate_trasf_lunga }}€):</dt>
+                        <dt class="text-gray-600 dark:text-gray-400">Trasf. Lunga &gt;300km ({{ $trasf_lunga_num }} × {{ $rate_trasf_lunga }}€):</dt>
                         <dd class="font-semibold text-right">{{ round($trasf_lunga_tot, 2) }}€</dd>
                     </div>
                     @endif
@@ -451,6 +480,22 @@ $totale += $totale_bonus;
                     <div class="flex justify-between gap-4">
                         <dt class="text-gray-600 dark:text-gray-400">Pernotti ({{ $pernotto_num }} × {{ $rate_pernotto }}€):</dt>
                         <dd class="font-semibold text-right">{{ round($pernotto_tot, 2) }}€</dd>
+                    </div>
+                    @endif
+
+                    {{-- SIELTE --}}
+                    @if($sielte_num > 0)
+                    <div class="flex justify-between gap-4">
+                        <dt class="text-gray-600 dark:text-gray-400">SIELTE ({{ $sielte_num }} × {{ $rate_sielte }}€):</dt>
+                        <dd class="font-semibold text-right">{{ round($sielte_tot, 2) }}€</dd>
+                    </div>
+                    @endif
+
+                    {{-- Pernotto SIELTE --}}
+                    @if($pern_sielte_num > 0)
+                    <div class="flex justify-between gap-4">
+                        <dt class="text-gray-600 dark:text-gray-400">Pernotto SIELTE ({{ $pern_sielte_num }} × {{ $rate_pernotto_sielte }}€):</dt>
+                        <dd class="font-semibold text-right">{{ round($pern_sielte_tot, 2) }}€</dd>
                     </div>
                     @endif
 
@@ -479,10 +524,13 @@ $totale += $totale_bonus;
     </div>
     @endif
 
-    @if(array_sum($note_summary) > 0)
-    <div class="mb-6">
-        <p class="text-lg text-gray-800 dark:text-gray-200 leading-tight mb-2">
-            <strong>Note:</strong>
+</div>
+{{-- ====== FINE HEADER CENTRATO ====== --}}
+
+@if(array_sum($note_summary) > 0)
+<div class="mb-6">
+    <p class="text-lg text-gray-800 dark:text-gray-200 leading-tight mb-2">
+        <strong>Note:</strong>
         </p>
         <div class="flex flex-wrap gap-2">
             @if($note_summary['Ferie'] > 0)
@@ -511,13 +559,35 @@ $totale += $totale_bonus;
                 </span>
             @endif
         </div>
-    </div>
-    @endif
+</div>
+@endif
 
-    <h2 class="text-lg text-gray-800 dark:text-gray-200 leading-tight mb-4">
-        <strong>Foglio Orario Complessivo:</strong>
-    </h2>
-    <form class="gsv-form" method="POST" action="{{ route('timesheets.update', $ts) }}">
+{{-- ====== CARD FILTRO CLIENTE ====== --}}
+<div class="mb-5 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm overflow-hidden">
+    <button type="button" id="clientFilterToggle"
+        class="w-full flex items-center justify-between px-5 py-3 bg-gray-50 dark:bg-gray-800 text-left hover:bg-gray-100 dark:hover:bg-gray-750 transition-colors focus:outline-none">
+        <span class="text-sm font-semibold text-gray-600 dark:text-gray-400 flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z"/>
+            </svg>
+            Filtra per Cliente
+        </span>
+        <svg id="clientFilterChevron" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-gray-400 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+        </svg>
+    </button>
+    <div id="clientFilterBody" class="hidden px-5 py-4 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
+        <input type="text" id="clientSearchInput"
+            placeholder="Scrivi il nome del cliente per filtrare le righe..."
+            class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-400 dark:focus:ring-indigo-500" />
+        <div id="clientFilterResult" class="hidden mt-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"></div>
+    </div>
+</div>
+
+<h2 class="text-lg text-gray-800 dark:text-gray-200 leading-tight mb-4">
+    <strong>Foglio Orario Complessivo:</strong>
+</h2>
+<form class="gsv-form" method="POST" action="{{ route('timesheets.update', $ts) }}">
         @csrf
         @method('PATCH')
 
@@ -654,5 +724,112 @@ $totale += $totale_bonus;
         });
 
         renderBonusList();
+
+        // ====== FILTRO CLIENTE ======
+        const compensiData = <?= json_encode($compensi) ?>;
+
+        const filterToggle  = document.getElementById('clientFilterToggle');
+        const filterBody    = document.getElementById('clientFilterBody');
+        const filterChevron = document.getElementById('clientFilterChevron');
+        const searchInput   = document.getElementById('clientSearchInput');
+        const filterResult  = document.getElementById('clientFilterResult');
+
+        filterToggle.addEventListener('click', function () {
+            const isOpen = !filterBody.classList.contains('hidden');
+            filterBody.classList.toggle('hidden', isOpen);
+            filterChevron.classList.toggle('rotate-180', !isOpen);
+            if (!isOpen) searchInput.focus();
+        });
+
+        const COMP_LABELS = {
+            figc_fer_it:   'Feriale Italia',
+            figc_fest_it:  'Festivo Italia',
+            fer_estero:    'Feriale Estero',
+            fest_estero:   'Festivo Estero',
+            figc_tr_aut:   'FIGC Trasp. Autista',
+            figc_tr_acmp:  'FIGC Trasp. Accomp.',
+            pres_aut:      'Presidio Autisti',
+            pres_acmp:     'Presidio Accomp.',
+            aut_nofigc:    'Autista no FIGC',
+            trasf_breve:   'Trasf. Breve \u003c230km',
+            trasf_media:   'Trasf. Media \u003c300km',
+            trasf_lunga:   'Trasf. Lunga \u003e300km',
+            pernotto:      'Pernotto',
+            sielte:        'SIELTE',
+            pern_sielte:   'Pernotto SIELTE',
+            straordinari:  'Straordinari',
+        };
+
+        function applyClientFilter() {
+            const term = searchInput.value.toLowerCase().trim();
+
+            // Show/hide table rows
+            document.querySelectorAll('#editableTable tbody tr').forEach(function (row) {
+                const c = (row.dataset.cliente || '').toLowerCase();
+                row.style.display = (!term || c.includes(term)) ? '' : 'none';
+            });
+
+            // Show/hide mobile cards
+            document.querySelectorAll('#mobileCardsContainer [data-cliente]').forEach(function (card) {
+                const c = (card.dataset.cliente || '').toLowerCase();
+                card.style.display = (!term || c.includes(term)) ? '' : 'none';
+            });
+
+            if (!term) {
+                filterResult.classList.add('hidden');
+                return;
+            }
+
+            const filtered = compensiData.filter(function (c) {
+                return (c.cliente || '').toLowerCase().includes(term);
+            });
+
+            if (filtered.length === 0) {
+                filterResult.innerHTML = '<p class="italic text-gray-400 dark:text-gray-500">Nessuna giornata trovata per <strong>"' + searchInput.value + '"</strong>.</p>';
+                filterResult.classList.remove('hidden');
+                return;
+            }
+
+            const totals = {};
+            Object.keys(COMP_LABELS).forEach(function (k) { totals[k] = 0; });
+            filtered.forEach(function (c) {
+                Object.keys(COMP_LABELS).forEach(function (k) {
+                    if (c[k] !== undefined) totals[k] += parseFloat(c[k]) || 0;
+                });
+            });
+
+            const grandTotal = Object.keys(COMP_LABELS).reduce(function (s, k) { return s + totals[k]; }, 0);
+
+            let html = '<div class="flex items-center gap-3 mb-3">'
+                + '<span class="text-gray-600 dark:text-gray-400">'
+                + '<strong class="text-gray-800 dark:text-gray-200">' + filtered.length + '</strong>'
+                + ' giornate per <strong class="text-gray-800 dark:text-gray-200">"' + searchInput.value + '"</strong>'
+                + '</span>'
+                + '<span class="ml-auto text-lg font-extrabold text-orange-500 dark:text-orange-400">' + grandTotal.toFixed(2) + '€</span>'
+                + '</div>'
+                + '<dl class="space-y-1 border-t border-gray-200 dark:border-gray-600 pt-2">';
+
+            Object.keys(COMP_LABELS).forEach(function (k) {
+                if (totals[k] > 0) {
+                    html += '<div class="flex justify-between gap-4">'
+                        + '<dt class="text-gray-500 dark:text-gray-400">' + COMP_LABELS[k] + '</dt>'
+                        + '<dd class="font-semibold">' + totals[k].toFixed(2) + '€</dd>'
+                        + '</div>';
+                }
+            });
+
+            html += '</dl>';
+
+            <?php if ($fissa_eff > 0): ?>
+            html += '<p class="mt-3 text-xs text-indigo-500 dark:text-indigo-400 italic">'
+                + '&#9432; La paga mensile fissa (<?= $fissa_eff ?>€) è su base mensile e non suddivisibile per cliente.'
+                + '</p>';
+            <?php endif; ?>
+
+            filterResult.innerHTML = html;
+            filterResult.classList.remove('hidden');
+        }
+
+        searchInput.addEventListener('input', applyClientFilter);
     });
 </script>

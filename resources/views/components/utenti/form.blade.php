@@ -85,6 +85,8 @@
             'trasferta_media'           => 'Trasf. Media <300km (€)',
             'trasferta_lunga'           => 'Trasf. Lunga >300km (€)',
             'pernotto'                  => 'Pernotto (€)',
+            'sielte'                    => 'SIELTE (€)',
+            'pernotto_sielte'           => 'Pernotto SIELTE (€)',
             'straordinari'              => 'Straordinari (€/ora)',
             'tariffa_sabato'            => 'Tariffa 3° Sabato (€)',
         ];

@@ -24,14 +24,16 @@ $compensi = [];
                 <th>Uscita</th>
                 <th>Estero</th>
                 <th>FIGC Trasp. Autista</th>
-                <th>FIGC Trasp. Accompagnatore</th>
+                <th>FIGC Trasp. Accomp.</th>
                 <th>Presidio Autisti</th>
-                <th>Presidio Accompagnatori</th>
-                <th>No FIGC</th>
-                <th>Trasferta Breve</th>
-                <th>Trasferta Media</th>
-                <th>Trasferta Lunga</th>
+                <th>Presidio Accomp.</th>
+                <th>Autista no FIGC</th>
+                <th>Trasf. Breve &lt;230km</th>
+                <th>Trasf. Media &lt;300km</th>
+                <th>Trasf. Lunga &gt;300km</th>
                 <th>Pernotto</th>
+                <th>SIELTE</th>
+                <th>Pernotto SIELTE</th>
                 <th>Note</th>
             </tr>
         </thead>
@@ -86,14 +88,16 @@ document.addEventListener("DOMContentLoaded", function () {
         { name: "Uscita",          type: "time",        editable: true  },
         { name: "Estero",          type: "checkbox",    editable: false },
         { name: "FigcTraspAut",    label: "FIGC Trasp. Autista",  type: "checkbox", editable: false },
-        { name: "FigcTraspAccomp", label: "FIGC Trasp. Accompagnatore",  type: "checkbox", editable: false },
-        { name: "PresidioAut",     label: "Presidio Autisti",     type: "checkbox", editable: false },
-        { name: "PresidioAccomp",  label: "Presidio Accompagnatori",     type: "checkbox", editable: false },
-        { name: "AutistaNoFigc",   label: "No FIGC",        type: "checkbox", editable: false },
-        { name: "TrasfBreve",      label: "Trasferta Breve",      type: "checkbox", editable: false },
-        { name: "TrasfMedia",      label: "Trasferta Media",      type: "checkbox", editable: false },
-        { name: "TrasfLunga",      label: "Trasferta Lunga",      type: "checkbox", editable: false },
+        { name: "FigcTraspAccomp", label: "FIGC Trasp. Accomp.",    type: "checkbox", editable: false },
+        { name: "PresidioAut",     label: "Presidio Autisti",      type: "checkbox", editable: false },
+        { name: "PresidioAccomp",  label: "Presidio Accomp.",      type: "checkbox", editable: false },
+        { name: "AutistaNoFigc",   label: "Autista no FIGC",       type: "checkbox", editable: false },
+        { name: "TrasfBreve",      label: "Trasf. Breve <230km",   type: "checkbox", editable: false },
+        { name: "TrasfMedia",      label: "Trasf. Media <300km",   type: "checkbox", editable: false },
+        { name: "TrasfLunga",      label: "Trasf. Lunga >300km",   type: "checkbox", editable: false },
         { name: "Pernotto",        type: "checkbox",    editable: false },
+        { name: "Sielte",          label: "SIELTE",     type: "checkbox", editable: false },
+        { name: "PernSielte",      label: "Pernotto SIELTE", type: "checkbox", editable: false },
         { name: "Note",            type: "multiselect", editable: false },
     ];
 
@@ -148,6 +152,7 @@ document.addEventListener("DOMContentLoaded", function () {
         timesheetData.forEach((dayData) => {
             let row = document.createElement("tr");
             row.classList.add("odd:bg-white", "odd:dark:bg-gray-700", "even:bg-gray-50", "even:dark:bg-gray-800", "even:color-gray-700", "dark:text-gray-200");
+            row.dataset.cliente = (dayData['Cliente'] || '').toLowerCase().trim();
 
             const textCols = columns.filter(c => c.type !== "checkbox");
             const flagCols  = columns.filter(c => c.type === "checkbox");
@@ -246,6 +251,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 "bg-white", "dark:bg-gray-800", "rounded-lg",
                 "border", "border-gray-200", "dark:border-gray-700", "p-3"
             );
+            card.dataset.cliente = (dayData['Cliente'] || '').toLowerCase().trim();
 
             // Intestazione con la data
             let header = document.createElement("div");

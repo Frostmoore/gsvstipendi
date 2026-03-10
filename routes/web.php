@@ -141,6 +141,7 @@ Route::controller(UserTimesheetController::class)
     Route::get('/{userTimesheet}', 'show')->name('show');
     Route::get('/{userTimesheet}/edit', 'edit')->name('edit');
     Route::patch('/{userTimesheet}/update', 'update')->name('update');
+    Route::patch('/{userTimesheet}/bonuses', 'updateBonuses')->name('update-bonuses');
     Route::delete('/{userTimesheet}/destroy', 'destroy')->name('destroy');
 });
 

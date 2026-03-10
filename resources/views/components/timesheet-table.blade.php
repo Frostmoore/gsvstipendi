@@ -30,14 +30,16 @@
                 <th>Uscita</th>
                 <th>Estero</th>
                 <th>FIGC Trasp. Autista</th>
-                <th>FIGC Trasp. Accompagnatore</th>
+                <th>FIGC Trasp. Accomp.</th>
                 <th>Presidio Autisti</th>
-                <th>Presidio Accompagnatori</th>
-                <th>No FIGC</th>
-                <th>Trasferta Breve</th>
-                <th>Trasferta Media</th>
-                <th>Trasferta Lunga</th>
+                <th>Presidio Accomp.</th>
+                <th>Autista no FIGC</th>
+                <th>Trasf. Breve &lt;230km</th>
+                <th>Trasf. Media &lt;300km</th>
+                <th>Trasf. Lunga &gt;300km</th>
                 <th>Pernotto</th>
+                <th>SIELTE</th>
+                <th>Pernotto SIELTE</th>
                 <th>Note</th>
             </tr>
         </thead>
@@ -93,14 +95,16 @@ document.addEventListener("DOMContentLoaded", function () {
         { name: "Uscita",          type: "time",        editable: true  },
         { name: "Estero",          type: "checkbox",    editable: false },
         { name: "FigcTraspAut",    label: "FIGC Trasp. Autista",  type: "checkbox", editable: false },
-        { name: "FigcTraspAccomp", label: "FIGC Trasp. Accompagnatore",  type: "checkbox", editable: false },
-        { name: "PresidioAut",     label: "Presidio Autisti",     type: "checkbox", editable: false },
-        { name: "PresidioAccomp",  label: "Presidio Accompagnatori",     type: "checkbox", editable: false },
-        { name: "AutistaNoFigc",   label: "No FIGC",        type: "checkbox", editable: false },
-        { name: "TrasfBreve",      label: "Trasferta Breve",      type: "checkbox", editable: false },
-        { name: "TrasfMedia",      label: "Trasferta Media",      type: "checkbox", editable: false },
-        { name: "TrasfLunga",      label: "Trasferta Lunga",      type: "checkbox", editable: false },
+        { name: "FigcTraspAccomp", label: "FIGC Trasp. Accomp.",    type: "checkbox", editable: false },
+        { name: "PresidioAut",     label: "Presidio Autisti",      type: "checkbox", editable: false },
+        { name: "PresidioAccomp",  label: "Presidio Accomp.",      type: "checkbox", editable: false },
+        { name: "AutistaNoFigc",   label: "Autista no FIGC",       type: "checkbox", editable: false },
+        { name: "TrasfBreve",      label: "Trasf. Breve <230km",   type: "checkbox", editable: false },
+        { name: "TrasfMedia",      label: "Trasf. Media <300km",   type: "checkbox", editable: false },
+        { name: "TrasfLunga",      label: "Trasf. Lunga >300km",   type: "checkbox", editable: false },
         { name: "Pernotto",        type: "checkbox",    editable: false },
+        { name: "Sielte",          label: "SIELTE",     type: "checkbox", editable: false },
+        { name: "PernSielte",      label: "Pernotto SIELTE", type: "checkbox", editable: false },
         { name: "Note",            type: "multiselect", editable: false },
     ];
 
@@ -117,6 +121,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 case "TrasfMedia":     return rates && parseFloat(rates.trasferta_media || 0) > 0;
                 case "TrasfLunga":     return rates && parseFloat(rates.trasferta_lunga || 0) > 0;
                 case "Pernotto":       return rates && parseFloat(rates.pernotto || 0) > 0;
+                case "Sielte":         return rates && parseFloat(rates.sielte || 0) > 0;
+                case "PernSielte":     return rates && parseFloat(rates.pernotto_sielte || 0) > 0;
                 default:               return true;
             }
         });

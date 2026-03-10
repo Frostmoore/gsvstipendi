@@ -131,6 +131,15 @@ class UserTimesheetController extends Controller
         return redirect()->route('user-timesheets.index')->with('success', 'Foglio Orario aggiornato con successo!');
     }
 
+    public function updateBonuses(Request $request, Timesheet $userTimesheet)
+    {
+        $userTimesheet->update([
+            'bonuses'          => $request->input('bonuses', '[]'),
+            'compenso_atteso'  => $request->input('compenso_atteso') ?: null,
+        ]);
+        return redirect()->back()->with('success', 'Aggiunte/detrazioni salvate.');
+    }
+
     public function destroy(Timesheet $userTimesheet)
     {
         if (!in_array(Auth::user()->role, ['admin', 'superadmin'])) {

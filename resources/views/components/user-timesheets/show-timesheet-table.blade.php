@@ -1,13 +1,15 @@
 <?php
 
 use App\Helpers\DateHelper;
-$timesheet = $userTimesheet;
-$id = $timesheet->id;
-$_month = $timesheet->month;
+$ts = $userTimesheet;
+$id = $ts->id;
+$_month = $ts->month;
 $month = $months[$_month];
-$year = $timesheet->year;
-$userid = $timesheet->user;
-$timesheet = json_decode($timesheet->link);
+$year = $ts->year;
+$userid = $ts->user;
+$bonus_list   = is_array($ts->bonuses) ? $ts->bonuses : (json_decode($ts->bonuses ?? '[]', true) ?? []);
+$totale_bonus = array_sum(array_column($bonus_list, 'amount'));
+$timesheet = json_decode($ts->link);
 $compensi = [];
 
 foreach($users as $u) {
@@ -33,6 +35,8 @@ $rate_trasf_breve              = $_userRoleRate ? (float)($_userRoleRate->trasfe
 $rate_trasf_media              = $_userRoleRate ? (float)($_userRoleRate->trasferta_media          ?? 0) : 0;
 $rate_trasf_lunga              = $_userRoleRate ? (float)($_userRoleRate->trasferta_lunga          ?? 0) : 0;
 $rate_pernotto                 = $_userRoleRate ? (float)($_userRoleRate->pernotto                 ?? 0) : 0;
+$rate_sielte                   = $_userRoleRate ? (float)($_userRoleRate->sielte                   ?? 0) : 0;
+$rate_pernotto_sielte          = $_userRoleRate ? (float)($_userRoleRate->pernotto_sielte          ?? 0) : 0;
 $rate_straordinari             = $_userRoleRate ? (float)($_userRoleRate->straordinari             ?? 0) : 0;
 $rate_tariffa_sabato           = $_userRoleRate ? (float)($_userRoleRate->tariffa_sabato           ?? 0) : 0;
 
@@ -49,14 +53,16 @@ $allowedKeys = ['Data', 'Cliente', 'Luogo', 'Entrata', 'Uscita'];
 $flagColKeys = [];
 if ($rate_feriale_estero > 0 || $rate_festivo_estero > 0) $flagColKeys['Estero'] = 'Estero';
 if ($rate_figc_trasp_aut > 0)   $flagColKeys['FIGC Trasp. Autista'] = 'FigcTraspAut';
-if ($rate_figc_trasp_acmp > 0)  $flagColKeys['FIGC Trasp. Accompagnatore'] = 'FigcTraspAccomp';
-if ($rate_presidio_aut > 0)     $flagColKeys['Presidio Autisti'] = 'PresidioAut';
-if ($rate_presidio_acmp > 0)    $flagColKeys['Presidio Accompagnatori'] = 'PresidioAccomp';
-if ($rate_autista_nofigc > 0)   $flagColKeys['Autista no FIGC'] = 'AutistaNoFigc';
-if ($rate_trasf_breve > 0)      $flagColKeys['Trasferta Breve'] = 'TrasfBreve';
-if ($rate_trasf_media > 0)      $flagColKeys['Trasferta Media'] = 'TrasfMedia';
-if ($rate_trasf_lunga > 0)      $flagColKeys['Trasferta Lunga'] = 'TrasfLunga';
-if ($rate_pernotto > 0)         $flagColKeys['Pernotto'] = 'Pernotto';
+if ($rate_figc_trasp_acmp > 0)  $flagColKeys['FIGC Trasp. Accomp.']  = 'FigcTraspAccomp';
+if ($rate_presidio_aut > 0)     $flagColKeys['Presidio Autisti']     = 'PresidioAut';
+if ($rate_presidio_acmp > 0)    $flagColKeys['Presidio Accomp.']     = 'PresidioAccomp';
+if ($rate_autista_nofigc > 0)   $flagColKeys['Autista no FIGC']      = 'AutistaNoFigc';
+if ($rate_trasf_breve > 0)      $flagColKeys['Trasf. Breve <230km']  = 'TrasfBreve';
+if ($rate_trasf_media > 0)      $flagColKeys['Trasf. Media <300km']  = 'TrasfMedia';
+if ($rate_trasf_lunga > 0)      $flagColKeys['Trasf. Lunga >300km']  = 'TrasfLunga';
+if ($rate_pernotto > 0)        $flagColKeys['Pernotto']        = 'Pernotto';
+if ($rate_sielte > 0)          $flagColKeys['SIELTE']          = 'Sielte';
+if ($rate_pernotto_sielte > 0)   $flagColKeys['Pernotto SIELTE']     = 'PernSielte';
 if (!empty($flagColKeys)) { $cols[] = 'Opzioni'; $allowedKeys[] = '__flags__'; }
 $cols[] = 'Note'; $allowedKeys[] = 'Note';
 
@@ -98,11 +104,14 @@ foreach ($timesheet as $t) {
     $trasf_media    = array_key_exists('TrasfMedia',     $t) ? $t['TrasfMedia']     : null;
     $trasf_lunga    = array_key_exists('TrasfLunga',     $t) ? $t['TrasfLunga']     : null;
     $pernotto       = array_key_exists('Pernotto',       $t) ? $t['Pernotto']       : null;
+    $sielte         = array_key_exists('Sielte',         $t) ? $t['Sielte']         : null;
+    $pern_sielte    = array_key_exists('PernSielte',     $t) ? $t['PernSielte']     : null;
 
     $ha_flag_speciale = (
         $estero == 1 || $figc_tr_aut == 1 || $figc_tr_acmp == 1 ||
         $pres_aut == 1 || $pres_acmp == 1 || $aut_nofigc == 1 ||
-        $trasf_breve == 1 || $trasf_media == 1 || $trasf_lunga == 1 || $pernotto == 1
+        $trasf_breve == 1 || $trasf_media == 1 || $trasf_lunga == 1 || $pernotto == 1 ||
+        $sielte == 1 || $pern_sielte == 1
     );
 
     // Straordinari
@@ -161,7 +170,9 @@ foreach ($timesheet as $t) {
     if ($trasf_breve == 1)   $rowCompensi['trasf_breve']  = $rate_trasf_breve;
     if ($trasf_media == 1)   $rowCompensi['trasf_media']  = $rate_trasf_media;
     if ($trasf_lunga == 1)   $rowCompensi['trasf_lunga']  = $rate_trasf_lunga;
-    if ($pernotto == 1)      $rowCompensi['pernotto']     = $rate_pernotto;
+    if ($pernotto == 1)  $rowCompensi['pernotto'] = $rate_pernotto;
+    if ($sielte == 1)    $rowCompensi['sielte']   = $rate_sielte;
+    if ($pern_sielte == 1)   $rowCompensi['pern_sielte']      = $rate_pernotto_sielte;
 
     array_push($compensi, $rowCompensi);
 }
@@ -179,8 +190,10 @@ $aut_nofigc_tot   = 0; $aut_nofigc_num       = 0;
 $trasf_breve_tot  = 0; $trasf_breve_num      = 0;
 $trasf_media_tot  = 0; $trasf_media_num      = 0;
 $trasf_lunga_tot  = 0; $trasf_lunga_num      = 0;
-$pernotto_tot     = 0; $pernotto_num         = 0;
-$straordinari_tot = 0; $straordinari_ore     = 0;
+$pernotto_tot = 0; $pernotto_num = 0;
+$sielte_tot   = 0; $sielte_num   = 0;
+$pern_sielte_tot    = 0; $pern_sielte_num    = 0;
+$straordinari_tot   = 0; $straordinari_ore   = 0;
 
 foreach ($compensi as $z) {
     $figc_fer_it      += $z['figc_fer_it']   ?? 0;
@@ -195,9 +208,11 @@ foreach ($compensi as $z) {
     $trasf_breve_tot  += $z['trasf_breve']   ?? 0;
     $trasf_media_tot  += $z['trasf_media']   ?? 0;
     $trasf_lunga_tot  += $z['trasf_lunga']   ?? 0;
-    $pernotto_tot     += $z['pernotto']      ?? 0;
-    $straordinari_tot += $z['straordinari']  ?? 0;
-    $straordinari_ore += $z['straordinari_ore'] ?? 0;
+    $pernotto_tot += $z['pernotto'] ?? 0;
+    $sielte_tot   += $z['sielte']   ?? 0;
+    $pern_sielte_tot    += $z['pern_sielte']    ?? 0;
+    $straordinari_tot   += $z['straordinari']   ?? 0;
+    $straordinari_ore   += $z['straordinari_ore'] ?? 0;
 
     array_key_exists('figc_fer_it',  $z) ? $figc_fer_it_num++     : null;
     array_key_exists('figc_fest_it', $z) ? $figc_fest_it_num++    : null;
@@ -211,7 +226,9 @@ foreach ($compensi as $z) {
     array_key_exists('trasf_breve',  $z) ? $trasf_breve_num++     : null;
     array_key_exists('trasf_media',  $z) ? $trasf_media_num++     : null;
     array_key_exists('trasf_lunga',  $z) ? $trasf_lunga_num++     : null;
-    array_key_exists('pernotto',     $z) ? $pernotto_num++        : null;
+    array_key_exists('pernotto', $z) ? $pernotto_num++ : null;
+    array_key_exists('sielte',   $z) ? $sielte_num++  : null;
+    array_key_exists('pern_sielte',   $z) ? $pern_sielte_num++    : null;
 }
 
 // Apply fissa logic to figc_fer_it total
@@ -227,7 +244,8 @@ $totale = $figc_fer_it + $figc_fest_it + $fer_estero + $fest_estero
         + $figc_tr_aut_tot + $figc_tr_acmp_tot
         + $pres_aut_tot + $pres_acmp_tot + $aut_nofigc_tot
         + $trasf_breve_tot + $trasf_media_tot + $trasf_lunga_tot
-        + $pernotto_tot + $straordinari_tot;
+        + $pernotto_tot + $sielte_tot + $pern_sielte_tot
+        + $straordinari_tot + $totale_bonus;
 
 ?>
 
@@ -289,4 +307,130 @@ $totale = $figc_fer_it + $figc_fest_it + $fer_estero + $fest_estero
         <strong>Totale Compenso:</strong>
         <span style="padding:5px;background-color:orange;color:black;font-size:1.5rem;font-weight:bolder;">{{ $totale }}€</span>
     </p>
+
+
+    <form class="gsv-bonus-form mt-6" method="POST" action="{{ route('user-timesheets.update-bonuses', $ts) }}">
+        @csrf
+        @method('PATCH')
+
+        {{-- Compenso Atteso --}}
+        <div class="mb-4">
+            <x-input-label for="user_compenso_atteso" :value="__('Compenso Atteso (€) — opzionale')" />
+            <div class="flex items-center gap-3">
+                <x-text-input id="user_compenso_atteso" class="block mt-1 w-full md:w-64" type="number" step="0.01" min="0"
+                    name="compenso_atteso"
+                    value="{{ $ts->compenso_atteso }}"
+                    placeholder="es. 1200.00" />
+                <button type="submit" class="mt-1 inline-flex items-center px-3 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 rounded-md text-xs font-semibold hover:bg-gray-300 dark:hover:bg-gray-600 transition">
+                    Salva
+                </button>
+            </div>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Visibile agli amministratori. Non influenza il calcolo del compenso.</p>
+        </div>
+
+        <fieldset class="w-full overflow-hidden border border-gray-300 dark:border-gray-600 rounded-lg p-4 mb-6">
+            <legend class="px-2 text-sm font-semibold text-gray-700 dark:text-gray-300">Aggiunte e Detrazioni</legend>
+
+            <div class="flex flex-col md:flex-row gap-3 md:items-end mb-4">
+                <div class="w-full md:w-40">
+                    <x-input-label for="user_bonus_amount" :value="__('Importo (€)')" />
+                    <x-text-input id="user_bonus_amount" class="block mt-1 w-full" type="number" step="0.01" placeholder="es. 50 o -30" />
+                </div>
+                <div class="w-full md:flex-1">
+                    <x-input-label for="user_bonus_note" :value="__('Motivazione')" />
+                    <x-text-input id="user_bonus_note" class="block mt-1 w-full" type="text" placeholder="es. Rimborso spese..." />
+                </div>
+                <div class="w-full md:w-auto md:flex-shrink-0 md:pb-0.5">
+                    <button type="button" id="user_add_bonus_btn"
+                        class="w-full md:w-auto inline-flex justify-center items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 focus:outline-none transition ease-in-out duration-150">
+                        + Aggiungi
+                    </button>
+                </div>
+            </div>
+
+            <div id="user_bonus_list_container"></div>
+            <input type="hidden" name="bonuses" id="user_bonuses_hidden" value="{{ old('bonuses', json_encode($bonus_list)) }}" />
+        </fieldset>
+    </form>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const bonusContainer = document.getElementById('user_bonus_list_container');
+        let bonusEntries = JSON.parse(document.getElementById('user_bonuses_hidden').value || '[]');
+
+        function renderBonusList() {
+            document.getElementById('user_bonuses_hidden').value = JSON.stringify(bonusEntries);
+
+            if (bonusEntries.length === 0) {
+                bonusContainer.innerHTML =
+                    '<p class="text-sm text-gray-400 dark:text-gray-500 italic">Nessuna aggiunta o detrazione.</p>';
+                return;
+            }
+
+            if (window.innerWidth < 768) {
+                let html = '<div class="space-y-2">';
+                bonusEntries.forEach(function(entry, index) {
+                    const isBonus = parseFloat(entry.amount) >= 0;
+                    const colorClass = isBonus
+                        ? 'bg-green-50 dark:bg-green-950 text-green-800 dark:text-green-200 border-green-300 dark:border-green-800'
+                        : 'bg-red-50 dark:bg-red-950 text-red-800 dark:text-red-200 border-red-300 dark:border-red-800';
+                    const sign   = isBonus ? '+' : '';
+                    const amount = sign + parseFloat(entry.amount).toFixed(2) + ' €';
+                    html += `<div class="flex items-center gap-2 rounded-lg border p-3 ${colorClass}">`;
+                    html += `<span class="font-bold text-sm w-20 flex-shrink-0">${amount}</span>`;
+                    html += `<span class="text-sm flex-1 min-w-0 break-words">${entry.note}</span>`;
+                    html += `<button type="button" onclick="userRemoveBonus(${index})" class="text-xs hover:underline flex-shrink-0">Elimina</button>`;
+                    html += `</div>`;
+                });
+                html += '</div>';
+                bonusContainer.innerHTML = html;
+            } else {
+                let html = '<table class="w-full text-sm border-collapse rounded overflow-hidden">';
+                html += '<thead><tr class="text-left bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">';
+                html += '<th class="px-3 py-1.5 w-28">Importo</th>';
+                html += '<th class="px-3 py-1.5">Motivazione</th>';
+                html += '<th class="px-3 py-1.5 w-20"></th>';
+                html += '</tr></thead><tbody>';
+                bonusEntries.forEach(function(entry, index) {
+                    const isBonus  = parseFloat(entry.amount) >= 0;
+                    const rowClass = isBonus
+                        ? 'bg-green-50 dark:bg-green-950 text-green-800 dark:text-green-200'
+                        : 'bg-red-50 dark:bg-red-950 text-red-800 dark:text-red-200';
+                    const sign   = isBonus ? '+' : '';
+                    const amount = sign + parseFloat(entry.amount).toFixed(2) + ' €';
+                    html += `<tr class="${rowClass} border-t border-gray-200 dark:border-gray-600">`;
+                    html += `<td class="px-3 py-1.5 font-semibold">${amount}</td>`;
+                    html += `<td class="px-3 py-1.5">${entry.note}</td>`;
+                    html += `<td class="px-3 py-1.5 text-right">`;
+                    html += `<button type="button" onclick="userRemoveBonus(${index})" class="text-xs text-red-600 dark:text-red-400 hover:underline">Elimina</button>`;
+                    html += `</td></tr>`;
+                });
+                html += '</tbody></table>';
+                bonusContainer.innerHTML = html;
+            }
+        }
+
+        window.userRemoveBonus = function(index) {
+            bonusEntries.splice(index, 1);
+            renderBonusList();
+            document.querySelector('form.gsv-bonus-form').submit();
+        };
+
+        document.getElementById('user_add_bonus_btn').addEventListener('click', function() {
+            const amountInput = document.getElementById('user_bonus_amount');
+            const noteInput   = document.getElementById('user_bonus_note');
+            const amount      = parseFloat(amountInput.value);
+            const note        = noteInput.value.trim();
+
+            if (isNaN(amount) || amount === 0) { amountInput.focus(); return; }
+            if (!note) { noteInput.focus(); return; }
+
+            bonusEntries.push({ amount: amount, note: note });
+            renderBonusList();
+            document.querySelector('form.gsv-bonus-form').submit();
+        });
+
+        renderBonusList();
+    });
+</script>

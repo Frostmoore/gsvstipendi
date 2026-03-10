@@ -108,7 +108,7 @@ class UtenteController extends Controller
 
     private function saveUserRates(int $userId, Request $request): void
     {
-        $fields = ['figc_feriale_italia', 'feriale_estero', 'figc_festivo_italia', 'festivo_estero', 'figc_trasp_autista', 'figc_trasp_accompagnatore', 'presidio_autisti', 'presidio_accompagnatori', 'autista_no_figc', 'trasferta', 'trasferta_media', 'trasferta_lunga', 'pernotto', 'straordinari', 'tariffa_sabato', 'fissa'];
+        $fields = ['figc_feriale_italia', 'feriale_estero', 'figc_festivo_italia', 'festivo_estero', 'figc_trasp_autista', 'figc_trasp_accompagnatore', 'presidio_autisti', 'presidio_accompagnatori', 'autista_no_figc', 'trasferta', 'trasferta_media', 'trasferta_lunga', 'pernotto', 'sielte', 'pernotto_sielte', 'straordinari', 'tariffa_sabato', 'fissa'];
         $rates = $request->input('rates', []);
 
         $data = [];

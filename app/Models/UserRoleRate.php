@@ -15,7 +15,7 @@ class UserRoleRate extends Model
         'presidio_autisti', 'presidio_accompagnatori',
         'autista_no_figc',
         'trasferta', 'trasferta_media', 'trasferta_lunga',
-        'pernotto', 'straordinari',
+        'pernotto', 'sielte', 'pernotto_sielte', 'straordinari',
         'fissa', 'tariffa_sabato',
     ];
 }
