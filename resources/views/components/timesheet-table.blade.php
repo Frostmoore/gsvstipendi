@@ -105,6 +105,7 @@ document.addEventListener("DOMContentLoaded", function () {
         { name: "Pernotto",        type: "checkbox",    editable: false },
         { name: "Sielte",          label: "SIELTE",     type: "checkbox", editable: false },
         { name: "PernSielte",      label: "Pernotto SIELTE", type: "checkbox", editable: false },
+        { name: "CompensoAtteso",  label: "Comp. Atteso (€)", type: "number",   editable: true  },
         { name: "Note",            type: "multiselect", editable: false },
     ];
 
@@ -231,6 +232,10 @@ document.addEventListener("DOMContentLoaded", function () {
                         return function() { d[c.name] = this.value; updateHiddenInput(); };
                     })(dayData, col));
                     td.appendChild(input);
+                } else if (col.type === "number") {
+                    td.textContent = dayData[col.name] ? parseFloat(dayData[col.name]).toFixed(2) + '\u00a0€' : '—';
+                    td.style.textAlign = "center";
+                    td.style.fontSize = "0.85em";
                 } else {
                     td.contentEditable = col.editable;
                     if (col.name === "Cliente") {
@@ -383,6 +388,12 @@ document.addEventListener("DOMContentLoaded", function () {
                         };
                     })(dayData, col));
                     inputWrap.appendChild(input);
+
+                } else if (col.type === "number") {
+                    let span = document.createElement("span");
+                    span.textContent = dayData[col.name] ? parseFloat(dayData[col.name]).toFixed(2) + '\u00a0€' : '—';
+                    span.classList.add("text-sm", "text-gray-700", "dark:text-gray-300");
+                    inputWrap.appendChild(span);
 
                 } else {
                     let input = document.createElement("input");

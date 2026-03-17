@@ -64,6 +64,7 @@ if ($rate_pernotto > 0)        $flagColKeys['Pernotto']        = 'Pernotto';
 if ($rate_sielte > 0)          $flagColKeys['SIELTE']          = 'Sielte';
 if ($rate_pernotto_sielte > 0)   $flagColKeys['Pernotto SIELTE']     = 'PernSielte';
 if (!empty($flagColKeys)) { $cols[] = 'Opzioni'; $allowedKeys[] = '__flags__'; }
+$cols[] = 'Comp. Atteso (€)'; $allowedKeys[] = 'CompensoAtteso';
 $cols[] = 'Note'; $allowedKeys[] = 'Note';
 
 $sabati_lavorati = 0;
@@ -247,6 +248,16 @@ $totale = $figc_fer_it + $figc_fest_it + $fer_estero + $fest_estero
         + $pernotto_tot + $sielte_tot + $pern_sielte_tot
         + $straordinari_tot + $totale_bonus;
 
+// Compenso atteso per-day: sum from JSON
+$sum_compenso_atteso = 0;
+foreach ($timesheet as $_row) {
+    $_row = json_decode(json_encode($_row), true);
+    $sum_compenso_atteso += (float)($_row['CompensoAtteso'] ?? 0);
+}
+if ($sum_compenso_atteso <= 0) {
+    $sum_compenso_atteso = (float)($ts->compenso_atteso ?? 0);
+}
+
 ?>
 
 <div class="title-container mb-4">
@@ -307,26 +318,20 @@ $totale = $figc_fer_it + $figc_fest_it + $fer_estero + $fest_estero
         <strong>Totale Compenso:</strong>
         <span style="padding:5px;background-color:orange;color:black;font-size:1.5rem;font-weight:bolder;">{{ $totale }}€</span>
     </p>
+    @if($sum_compenso_atteso > 0)
+    @php $diff_u = round($totale - $sum_compenso_atteso, 2); @endphp
+    <p class="text-sm mt-1 text-gray-600 dark:text-gray-400">
+        Compenso atteso: <strong>{{ number_format($sum_compenso_atteso, 2, '.', '') }}€</strong>
+        <span class="font-medium {{ $diff_u >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-500 dark:text-red-400' }}">
+            ({{ $diff_u >= 0 ? '+' : '' }}{{ $diff_u }}€)
+        </span>
+    </p>
+    @endif
 
 
     <form class="gsv-bonus-form mt-6" method="POST" action="{{ route('user-timesheets.update-bonuses', $ts) }}">
         @csrf
         @method('PATCH')
-
-        {{-- Compenso Atteso --}}
-        <div class="mb-4">
-            <x-input-label for="user_compenso_atteso" :value="__('Compenso Atteso (€) — opzionale')" />
-            <div class="flex items-center gap-3">
-                <x-text-input id="user_compenso_atteso" class="block mt-1 w-full md:w-64" type="number" step="0.01" min="0"
-                    name="compenso_atteso"
-                    value="{{ $ts->compenso_atteso }}"
-                    placeholder="es. 1200.00" />
-                <button type="submit" class="mt-1 inline-flex items-center px-3 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 rounded-md text-xs font-semibold hover:bg-gray-300 dark:hover:bg-gray-600 transition">
-                    Salva
-                </button>
-            </div>
-            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Visibile agli amministratori. Non influenza il calcolo del compenso.</p>
-        </div>
 
         <fieldset class="w-full overflow-hidden border border-gray-300 dark:border-gray-600 rounded-lg p-4 mb-6">
             <legend class="px-2 text-sm font-semibold text-gray-700 dark:text-gray-300">Aggiunte e Detrazioni</legend>

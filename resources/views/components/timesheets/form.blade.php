@@ -35,10 +35,12 @@
     <x-timesheet-table :users="$users" :usersRates="$usersRates ?? []" />
 </div>
 
-<div class="gsv-timesheet-form">
-    <div class="flex items-center justify-end mt-4">
-        <x-primary-button class="ms-3">
-            {{ __('Salva') }}
-        </x-primary-button>
-    </div>
-</div>
+<div class="pb-20"></div>
+
+<button type="submit"
+    class="fixed bottom-6 right-6 z-50 inline-flex items-center gap-2 px-5 py-3 bg-gray-800 dark:bg-gray-200 text-white dark:text-gray-800 font-semibold text-sm rounded-full shadow-xl hover:bg-gray-700 dark:hover:bg-white active:bg-gray-900 dark:active:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+    </svg>
+    Salva
+</button>

@@ -140,6 +140,7 @@ document.addEventListener("DOMContentLoaded", function () {
         { name: "Pernotto",        type: "checkbox",    editable: false },
         { name: "Sielte",          label: "SIELTE",     type: "checkbox", editable: false },
         { name: "PernSielte",      label: "Pernotto SIELTE", type: "checkbox", editable: false },
+        { name: "CompensoAtteso",  label: "Comp. Atteso (€)", type: "number",   editable: true  },
         { name: "Note",            type: "multiselect", editable: false },
     ];
 
@@ -266,6 +267,14 @@ document.addEventListener("DOMContentLoaded", function () {
                         return function() { d[c.name] = this.value; updateHiddenInput(); };
                     })(dayData, col));
                     td.appendChild(input);
+                } else if (col.type === "number") {
+                    let input = document.createElement("input");
+                    input.type = "number"; input.step = "0.01"; input.min = "0"; input.placeholder = "0.00";
+                    input.style.cssText = "width:70px;font-size:0.8em;border:1px solid #d1d5db;border-radius:4px;padding:2px 4px;background:transparent;color:inherit;";
+                    input.addEventListener("input", (function(d, c) {
+                        return function() { d[c.name] = this.value; updateHiddenInput(); };
+                    })(dayData, col));
+                    td.appendChild(input);
                 } else {
                     td.contentEditable = col.editable;
                     if (col.name === "Cliente") {
@@ -337,6 +346,9 @@ document.addEventListener("DOMContentLoaded", function () {
                         if (sel) sel.value = val || "";
                     } else if (col.type === "time") {
                         let inp = td.querySelector("input[type='time']");
+                        if (inp) inp.value = val;
+                    } else if (col.type === "number") {
+                        let inp = td.querySelector("input[type='number']");
                         if (inp) inp.value = val;
                     } else {
                         td.innerText = val;
@@ -454,6 +466,26 @@ document.addEventListener("DOMContentLoaded", function () {
                             if (tableRow) {
                                 let colIdx = columns.findIndex(x => x.name === c.name);
                                 let inp = tableRow.cells[colIdx] && tableRow.cells[colIdx].querySelector("input[type='time']");
+                                if (inp) inp.value = this.value;
+                            }
+                            updateHiddenInput();
+                        };
+                    })(dayData, col));
+                    inputWrap.appendChild(input);
+
+                } else if (col.type === "number") {
+                    let input = document.createElement("input");
+                    input.type = "number"; input.step = "0.01"; input.min = "0"; input.placeholder = "0.00";
+                    input.value = dayData[col.name] || "";
+                    input.classList.add("bg-white", "text-gray-900", "border", "border-gray-200", "rounded", "px-2", "py-0.5", "w-full", "focus:outline-none", "focus:ring-1", "focus:ring-blue-400");
+                    input.style.fontSize = "0.8em";
+                    input.addEventListener("input", (function(d, c) {
+                        return function() {
+                            d[c.name] = this.value;
+                            let tableRow = document.querySelectorAll("#editableTable tbody tr")[dayIndex];
+                            if (tableRow) {
+                                let colIdx = columns.findIndex(x => x.name === c.name);
+                                let inp = tableRow.cells[colIdx] && tableRow.cells[colIdx].querySelector("input[type='number']");
                                 if (inp) inp.value = this.value;
                             }
                             updateHiddenInput();

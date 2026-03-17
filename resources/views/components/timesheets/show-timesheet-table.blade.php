@@ -66,6 +66,7 @@ if ($rate_trasf_lunga > 0)      { $cols[] = 'Trasf. Lunga >300km';  $colKeys[] =
 if ($rate_pernotto > 0)         { $cols[] = 'Pernotto';        $colKeys[] = 'Pernotto'; }
 if ($rate_sielte > 0)           { $cols[] = 'SIELTE';          $colKeys[] = 'Sielte'; }
 if ($rate_pernotto_sielte > 0)  { $cols[] = 'Pernotto SIELTE';     $colKeys[] = 'PernSielte'; }
+$cols[] = 'Comp. Atteso (€)'; $colKeys[] = 'CompensoAtteso';
 $cols[] = 'Note'; $colKeys[] = 'Note';
 
 $sabati_lavorati = 0;
@@ -280,6 +281,17 @@ if ($o_compensation > 0) {
 // Bonus/detrazioni always apply (even over override_compensation)
 $totale += $totale_bonus;
 
+// Compenso atteso per-day: sum from JSON (all rows)
+$sum_compenso_atteso = 0;
+foreach ($timesheet as $_row) {
+    $_row = json_decode(json_encode($_row), true);
+    $sum_compenso_atteso += (float)($_row['CompensoAtteso'] ?? 0);
+}
+// Fallback to legacy DB field if no per-day values set
+if ($sum_compenso_atteso <= 0) {
+    $sum_compenso_atteso = (float)($ts->compenso_atteso ?? 0);
+}
+
 ?>
 
 {{-- ====== HEADER CENTRATO ====== --}}
@@ -294,11 +306,11 @@ $totale += $totale_bonus;
     <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-md px-10 py-6 mb-6 min-w-[260px]">
         <p class="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2">Totale Compenso</p>
         <p class="text-5xl font-extrabold text-orange-500 dark:text-orange-400 leading-none">{{ $totale }}€</p>
-        @if($ts->compenso_atteso)
-        @php $diff = round($totale - (float)$ts->compenso_atteso, 2); @endphp
+        @if($sum_compenso_atteso > 0)
+        @php $diff = round($totale - $sum_compenso_atteso, 2); @endphp
         <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600">
             <p class="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-1">Compenso Atteso dall'utente</p>
-            <p class="text-2xl font-bold text-gray-700 dark:text-gray-200">{{ number_format((float)$ts->compenso_atteso, 2, '.', '') }}€</p>
+            <p class="text-2xl font-bold text-gray-700 dark:text-gray-200">{{ number_format($sum_compenso_atteso, 2, '.', '') }}€</p>
             <p class="text-sm mt-1 font-medium {{ $diff >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-500 dark:text-red-400' }}">
                 {{ $diff >= 0 ? '+' : '' }}{{ $diff }}€ rispetto all'atteso
             </p>
@@ -624,11 +636,15 @@ $totale += $totale_bonus;
         @endif
 
         <x-timesheets.show-edit-timesheet-table :timesheet="$ts" :months="$months" :cols="$cols" :col-keys="$colKeys" />
-        <div class="flex items-center justify-end mt-4 mb-8">
-            <x-primary-button class="ms-3">
-                {{ __('Salva') }}
-            </x-primary-button>
-        </div>
+        <div class="pb-20"></div>
+
+        <button type="submit"
+            class="fixed bottom-6 right-6 z-50 inline-flex items-center gap-2 px-5 py-3 bg-gray-800 dark:bg-gray-200 text-white dark:text-gray-800 font-semibold text-sm rounded-full shadow-xl hover:bg-gray-700 dark:hover:bg-white active:bg-gray-900 dark:active:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+            </svg>
+            Salva
+        </button>
     </form>
 </div>
 
