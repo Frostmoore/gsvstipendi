@@ -22,7 +22,10 @@ $compensi = [];
                 <th>Luogo</th>
                 <th>Entrata</th>
                 <th>Uscita</th>
-                <th>Estero</th>
+                <th>Feriale Italia</th>
+                <th>Festivo Italia</th>
+                <th>Feriale Estero</th>
+                <th>Festivo Estero</th>
                 <th>FIGC Trasp. Autista</th>
                 <th>FIGC Trasp. Accomp.</th>
                 <th>Presidio Autisti</th>
@@ -86,7 +89,10 @@ document.addEventListener("DOMContentLoaded", function () {
         { name: "Luogo",           type: "text",        editable: true  },
         { name: "Entrata",         type: "time",        editable: true  },
         { name: "Uscita",          type: "time",        editable: true  },
-        { name: "Estero",          type: "checkbox",    editable: false },
+        { name: "FerItalia",   label: "Feriale Italia",  type: "checkbox", editable: false },
+        { name: "FestItalia",  label: "Festivo Italia",  type: "checkbox", editable: false },
+        { name: "FerEstero",   label: "Feriale Estero",  type: "checkbox", editable: false },
+        { name: "FestEstero",  label: "Festivo Estero",  type: "checkbox", editable: false },
         { name: "FigcTraspAut",    label: "FIGC Trasp. Autista",  type: "checkbox", editable: false },
         { name: "FigcTraspAccomp", label: "FIGC Trasp. Accomp.",    type: "checkbox", editable: false },
         { name: "PresidioAut",     label: "Presidio Autisti",      type: "checkbox", editable: false },

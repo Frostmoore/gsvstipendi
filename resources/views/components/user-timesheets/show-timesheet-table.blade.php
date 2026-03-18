@@ -51,7 +51,10 @@ if ($_userRoleRate && (float)($_userRoleRate->fissa ?? 0) > 0) {
 $cols        = ['Data', 'Cliente', 'Luogo', 'Entrata', 'Uscita'];
 $allowedKeys = ['Data', 'Cliente', 'Luogo', 'Entrata', 'Uscita'];
 $flagColKeys = [];
-if ($rate_feriale_estero > 0 || $rate_festivo_estero > 0) $flagColKeys['Estero'] = 'Estero';
+$flagColKeys['Feriale Italia'] = 'FerItalia';
+if ($rate_figc_festivo_italia > 0) $flagColKeys['Festivo Italia'] = 'FestItalia';
+if ($rate_feriale_estero > 0)      $flagColKeys['Feriale Estero'] = 'FerEstero';
+if ($rate_festivo_estero > 0)      $flagColKeys['Festivo Estero'] = 'FestEstero';
 if ($rate_figc_trasp_aut > 0)   $flagColKeys['FIGC Trasp. Autista'] = 'FigcTraspAut';
 if ($rate_figc_trasp_acmp > 0)  $flagColKeys['FIGC Trasp. Accomp.']  = 'FigcTraspAccomp';
 if ($rate_presidio_aut > 0)     $flagColKeys['Presidio Autisti']     = 'PresidioAut';
@@ -70,7 +73,6 @@ $cols[] = 'Note'; $allowedKeys[] = 'Note';
 $sabati_lavorati = 0;
 
 foreach ($timesheet as $t) {
-    $festivo = false;
     $t = json_decode(json_encode($t), true);
     $rowCompensi = [];
 
@@ -78,9 +80,6 @@ foreach ($timesheet as $t) {
     $_month_str = str_pad($_month, 2, '0', STR_PAD_LEFT);
     $day = str_pad($day, 2, '0', STR_PAD_LEFT);
     $true_date_str = $year . '-' . $_month_str . '-' . $day;
-    if(DateHelper::isHoliday($true_date_str)) {
-        $festivo = true;
-    }
     $rowCompensi['data'] = $true_date_str;
 
     $entrata = array_key_exists('Entrata', $t) ? $t['Entrata'] : null;
@@ -93,7 +92,10 @@ foreach ($timesheet as $t) {
     $is_sabato = strpos($t['Data'], 'Sabato') !== false;
     if ($is_sabato) $sabati_lavorati++;
 
-    $estero         = array_key_exists('Estero',         $t) ? $t['Estero']         : null;
+    $fer_italia     = array_key_exists('FerItalia',      $t) ? $t['FerItalia']      : null;
+    $fest_italia    = array_key_exists('FestItalia',     $t) ? $t['FestItalia']     : null;
+    $fer_estero     = array_key_exists('FerEstero',      $t) ? $t['FerEstero']      : null;
+    $fest_estero    = array_key_exists('FestEstero',     $t) ? $t['FestEstero']     : null;
     $figc_tr_aut    = array_key_exists('FigcTraspAut',   $t) ? $t['FigcTraspAut']   : null;
     $figc_tr_acmp   = array_key_exists('FigcTraspAccomp',$t) ? $t['FigcTraspAccomp']: null;
     $pres_aut       = array_key_exists('PresidioAut',    $t) ? $t['PresidioAut']    : null;
@@ -109,7 +111,8 @@ foreach ($timesheet as $t) {
     $pern_sielte    = array_key_exists('PernSielte',     $t) ? $t['PernSielte']     : null;
 
     $ha_flag_speciale = (
-        $estero == 1 || $figc_tr_aut == 1 || $figc_tr_acmp == 1 ||
+        $fer_estero == 1 || $fest_estero == 1 ||
+        $figc_tr_aut == 1 || $figc_tr_acmp == 1 ||
         $pres_aut == 1 || $pres_acmp == 1 || $aut_nofigc == 1 ||
         $trasf_breve == 1 || $trasf_media == 1 || $trasf_lunga == 1 || $pernotto == 1 ||
         $sielte == 1 || $pern_sielte == 1
@@ -132,35 +135,25 @@ foreach ($timesheet as $t) {
         }
     }
 
-    // Giornata base: dipende da festivo × estero
-    if (!$festivo) {
-        if ($estero == 1) {
-            if ($rate_feriale_estero > 0) {
-                $rowCompensi['fer_estero'] = $rate_feriale_estero;
-            }
+    // Giornata base: diretta da checkbox (nessun calcolo automatico)
+    if ($fer_italia == 1) {
+        if ($fissa_eff > 0) {
+            $rowCompensi['figc_fer_it'] = ($is_sabato && $sabati_lavorati <= 2)
+                ? $fissa_eff
+                : (($is_sabato && $sabati_lavorati > 2 && $rate_tariffa_sabato > 0) ? $rate_tariffa_sabato : $rate_figc_feriale_italia);
         } else {
-            if ($fissa_eff > 0) {
-                if ($is_sabato && $sabati_lavorati <= 2) {
-                    $rowCompensi['figc_fer_it'] = $fissa_eff; // placeholder, recalculated in totals
-                } else {
-                    $rowCompensi['figc_fer_it'] = ($is_sabato && $sabati_lavorati > 2 && $rate_tariffa_sabato > 0)
-                        ? $rate_tariffa_sabato : $rate_figc_feriale_italia;
-                }
-            } else {
-                $rowCompensi['figc_fer_it'] = ($is_sabato && $sabati_lavorati > 2 && $rate_tariffa_sabato > 0)
-                    ? $rate_tariffa_sabato : $rate_figc_feriale_italia;
-            }
+            $rowCompensi['figc_fer_it'] = ($is_sabato && $sabati_lavorati > 2 && $rate_tariffa_sabato > 0)
+                ? $rate_tariffa_sabato : $rate_figc_feriale_italia;
         }
-    } else {
-        if ($estero == 1) {
-            if ($rate_festivo_estero > 0) {
-                $rowCompensi['fest_estero'] = $rate_festivo_estero;
-            }
-        } else {
-            if ($rate_figc_festivo_italia > 0) {
-                $rowCompensi['figc_fest_it'] = $rate_figc_festivo_italia;
-            }
-        }
+    }
+    if ($fest_italia == 1 && $rate_figc_festivo_italia > 0) {
+        $rowCompensi['figc_fest_it'] = $rate_figc_festivo_italia;
+    }
+    if ($fer_estero == 1 && $rate_feriale_estero > 0) {
+        $rowCompensi['fer_estero'] = $rate_feriale_estero;
+    }
+    if ($fest_estero == 1 && $rate_festivo_estero > 0) {
+        $rowCompensi['fest_estero'] = $rate_festivo_estero;
     }
 
     if ($figc_tr_aut == 1)   $rowCompensi['figc_tr_aut']  = $rate_figc_trasp_aut;

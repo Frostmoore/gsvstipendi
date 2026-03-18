@@ -6,7 +6,10 @@
 
 @php
     $_ur = $userRates;
-    $_show_estero          = $_ur && ((float)($_ur->feriale_estero ?? 0) > 0 || (float)($_ur->festivo_estero ?? 0) > 0);
+    $_show_fer_italia      = true;
+    $_show_fest_italia     = $_ur && (float)($_ur->figc_festivo_italia ?? 0) > 0;
+    $_show_fer_estero      = $_ur && (float)($_ur->feriale_estero ?? 0) > 0;
+    $_show_fest_estero     = $_ur && (float)($_ur->festivo_estero ?? 0) > 0;
     $_show_figc_tr_aut     = $_ur && (float)($_ur->figc_trasp_autista ?? 0) > 0;
     $_show_figc_tr_acmp    = $_ur && (float)($_ur->figc_trasp_accompagnatore ?? 0) > 0;
     $_show_pres_aut        = $_ur && (float)($_ur->presidio_autisti ?? 0) > 0;
@@ -49,7 +52,10 @@
                 <th>Luogo</th>
                 <th>Entrata</th>
                 <th>Uscita</th>
-                <th>Estero</th>
+                <th>Feriale Italia</th>
+                <th>Festivo Italia</th>
+                <th>Feriale Estero</th>
+                <th>Festivo Estero</th>
                 <th>FIGC Trasp. Autista</th>
                 <th>FIGC Trasp. Accomp.</th>
                 <th>Presidio Autisti</th>
@@ -108,7 +114,10 @@ document.addEventListener("DOMContentLoaded", function () {
     const NOTE_OPTIONS = ["Ferie", "Permesso", "Malattia", "104", "Smart Working"];
 
     const userRatesConfig = {
-        showEstero:        <?= json_encode($_show_estero) ?>,
+        showFerItalia:     <?= json_encode($_show_fer_italia) ?>,
+        showFestItalia:    <?= json_encode($_show_fest_italia) ?>,
+        showFerEstero:     <?= json_encode($_show_fer_estero) ?>,
+        showFestEstero:    <?= json_encode($_show_fest_estero) ?>,
         showFigcTrAut:     <?= json_encode($_show_figc_tr_aut) ?>,
         showFigcTrAccomp:  <?= json_encode($_show_figc_tr_acmp) ?>,
         showPresAut:       <?= json_encode($_show_pres_aut) ?>,
@@ -128,7 +137,10 @@ document.addEventListener("DOMContentLoaded", function () {
         { name: "Luogo",           type: "text",        editable: true  },
         { name: "Entrata",         type: "time",        editable: true  },
         { name: "Uscita",          type: "time",        editable: true  },
-        { name: "Estero",          type: "checkbox",    editable: false },
+        { name: "FerItalia",   label: "Feriale Italia",  type: "checkbox", editable: false },
+        { name: "FestItalia",  label: "Festivo Italia",  type: "checkbox", editable: false },
+        { name: "FerEstero",   label: "Feriale Estero",  type: "checkbox", editable: false },
+        { name: "FestEstero",  label: "Festivo Estero",  type: "checkbox", editable: false },
         { name: "FigcTraspAut",    label: "FIGC Trasp. Autista",  type: "checkbox", editable: false },
         { name: "FigcTraspAccomp", label: "FIGC Trasp. Accomp.",    type: "checkbox", editable: false },
         { name: "PresidioAut",     label: "Presidio Autisti",      type: "checkbox", editable: false },
@@ -150,7 +162,10 @@ document.addEventListener("DOMContentLoaded", function () {
     function updateRoleAndGenerateTable() {
         columns = allColumns.filter(function(col) {
             switch (col.name) {
-                case "Estero":         return userRatesConfig.showEstero;
+                case "FerItalia":      return userRatesConfig.showFerItalia;
+                case "FestItalia":     return userRatesConfig.showFestItalia;
+                case "FerEstero":      return userRatesConfig.showFerEstero;
+                case "FestEstero":     return userRatesConfig.showFestEstero;
                 case "FigcTraspAut":   return userRatesConfig.showFigcTrAut;
                 case "FigcTraspAccomp":return userRatesConfig.showFigcTrAccomp;
                 case "PresidioAut":    return userRatesConfig.showPresAut;

@@ -28,7 +28,10 @@
                 <th>Luogo</th>
                 <th>Entrata</th>
                 <th>Uscita</th>
-                <th>Estero</th>
+                <th>Feriale Italia</th>
+                <th>Festivo Italia</th>
+                <th>Feriale Estero</th>
+                <th>Festivo Estero</th>
                 <th>FIGC Trasp. Autista</th>
                 <th>FIGC Trasp. Accomp.</th>
                 <th>Presidio Autisti</th>
@@ -93,7 +96,10 @@ document.addEventListener("DOMContentLoaded", function () {
         { name: "Luogo",           type: "text",        editable: true  },
         { name: "Entrata",         type: "time",        editable: true  },
         { name: "Uscita",          type: "time",        editable: true  },
-        { name: "Estero",          type: "checkbox",    editable: false },
+        { name: "FerItalia",   label: "Feriale Italia",  type: "checkbox", editable: false },
+        { name: "FestItalia",  label: "Festivo Italia",  type: "checkbox", editable: false },
+        { name: "FerEstero",   label: "Feriale Estero",  type: "checkbox", editable: false },
+        { name: "FestEstero",  label: "Festivo Estero",  type: "checkbox", editable: false },
         { name: "FigcTraspAut",    label: "FIGC Trasp. Autista",  type: "checkbox", editable: false },
         { name: "FigcTraspAccomp", label: "FIGC Trasp. Accomp.",    type: "checkbox", editable: false },
         { name: "PresidioAut",     label: "Presidio Autisti",      type: "checkbox", editable: false },
@@ -112,7 +118,10 @@ document.addEventListener("DOMContentLoaded", function () {
     function getColumnsForRates(rates) {
         return allColumns.filter(function(col) {
             switch (col.name) {
-                case "Estero":         return rates && (parseFloat(rates.feriale_estero || 0) > 0 || parseFloat(rates.festivo_estero || 0) > 0);
+                case "FerItalia":      return true;
+            case "FestItalia":     return rates && parseFloat(rates.figc_festivo_italia || 0) > 0;
+            case "FerEstero":      return rates && parseFloat(rates.feriale_estero || 0) > 0;
+            case "FestEstero":     return rates && parseFloat(rates.festivo_estero || 0) > 0;
                 case "FigcTraspAut":   return rates && parseFloat(rates.figc_trasp_autista || 0) > 0;
                 case "FigcTraspAccomp":return rates && parseFloat(rates.figc_trasp_accompagnatore || 0) > 0;
                 case "PresidioAut":    return rates && parseFloat(rates.presidio_autisti || 0) > 0;
