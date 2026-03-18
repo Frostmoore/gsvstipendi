@@ -266,7 +266,76 @@ if ($sum_compenso_atteso <= 0) {
     </h2>
 </div>
 
-<div class="w-full overflow-x-auto">
+{{-- Mobile cards (< md) --}}
+<div class="md:hidden space-y-3 mb-4">
+    <h2 class="text-lg text-gray-800 dark:text-gray-200 leading-tight mb-3"><strong>Foglio Orario Complessivo:</strong></h2>
+    @foreach($timesheet as $row)
+    @php
+        $_r        = is_object($row) ? (array)$row : $row;
+        $_data     = $_r['Data']            ?? '';
+        $_cliente  = $_r['Cliente']         ?? '';
+        $_luogo    = $_r['Luogo']           ?? '';
+        $_entrata  = $_r['Entrata']         ?? '';
+        $_uscita   = $_r['Uscita']          ?? '';
+        $_note     = $_r['Note']            ?? '';
+        $_ca       = $_r['CompensoAtteso']  ?? '';
+        $_hasTime  = !empty($_entrata) && !empty($_uscita) && $_entrata !== '00:00' && $_uscita !== '00:00';
+        $_mFlags   = [];
+        foreach ($flagColKeys as $lbl => $fk) {
+            $fv = $_r[$fk] ?? '';
+            if ($fv == '1' || $fv === true) $_mFlags[] = $lbl;
+        }
+    @endphp
+    <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
+        <div class="font-semibold text-sm text-gray-800 dark:text-gray-200 mb-2 pb-1 border-b border-gray-200 dark:border-gray-700">
+            {{ $_data }}
+        </div>
+        @if($_cliente || $_luogo)
+        <div class="space-y-0.5 mb-2">
+            @if($_cliente)
+            <div class="flex justify-between text-sm gap-2">
+                <span class="text-xs text-gray-500 dark:text-gray-400 w-20 flex-shrink-0">Cliente</span>
+                <span class="text-gray-800 dark:text-gray-200 text-right text-xs">{{ $_cliente }}</span>
+            </div>
+            @endif
+            @if($_luogo)
+            <div class="flex justify-between text-sm gap-2">
+                <span class="text-xs text-gray-500 dark:text-gray-400 w-20 flex-shrink-0">Luogo</span>
+                <span class="text-gray-800 dark:text-gray-200 text-right text-xs">{{ $_luogo }}</span>
+            </div>
+            @endif
+        </div>
+        @endif
+        @if($_hasTime)
+        <div class="flex gap-4 mb-2">
+            <span class="text-xs text-gray-500 dark:text-gray-400">Entrata: <strong class="text-gray-800 dark:text-gray-200">{{ $_entrata }}</strong></span>
+            <span class="text-xs text-gray-500 dark:text-gray-400">Uscita: <strong class="text-gray-800 dark:text-gray-200">{{ $_uscita }}</strong></span>
+        </div>
+        @endif
+        @if(count($_mFlags) > 0)
+        <div class="flex flex-wrap gap-1 mb-2">
+            @foreach($_mFlags as $af)
+            <span class="text-xs bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200 rounded px-1.5 py-0.5">{{ $af }}</span>
+            @endforeach
+        </div>
+        @endif
+        @if($_ca)
+        <div class="flex justify-between text-xs pt-1.5 border-t border-gray-200 dark:border-gray-700">
+            <span class="text-gray-500 dark:text-gray-400">Comp. Atteso</span>
+            <span class="font-semibold text-gray-800 dark:text-gray-200">{{ number_format((float)$_ca, 2, '.', '') }}€</span>
+        </div>
+        @endif
+        @if($_note)
+        <div class="text-xs mt-1.5 text-gray-500 dark:text-gray-400 {{ $_ca ? 'pt-1' : 'pt-1.5 border-t border-gray-200 dark:border-gray-700' }}">
+            <span class="font-medium">Note:</span> {{ $_note }}
+        </div>
+        @endif
+    </div>
+    @endforeach
+</div>
+
+{{-- Desktop table (>= md) --}}
+<div class="w-full overflow-x-auto hidden md:block">
     <h2 class="text-lg text-gray-800 dark:text-gray-200 leading-tight mb-4">
         <strong>Foglio Orario Complessivo:</strong>
     </h2>

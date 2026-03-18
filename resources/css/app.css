@@ -194,21 +194,9 @@ input[type=number] {
 
 @media screen and (max-width: 576px) {
 
-    body {
-        width: 576px;
-    }
-
     .std-content {
         max-width: 600px;
         padding: 0!important;
-    }
-
-    .gsv-timesheet-table {
-        display:block;
-        width: 100%;
-        position:relative;
-        /* padding: 20px; */
-        border: none;
     }
 
     .gsv-timesheet-table-container {
@@ -219,6 +207,17 @@ input[type=number] {
         width: 100%;
     }
 
+}
+
+/* CSS-level fallback: hide the editable table and show mobile cards on small screens.
+   This works even if JS applyLayout doesn't fire (e.g. slow devices, resize edge cases). */
+@media screen and (max-width: 767px) {
+    #editableTable {
+        display: none !important;
+    }
+    #mobileCardsContainer {
+        display: block !important;
+    }
 }
 
 @media screen and (max-width: 768px) {
