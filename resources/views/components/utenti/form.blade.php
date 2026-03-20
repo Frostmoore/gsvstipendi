@@ -78,8 +78,8 @@
             'festivo_estero'            => 'FIGC Mag. Festivo Estero (€)',
             'figc_trasp_autista'        => 'FIGC Trasp. Autista (€)',
             'figc_trasp_accompagnatore' => 'FIGC Trasp. Accomp. (€)',
-            'presidio_autisti'          => 'Presidio Autisti (€)',
-            'presidio_accompagnatori'   => 'Presidio Accomp. (€)',
+            'presidio_autisti'          => 'FIGC Presidio Autisti (€)',
+            'presidio_accompagnatori'   => 'FIGC Presidio Accomp. (€)',
             'autista_no_figc'           => 'Autista no FIGC (€)',
             'trasferta'                 => 'Trasf. Breve <230km (€)',
             'trasferta_media'           => 'Trasf. Media <300km (€)',
@@ -87,6 +87,7 @@
             'pernotto'                  => 'Pernotto (€)',
             'sielte'                    => 'SIELTE (€)',
             'pernotto_sielte'           => 'Pernotto SIELTE (€)',
+            'festivo'                   => 'Festivo (€)',
             'straordinari'              => 'Straordinari (€/ora)',
             'tariffa_sabato'            => 'Tariffa 3° Sabato (€)',
         ];

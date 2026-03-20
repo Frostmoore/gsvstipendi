@@ -37,6 +37,7 @@ $rate_trasf_lunga              = $_userRoleRate ? (float)($_userRoleRate->trasfe
 $rate_pernotto                 = $_userRoleRate ? (float)($_userRoleRate->pernotto                 ?? 0) : 0;
 $rate_sielte                   = $_userRoleRate ? (float)($_userRoleRate->sielte                   ?? 0) : 0;
 $rate_pernotto_sielte          = $_userRoleRate ? (float)($_userRoleRate->pernotto_sielte          ?? 0) : 0;
+$rate_festivo                  = $_userRoleRate ? (float)($_userRoleRate->festivo                  ?? 0) : 0;
 $rate_straordinari             = $_userRoleRate ? (float)($_userRoleRate->straordinari             ?? 0) : 0;
 $rate_tariffa_sabato           = $_userRoleRate ? (float)($_userRoleRate->tariffa_sabato           ?? 0) : 0;
 
@@ -51,14 +52,14 @@ if ($_userRoleRate && (float)($_userRoleRate->fissa ?? 0) > 0) {
 $cols        = ['Data', 'Cliente', 'Luogo', 'Entrata', 'Uscita'];
 $allowedKeys = ['Data', 'Cliente', 'Luogo', 'Entrata', 'Uscita'];
 $flagColKeys = [];
-$flagColKeys['Feriale Italia'] = 'FerItalia';
-if ($rate_figc_festivo_italia > 0) $flagColKeys['Festivo Italia'] = 'FestItalia';
-if ($rate_feriale_estero > 0)      $flagColKeys['Feriale Estero'] = 'FerEstero';
-if ($rate_festivo_estero > 0)      $flagColKeys['Festivo Estero'] = 'FestEstero';
-if ($rate_figc_trasp_aut > 0)   $flagColKeys['FIGC Trasp. Autista'] = 'FigcTraspAut';
+$flagColKeys['FIGC Mag. Feriale Italia'] = 'FerItalia';
+if ($rate_figc_festivo_italia > 0) $flagColKeys['FIGC Mag. Festivo Italia'] = 'FestItalia';
+if ($rate_feriale_estero > 0)      $flagColKeys['FIGC Mag. Feriale Estero'] = 'FerEstero';
+if ($rate_festivo_estero > 0)      $flagColKeys['FIGC Mag. Festivo Estero'] = 'FestEstero';
+if ($rate_figc_trasp_aut > 0)   $flagColKeys['FIGC Trasp. Autista']  = 'FigcTraspAut';
 if ($rate_figc_trasp_acmp > 0)  $flagColKeys['FIGC Trasp. Accomp.']  = 'FigcTraspAccomp';
-if ($rate_presidio_aut > 0)     $flagColKeys['Presidio Autisti']     = 'PresidioAut';
-if ($rate_presidio_acmp > 0)    $flagColKeys['Presidio Accomp.']     = 'PresidioAccomp';
+if ($rate_presidio_aut > 0)     $flagColKeys['FIGC Presidio Autisti']   = 'PresidioAut';
+if ($rate_presidio_acmp > 0)    $flagColKeys['FIGC Presidio Accomp.']   = 'PresidioAccomp';
 if ($rate_autista_nofigc > 0)   $flagColKeys['Autista no FIGC']      = 'AutistaNoFigc';
 if ($rate_trasf_breve > 0)      $flagColKeys['Trasf. Breve <230km']  = 'TrasfBreve';
 if ($rate_trasf_media > 0)      $flagColKeys['Trasf. Media <300km']  = 'TrasfMedia';
@@ -66,6 +67,7 @@ if ($rate_trasf_lunga > 0)      $flagColKeys['Trasf. Lunga >300km']  = 'TrasfLun
 if ($rate_pernotto > 0)        $flagColKeys['Pernotto']        = 'Pernotto';
 if ($rate_sielte > 0)          $flagColKeys['SIELTE']          = 'Sielte';
 if ($rate_pernotto_sielte > 0)   $flagColKeys['Pernotto SIELTE']     = 'PernSielte';
+if ($rate_festivo > 0)           $flagColKeys['Festivo']              = 'Festivo';
 if (!empty($flagColKeys)) { $cols[] = 'Opzioni'; $allowedKeys[] = '__flags__'; }
 $cols[] = 'Comp. Atteso (€)'; $allowedKeys[] = 'CompensoAtteso';
 $cols[] = 'Note'; $allowedKeys[] = 'Note';
@@ -109,13 +111,14 @@ foreach ($timesheet as $t) {
     $pernotto       = array_key_exists('Pernotto',       $t) ? $t['Pernotto']       : null;
     $sielte         = array_key_exists('Sielte',         $t) ? $t['Sielte']         : null;
     $pern_sielte    = array_key_exists('PernSielte',     $t) ? $t['PernSielte']     : null;
+    $festivo        = array_key_exists('Festivo',        $t) ? $t['Festivo']        : null;
 
     $ha_flag_speciale = (
         $fer_estero == 1 || $fest_estero == 1 ||
         $figc_tr_aut == 1 || $figc_tr_acmp == 1 ||
         $pres_aut == 1 || $pres_acmp == 1 || $aut_nofigc == 1 ||
         $trasf_breve == 1 || $trasf_media == 1 || $trasf_lunga == 1 || $pernotto == 1 ||
-        $sielte == 1 || $pern_sielte == 1
+        $sielte == 1 || $pern_sielte == 1 || $festivo == 1
     );
 
     // Straordinari
@@ -167,6 +170,7 @@ foreach ($timesheet as $t) {
     if ($pernotto == 1)  $rowCompensi['pernotto'] = $rate_pernotto;
     if ($sielte == 1)    $rowCompensi['sielte']   = $rate_sielte;
     if ($pern_sielte == 1)   $rowCompensi['pern_sielte']      = $rate_pernotto_sielte;
+    if ($festivo == 1)       $rowCompensi['festivo']          = $rate_festivo;
 
     array_push($compensi, $rowCompensi);
 }
@@ -187,6 +191,7 @@ $trasf_lunga_tot  = 0; $trasf_lunga_num      = 0;
 $pernotto_tot = 0; $pernotto_num = 0;
 $sielte_tot   = 0; $sielte_num   = 0;
 $pern_sielte_tot    = 0; $pern_sielte_num    = 0;
+$festivo_tot        = 0; $festivo_num        = 0;
 $straordinari_tot   = 0; $straordinari_ore   = 0;
 
 foreach ($compensi as $z) {
@@ -205,6 +210,7 @@ foreach ($compensi as $z) {
     $pernotto_tot += $z['pernotto'] ?? 0;
     $sielte_tot   += $z['sielte']   ?? 0;
     $pern_sielte_tot    += $z['pern_sielte']    ?? 0;
+    $festivo_tot        += $z['festivo']        ?? 0;
     $straordinari_tot   += $z['straordinari']   ?? 0;
     $straordinari_ore   += $z['straordinari_ore'] ?? 0;
 
@@ -223,6 +229,7 @@ foreach ($compensi as $z) {
     array_key_exists('pernotto', $z) ? $pernotto_num++ : null;
     array_key_exists('sielte',   $z) ? $sielte_num++  : null;
     array_key_exists('pern_sielte',   $z) ? $pern_sielte_num++    : null;
+    array_key_exists('festivo',       $z) ? $festivo_num++        : null;
 }
 
 // Apply fissa logic to figc_fer_it total
@@ -238,7 +245,7 @@ $totale = $figc_fer_it + $figc_fest_it + $fer_estero + $fest_estero
         + $figc_tr_aut_tot + $figc_tr_acmp_tot
         + $pres_aut_tot + $pres_acmp_tot + $aut_nofigc_tot
         + $trasf_breve_tot + $trasf_media_tot + $trasf_lunga_tot
-        + $pernotto_tot + $sielte_tot + $pern_sielte_tot
+        + $pernotto_tot + $sielte_tot + $pern_sielte_tot + $festivo_tot
         + $straordinari_tot + $totale_bonus;
 
 // Compenso atteso per-day: sum from JSON

@@ -28,14 +28,14 @@
                 <th>Luogo</th>
                 <th>Entrata</th>
                 <th>Uscita</th>
-                <th>Feriale Italia</th>
-                <th>Festivo Italia</th>
-                <th>Feriale Estero</th>
-                <th>Festivo Estero</th>
+                <th>FIGC Mag. Feriale Italia</th>
+                <th>FIGC Mag. Festivo Italia</th>
+                <th>FIGC Mag. Feriale Estero</th>
+                <th>FIGC Mag. Festivo Estero</th>
                 <th>FIGC Trasp. Autista</th>
                 <th>FIGC Trasp. Accomp.</th>
-                <th>Presidio Autisti</th>
-                <th>Presidio Accomp.</th>
+                <th>FIGC Presidio Autisti</th>
+                <th>FIGC Presidio Accomp.</th>
                 <th>Autista no FIGC</th>
                 <th>Trasf. Breve &lt;230km</th>
                 <th>Trasf. Media &lt;300km</th>
@@ -96,14 +96,14 @@ document.addEventListener("DOMContentLoaded", function () {
         { name: "Luogo",           type: "text",        editable: true  },
         { name: "Entrata",         type: "time",        editable: true  },
         { name: "Uscita",          type: "time",        editable: true  },
-        { name: "FerItalia",   label: "Feriale Italia",  type: "checkbox", editable: false },
-        { name: "FestItalia",  label: "Festivo Italia",  type: "checkbox", editable: false },
-        { name: "FerEstero",   label: "Feriale Estero",  type: "checkbox", editable: false },
-        { name: "FestEstero",  label: "Festivo Estero",  type: "checkbox", editable: false },
-        { name: "FigcTraspAut",    label: "FIGC Trasp. Autista",  type: "checkbox", editable: false },
-        { name: "FigcTraspAccomp", label: "FIGC Trasp. Accomp.",    type: "checkbox", editable: false },
-        { name: "PresidioAut",     label: "Presidio Autisti",      type: "checkbox", editable: false },
-        { name: "PresidioAccomp",  label: "Presidio Accomp.",      type: "checkbox", editable: false },
+        { name: "FerItalia",   label: "FIGC Mag. Feriale Italia",  type: "checkbox", editable: false },
+        { name: "FestItalia",  label: "FIGC Mag. Festivo Italia",  type: "checkbox", editable: false },
+        { name: "FerEstero",   label: "FIGC Mag. Feriale Estero",  type: "checkbox", editable: false },
+        { name: "FestEstero",  label: "FIGC Mag. Festivo Estero",  type: "checkbox", editable: false },
+        { name: "FigcTraspAut",    label: "FIGC Trasp. Autista",   type: "checkbox", editable: false },
+        { name: "FigcTraspAccomp", label: "FIGC Trasp. Accomp.",   type: "checkbox", editable: false },
+        { name: "PresidioAut",     label: "FIGC Presidio Autisti",    type: "checkbox", editable: false },
+        { name: "PresidioAccomp",  label: "FIGC Presidio Accomp.",    type: "checkbox", editable: false },
         { name: "AutistaNoFigc",   label: "Autista no FIGC",       type: "checkbox", editable: false },
         { name: "TrasfBreve",      label: "Trasf. Breve <230km",   type: "checkbox", editable: false },
         { name: "TrasfMedia",      label: "Trasf. Media <300km",   type: "checkbox", editable: false },
@@ -111,6 +111,7 @@ document.addEventListener("DOMContentLoaded", function () {
         { name: "Pernotto",        type: "checkbox",    editable: false },
         { name: "Sielte",          label: "SIELTE",     type: "checkbox", editable: false },
         { name: "PernSielte",      label: "Pernotto SIELTE", type: "checkbox", editable: false },
+        { name: "Festivo",         label: "Festivo",         type: "checkbox", editable: false },
         { name: "CompensoAtteso",  label: "Comp. Atteso (€)", type: "number",   editable: true  },
         { name: "Note",            type: "multiselect", editable: false },
     ];
@@ -133,6 +134,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 case "Pernotto":       return rates && parseFloat(rates.pernotto || 0) > 0;
                 case "Sielte":         return rates && parseFloat(rates.sielte || 0) > 0;
                 case "PernSielte":     return rates && parseFloat(rates.pernotto_sielte || 0) > 0;
+                case "Festivo":        return rates && parseFloat(rates.festivo || 0) > 0;
                 default:               return true;
             }
         });
